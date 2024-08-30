@@ -62,7 +62,11 @@ class API::V1::BarsController < ApplicationController
 
   def bar_params
     params.require(:bar).permit(
+<<<<<<< Updated upstream
       :name, :latitude, :longitude, :image_base64,
+=======
+      :name, :latitude, :longitude, :image_base64, :address_id,
+>>>>>>> Stashed changes
       address_attributes: [:user_id, :line1, :line2, :city, country_attributes: [:name]]
     )
   end
