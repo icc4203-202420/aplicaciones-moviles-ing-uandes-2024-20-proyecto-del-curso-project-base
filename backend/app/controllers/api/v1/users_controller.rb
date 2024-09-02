@@ -1,6 +1,7 @@
 class API::V1::UsersController < ApplicationController
   respond_to :json
-  before_action :set_user, only: [:show, :update]  
+  before_action :set_user, only: [:show, :update]
+  before_action :authenticate_user! 
   
   def index
     @users = User.includes(:reviews, :address).all   
@@ -28,6 +29,21 @@ class API::V1::UsersController < ApplicationController
     end
   end
 
+  def friendships
+    @friends = @user.friends
+    render json: @friends, status: :ok
+  end
+
+  def create_friendship
+    @friend = User.find(params[:friend_id])
+    @friendship = @user.friendships.build(friend: @friend)
+    if @friendship.save
+      render json: @friendship, status: :created
+    else
+      render json: @friendship.errors, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def set_user
@@ -41,5 +57,9 @@ class API::V1::UsersController < ApplicationController
               country_attributes: [:id, :name]],
               reviews_attributes: [:id, :text, :rating, :beer_id, :_destroy]
             })
+  end
+
+  def friendship_params
+    params.require(:friendship). permit(:friend_id)
   end
 end
