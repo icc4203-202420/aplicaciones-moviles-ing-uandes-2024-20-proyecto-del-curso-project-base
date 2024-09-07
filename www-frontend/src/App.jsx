@@ -9,7 +9,6 @@ import UserSearch from './components/UserSearch';
 import EventList from './components/EventList';
 import Navbar from './components/Navbar';
 
-
 function App() {
   return (
     <Router>
@@ -19,7 +18,7 @@ function App() {
           <Route path="/bars" element={<BarList />} />
           <Route path="/beers" element={<BeerList />} />
           <Route path="/bars/:id/events" element={<BarEvents />} />
-          <Route path="/search" element={<UserSearch />} />
+          <Route path="/users" element={<UserSearch />} />
           <Route path="/events" element={<EventList />} />
         </Routes>
         <Navbar />

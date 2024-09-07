@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { TextField, List, ListItem, ListItemText, Container, Typography, Paper } from '@mui/material';
 import axios from 'axios';
 
 function BarList() {
@@ -11,7 +12,7 @@ function BarList() {
       .then(response => {
         // Verifica la estructura de la respuesta
         console.log('Fetched bars:', response.data);
-        setBars(response.data.bars); // Asegúrate de que ⁠ response.data.bars ⁠ sea la estructura correcta
+        setBars(response.data.bars); // Asegúrate de que response.data.bars sea la estructura correcta
       })
       .catch(error => console.error('Error fetching bars:', error));
   }, []);
@@ -21,24 +22,34 @@ function BarList() {
   );
 
   return (
-    <div>
-      <h2>Bar List</h2>
-      <input
-        type="text"
-        placeholder="Search bars..."
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Lista de Bares
+      </Typography>
+      <TextField
+        label="Buscar bares..."
+        variant="outlined"
+        fullWidth
+        margin="normal"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <ul>
-        {filteredBars.length > 0 ? (
-          filteredBars.map(bar => (
-            <li key={bar.id}>{bar.name}</li>
-          ))
-        ) : (
-          <li>No bars available</li>
-        )}
-      </ul>
-    </div>
+      <Paper>
+        <List>
+          {filteredBars.length > 0 ? (
+            filteredBars.map(bar => (
+              <ListItem key={bar.id}>
+                <ListItemText primary={bar.name} />
+              </ListItem>
+            ))
+          ) : (
+            <ListItem>
+              <ListItemText primary="No hay bares disponibles" />
+            </ListItem>
+          )}
+        </List>
+      </Paper>
+    </Container>
   );
 }
 

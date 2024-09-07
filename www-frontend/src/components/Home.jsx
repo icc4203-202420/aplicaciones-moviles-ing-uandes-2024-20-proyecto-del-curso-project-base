@@ -10,7 +10,7 @@ function Home() {
         <li><Link to="/beers">Browse Beers</Link></li>
         <li><Link to="/bars">Find Bars</Link></li>
         <li><Link to="/bars/:id/events">Find Bar Events</Link></li>
-        <li><Link to="/search">Search Users</Link></li>
+        <li><Link to="/users">Search Users</Link></li>
         <li><Link to="/events">Events </Link></li> 
       </ul>
     </div>

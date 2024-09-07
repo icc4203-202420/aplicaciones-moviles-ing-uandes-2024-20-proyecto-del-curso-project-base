@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { TextField, List, ListItem, ListItemText, Container, Typography, Paper } from '@mui/material';
 import axios from 'axios';
 
 function BeerList() {
@@ -16,20 +17,34 @@ function BeerList() {
   );
 
   return (
-    <div>
-      <h2>Beer List</h2>
-      <input
-        type="text"
-        placeholder="Search beers..."
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Lista de Cervezas
+      </Typography>
+      <TextField
+        label="Buscar cervezas..."
+        variant="outlined"
+        fullWidth
+        margin="normal"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <ul>
-        {filteredBeers.map(beer => (
-          <li key={beer.id}>{beer.name}</li>
-        ))}
-      </ul>
-    </div>
+      <Paper>
+        <List>
+          {filteredBeers.length > 0 ? (
+            filteredBeers.map(beer => (
+              <ListItem key={beer.id}>
+                <ListItemText primary={beer.name} />
+              </ListItem>
+            ))
+          ) : (
+            <ListItem>
+              <ListItemText primary="No hay cervezas disponibles" />
+            </ListItem>
+          )}
+        </List>
+      </Paper>
+    </Container>
   );
 }
 
