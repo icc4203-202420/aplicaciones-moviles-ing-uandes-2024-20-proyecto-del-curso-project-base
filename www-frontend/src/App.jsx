@@ -6,7 +6,6 @@ import BarList from './components/BarList';
 import BeerList from './components/BeerList';
 import BarEvents from './components/BarEvents';
 import UserSearch from './components/UserSearch';
-import EventList from './components/EventList';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -19,7 +18,6 @@ function App() {
           <Route path="/beers" element={<BeerList />} />
           <Route path="/bars/:id/events" element={<BarEvents />} />
           <Route path="/users" element={<UserSearch />} />
-          <Route path="/events" element={<EventList />} />
         </Routes>
         <Navbar />
       </div>

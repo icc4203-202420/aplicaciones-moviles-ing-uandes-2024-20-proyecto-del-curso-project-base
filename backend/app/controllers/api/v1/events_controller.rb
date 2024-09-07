@@ -8,7 +8,7 @@ class API::V1::EventsController < ApplicationController
 
     def index
       # set_bar
-      if bar
+      if @bar
         @events = @bar.events
         if @events.empty?
           render json: { message: "No events available" }, status: :ok
