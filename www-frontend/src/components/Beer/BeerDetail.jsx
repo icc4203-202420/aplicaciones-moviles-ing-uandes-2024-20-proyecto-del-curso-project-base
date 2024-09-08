@@ -1,167 +1,121 @@
-// import React, { useState, useEffect } from 'react';
-// import { useParams, Link, useNavigate } from 'react-router-dom';
-// import axios from 'axios';
-// import {
-//   Typography,
-//   Container,
-//   Button,
-//   Paper,
-//   TextField,
-//   List,
-//   ListItem,
-//   ListItemText
-// } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { Typography, Box, Rating, IconButton } from '@mui/material';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import { styled } from '@mui/material/styles';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
 
-// // Función para obtener el ID del usuario actual (ajusta según tu implementación de autenticación)
-// const getCurrentUserId = () => {
-//   // Aquí se debe obtener el ID del usuario actual basado en la autenticación, por ejemplo:
-//   // return auth.currentUser ? auth.currentUser.id : null;
-//   // Aquí es un valor de ejemplo
-//   return 1; // Cambia esto según tu método de autenticación
-// };
+const CustomStarIcon = styled(StarIcon)(({ theme }) => ({
+  color: 'white',
+  borderColor: 'white',
+  borderWidth: '1px',
+}));
 
-// // Función para verificar si el usuario está autenticado
-// const isAuthenticated = () => {
-//   return Boolean(getCurrentUserId()); // Ajusta esto según tu lógica de autenticación
-// };
+const CustomStarBorderIcon = styled(StarBorderIcon)(({ theme }) => ({
+  color: 'white',
+  borderColor: 'white',
+  borderWidth: '1px',
+}));
 
-// function BeerDetail() {
-//   const { id } = useParams();
-//   const [beer, setBeer] = useState(null);
-//   const [reviews, setReviews] = useState([]);
-//   const [userReview, setUserReview] = useState(null);
-//   const [newReview, setNewReview] = useState({ text: '', rating: '' });
-//   const [avgRating, setAvgRating] = useState(0);
-//   const navigate = useNavigate();
+const BeerDetail = () => {
+  const { id } = useParams();
+  const [beer, setBeer] = useState(null);
 
-//   useEffect(() => {
-//     axios.get(`/api/v1/beers/${id}`)
-//       .then(response => {
-//         setBeer(response.data.beer);
-//         setReviews(response.data.reviews);
-//         const userId = getCurrentUserId();
-//         const userReview = response.data.reviews.find(review => review.user_id === userId);
-//         setUserReview(userReview);
-//         setAvgRating(response.data.avg_rating);
-//       })
-//       .catch(error => console.error('Error fetching beer details:', error));
-//   }, [id]);
+  const handleBackClick = () => {
+    window.history.back();
+  };
 
-//   const handleSubmitReview = () => {
-//     if (!isAuthenticated()) {
-//       alert('You must be logged in to write a review.');
-//       navigate('/login'); // Redirige a la página de inicio de sesión
-//       return;
-//     }
+  useEffect(() => {
+    axios.get(`http://localhost:3001/api/v1/beers/${id}`)
+      .then(response => {
+        setBeer(response.data.beer);
+      })
+      .catch(error => {
+        console.error('Error fetching beer details:', error);
+      });
+  }, [id]);
 
-//     if (newReview.text.length < 15 || newReview.rating < 1 || newReview.rating > 5) {
-//       alert('La evaluación debe tener al menos 15 palabras y un rating entre 1 y 5.');
-//       return;
-//     }
+  if (!beer) return <div>Loading...</div>;
 
-//     axios.post(`/api/v1/reviews`, {
-//       ...newReview,
-//       beer_id: id,
-//       user_id: getCurrentUserId()
-//     })
-//       .then(response => {
-//         setReviews([...reviews, response.data.review]);
-//         setUserReview(response.data.review);
-//         setNewReview({ text: '', rating: '' });
-//       })
-//       .catch(error => console.error('Error submitting review:', error));
-//   };
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      backgroundImage: 'url(/images/IMG_2754.JPG)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      overflow: 'hidden',
+    }}>
+      <div style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        color: 'white',
+        height: '100%',
+        padding: '20px',
+        boxSizing: 'border-box',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center', // Center the content vertically
+        alignItems: 'center', // Center the content horizontally
+      }}>
+        <IconButton 
+          onClick={handleBackClick} 
+          sx={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            color: 'white',
+            fontSize: '1.5rem',
+          }}
+        >
+          <ArrowBackIosIcon />
+        </IconButton>
 
-//   return (
-//     <Container>
-//       {beer && (
-//         <>
-//           <Typography variant="h4">{beer.name}</Typography>
-//           <Typography variant="h6">Brewery: {beer.brewery_name}</Typography>
-//           <Typography variant="h6">Average Rating: {avgRating.toFixed(1)}</Typography>
-//           <Typography variant="h6">Bars Serving This Beer:</Typography>
-//           <List>
-//             {beer.bars.map(bar => (
-//               <ListItem key={bar.id}>
-//                 <ListItemText primary={bar.name} />
-//               </ListItem>
-//             ))}
-//           </List>
-//           <Typography variant="h5">User Reviews:</Typography>
-//           <List>
-//             {reviews.map(review => (
-//               <ListItem key={review.id}>
-//                 <ListItemText
-//                   primary={`Rating: ${review.rating}`}
-//                   secondary={review.text}
-//                 />
-//               </ListItem>
-//             ))}
-//           </List>
-//           {!userReview ? (
-//             <Paper style={{ padding: 16 }}>
-//               <Typography variant="h6">Write a Review:</Typography>
-//               <TextField
-//                 label="Review Text"
-//                 multiline
-//                 rows={4}
-//                 fullWidth
-//                 value={newReview.text}
-//                 onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
-//               />
-//               <TextField
-//                 label="Rating (1-5)"
-//                 type="number"
-//                 fullWidth
-//                 value={newReview.rating}
-//                 onChange={(e) => setNewReview({ ...newReview, rating: e.target.value })}
-//               />
-//               <Button
-//                 variant="contained"
-//                 onClick={handleSubmitReview}
-//                 style={{ marginTop: 16 }}
-//               >
-//                 Submit Review
-//               </Button>
-//             </Paper>
-//           ) : (
-//             <Typography variant="h6">Your Review: {userReview.text}</Typography>
-//           )}
-//           <Button variant="contained" component={Link} to={`/beers/${id}`}>
-//             See Details
-//           </Button>
-//         </>
-//       )}
-//     </Container>
-//   );
-// }
+        <div>
+          <Typography variant="h4" component="div" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+            {beer.name}
+          </Typography>
+          <Typography variant="h6" component="div" color="text.white" gutterBottom sx={{ textAlign: 'center' }}>
+            {beer.style}
+          </Typography>
 
-// export default BeerDetail;
-import React from 'react';
-import { Card, CardContent, Typography } from '@mui/material';
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px' }}>
+            <Rating
+              value={beer.avg_rating}
+              readOnly
+              precision={0.5}
+              icon={<CustomStarIcon />}
+              emptyIcon={<CustomStarBorderIcon />}
+              sx={{ color: 'white' }}
+            />
+            <Typography variant="body2" sx={{ marginTop: '8px', color: 'white' }}>
+              {beer.avg_rating} ({beer.reviews_count || 'N/A'} Reviews)
+            </Typography>
+          </Box>
 
-const BeerDetail = ({ beer }) => {
-    return (
-        <Card sx={{ maxWidth: 345 }}>
-            <CardContent>
-                <Typography variant="h5" component="div">
-                    {beer.name}
-                </Typography>
-                <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    Style: {beer.style}
-                </Typography>
-                <Typography variant="body2">
-                    <strong>Hop:</strong> {beer.hop}<br />
-                    <strong>Yeast:</strong> {beer.yeast}<br />
-                    <strong>Malts:</strong> {beer.malts}<br />
-                    <strong>IBU:</strong> {beer.ibu}<br />
-                    <strong>Alcohol:</strong> {beer.alcohol}<br />
-                    <strong>BLG:</strong> {beer.blg}
-                </Typography>
-            </CardContent>
-        </Card>
-    );
-};
+          <Typography variant="body1" sx={{ marginTop: 2, color: 'white', textAlign: 'center' }}>
+            {beer.bar_names && beer.bar_names.length > 0 ? (
+              <ul style={{ padding: 0, listStyle: 'none' }}>
+                {beer.bar_names.map((barName, index) => (
+                  <li key={index} style={{ color: 'white', textAlign: 'center' }}>{barName}</li>
+                ))}
+              </ul>
+            ) : (
+              <span style={{ color: 'gray', fontSize: '16px' }}>No bars found.</span>
+            )}
+          </Typography>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default BeerDetail;
+
+
 

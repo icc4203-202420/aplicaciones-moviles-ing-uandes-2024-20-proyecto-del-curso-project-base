@@ -20,11 +20,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/bars" element={<BarList />} />
-          <Route path="/beers" element={<BeerList />} />
           <Route path="/bars/:id/events" element={<BarEvents />} />
           <Route path="/users" element={<UserSearch />} />
+          <Route path="/beers" element={<BeerList />} />
+          <Route path="/beers" element={<BeerPopup />} />
           <Route path="/beers/:id" element={<BeerDetail />} />
-          <Route path="/beers/:id" element={<BeerPopup />} />
           <Route path="/beers/:id/reviews" element={<BeerReviewList />} />
           <Route path="/beers/:id/review" element={<BeerReviewForm />} />
         </Routes>

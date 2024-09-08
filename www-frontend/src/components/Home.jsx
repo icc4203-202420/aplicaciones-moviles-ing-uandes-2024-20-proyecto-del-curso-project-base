@@ -22,8 +22,8 @@ function Home() {
         position: 'absolute',
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100%',
+        width: '100vw',
+        height: '100vh',
         backgroundColor: 'rgba(0, 0, 0, 0.6)', // Fondo negro con opacidad 60%
         zIndex: -1,
       }} />

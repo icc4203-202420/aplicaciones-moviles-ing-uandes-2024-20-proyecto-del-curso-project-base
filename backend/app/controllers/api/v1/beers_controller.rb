@@ -28,14 +28,24 @@ class API::V1::BeersController < ApplicationController
 
   # GET /beers/:id
   def show
+    @beer = Beer.includes(brand: :brewery).find(params[:id])
+    @brewery = @beer.brand.brewery
+    @bars = BarsBeer.where(beer_id: @beer.id).includes(:bar)
+
+    beer_data = @beer.as_json.merge({
+      brand_name: @beer.brand.name,
+      brewery_name: @brewery.name,
+      bar_names: @bars.map { |bars_beer| bars_beer.bar.name }
+    })
+
     if @beer.image.attached?
-      render json: @beer.as_json.merge({
+      beer_data.merge!({
         image_url: url_for(@beer.image),
-        thumbnail_url: url_for(@beer.thumbnail)}),
-        status: :ok
-    else
-      render json: { beer: @beer.as_json }, status: :ok
+        thumbnail_url: url_for(@beer.thumbnail)
+      })
     end
+
+    render json: { beer: beer_data }, status: :ok
   end
 
   # POST /beers
