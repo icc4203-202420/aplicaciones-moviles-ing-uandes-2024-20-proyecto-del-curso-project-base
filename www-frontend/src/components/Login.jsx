@@ -7,6 +7,9 @@ import axios from 'axios';
 import qs from 'qs';
 import { useNavigate } from 'react-router-dom';
 
+// Configura Axios con una URL base estática
+axios.defaults.baseURL = 'http://localhost:3001'; // Cambia esta URL a la de tu backend
+
 const validationSchema = Yup.object({
   email: Yup.string().email('Invalid email').required('Email is required'),
   password: Yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
@@ -17,30 +20,27 @@ const initialValues = {
   password: '',
 };
 
-// Configure axios with a static base URL
-axios.defaults.baseURL = 'http://localhost:3001'; // Cambia esta URL a la de tu backend
-
 const Login = ({ tokenHandler }) => {
-  const [serverError, setServerError] = useState(''); // State to handle server error
-  const navigate = useNavigate(); // Hook for navigation
+  const [serverError, setServerError] = useState(''); // Estado para manejar el error del servidor
+  const navigate = useNavigate(); // Hook para la navegación
 
-  // Define the hook for the POST request
+  // Define el hook para la solicitud POST
   const [{ data, loading, error }, executePost] = useAxios(
     {
       url: '/login',
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     },
-    { manual: true } // Manually trigger the request on form submission
+    { manual: true } // Activar la solicitud manualmente en el envío del formulario
   );
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       const response = await executePost({ data: qs.stringify(values) });
       const receivedToken = response.data.token;
-      tokenHandler(receivedToken); // Handle the received token
-      setServerError(''); // Clear any error messages if login is successful
-      navigate('/'); // Redirect to home page after successful login
+      tokenHandler(receivedToken); // Maneja el token recibido
+      setServerError(''); // Limpiar mensajes de error si el inicio de sesión es exitoso
+      navigate('/'); // Redirigir a la página principal después del inicio de sesión exitoso
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setServerError('Incorrect email or password.');
