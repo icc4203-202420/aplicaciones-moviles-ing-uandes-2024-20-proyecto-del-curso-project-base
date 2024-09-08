@@ -84,6 +84,29 @@ const BeerDetail = () => {
             {beer.style}
           </Typography>
 
+          
+
+          <Box sx={{ marginTop: 2, color: 'white', textAlign: 'center' }}>
+            <Typography variant="body1">Brewery: {beer.brewery_name || 'Not Available'}</Typography>
+            <Typography variant="body1">Hop: {beer.hop || 'Not Available'}</Typography>
+            <Typography variant="body1">Yeast: {beer.yeast || 'Not Available'}</Typography>
+            <Typography variant="body1">Malts: {beer.malts || 'Not Available'}</Typography>
+            <Typography variant="body1">IBU: {beer.ibu || 'Not Available'}</Typography>
+            <Typography variant="body1">Alcohol: {beer.alcohol || 'Not Available'}</Typography>
+            <Typography variant="body1">BLG: {beer.blg || 'Not Available'}</Typography>
+          </Box>
+
+          <Typography variant="h6" sx={{ marginTop: 2 }}>Bars Serving This Beer:</Typography>
+          {beer.bar_names && beer.bar_names.length > 0 ? (
+            <ul style={{ padding: 0, listStyle: 'none', color: 'white', textAlign: 'center' }}>
+              {beer.bar_names.map((barName, index) => (
+                <li key={index} style={{ color: 'white' }}>{barName}</li>
+              ))}
+            </ul>
+          ) : (
+            <Typography variant="body2" sx={{ color: 'gray', textAlign: 'center' }}>No bars found.</Typography>
+          )}
+
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px' }}>
             <Rating
               value={beer.avg_rating}
@@ -97,18 +120,6 @@ const BeerDetail = () => {
               {beer.avg_rating} ({beer.reviews_count || 'N/A'} Reviews)
             </Typography>
           </Box>
-
-          <Typography variant="body1" sx={{ marginTop: 2, color: 'white', textAlign: 'center' }}>
-            {beer.bar_names && beer.bar_names.length > 0 ? (
-              <ul style={{ padding: 0, listStyle: 'none' }}>
-                {beer.bar_names.map((barName, index) => (
-                  <li key={index} style={{ color: 'white', textAlign: 'center' }}>{barName}</li>
-                ))}
-              </ul>
-            ) : (
-              <span style={{ color: 'gray', fontSize: '16px' }}>No bars found.</span>
-            )}
-          </Typography>
         </div>
       </div>
     </div>
