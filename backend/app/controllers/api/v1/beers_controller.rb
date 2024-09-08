@@ -22,7 +22,11 @@ class API::V1::BeersController < ApplicationController
     beer = Beer.find(params[:id])
     reviews = beer.reviews
     avg_rating = reviews.average(:rating).to_f
-    user_review = reviews.find_by(user_id: current_user.id) # Adjust as needed
+    if current_user.present?
+      user_review = reviews.find_by(user_id: current_user.id) # Adjust as needed
+    else
+      render json: { error: "No user logged in" }, status: :unauthorized
+    end
     render json: { reviews: reviews, avg_rating: avg_rating, user_review: user_review }
   end
 

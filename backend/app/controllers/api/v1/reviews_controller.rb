@@ -16,10 +16,20 @@ class API::V1::ReviewsController < ApplicationController
     end
   end
 
+  # def create
+  #   @review = @user.reviews.build(review_params)
+  #   if @review.save
+  #     render json: @review, status: :created, location: api_v1_review_url(@review)
+  #   else
+  #     render json: @review.errors, status: :unprocessable_entity
+  #   end
+  # end
+
   def create
-    @review = @user.reviews.build(review_params)
+    @beer = Beer.find(params[:beer_id])
+    @review = @beer.reviews.create(review_params)
     if @review.save
-      render json: @review, status: :created, location: api_v1_review_url(@review)
+      render json: @review, status: :created
     else
       render json: @review.errors, status: :unprocessable_entity
     end
@@ -46,7 +56,7 @@ class API::V1::ReviewsController < ApplicationController
   end
 
   def set_user
-    @user = User.find(params[:user_id]) 
+    @user = User.find(params[:user_id])
   end
 
   def review_params

@@ -27,7 +27,7 @@ Rails.application.routes.draw do
       resources :beers do
         member do
           get :bars
-          get :reviews
+          get :reviews, only: [:create, :index]
         end
       end
       resources :events, only: [:show, :create, :update, :destroy]
