@@ -1,0 +1,240 @@
+[33mcommit 94ae73d8c6f6e6cb9560cdb221c27e93326b942b[m[33m ([m[1;36mHEAD -> [m[1;32mentrega1.3[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: lucasfreyess <lfreyes1@miuandes.cl>
+Date:   Fri Aug 30 23:20:25 2024 -0400
+
+    feat: Entrega 1.2 lista; falta pr
+
+[33mcommit a3da374beec42ec91aeb3602db61279c9103e390[m
+Author: lucasfreyess <lfreyes1@miuandes.cl>
+Date:   Fri Aug 23 21:00:33 2024 -0400
+
+    feat: Entrega 1.1 lista; falta pr
+
+[33mcommit 5412147ee85e289396adbf75297725f95e250a40[m
+Merge: 5ee6fab 770be62
+Author: lucasfreyess <lfreyes1@miuandes.cl>
+Date:   Thu Aug 22 16:34:58 2024 -0400
+
+    feat: Events and User Controllers done
+
+[33mcommit 770be628a0cd1c1ee586423f24b708fdce54a04e[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Tue Aug 20 13:08:35 2024 -0400
+
+    Fixed part 1.2 statement.
+
+[33mcommit f267e8b0db814145569178a6366ad20c1cea939f[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Tue Aug 20 12:37:02 2024 -0400
+
+    Improved seeds and 1.2 statement.
+
+[33mcommit b0869ad0397299a1b3c01616670950714c0d788b[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Tue Aug 20 12:28:52 2024 -0400
+
+    Fixed parameter list in Bars Controller.
+
+[33mcommit 7cdf3e5634f6c3d9eae35b75c2eebcf2807b7c1f[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Tue Aug 20 10:02:25 2024 -0400
+
+    Adding seeds for the development environment.
+
+[33mcommit 6bf231a9b33bfd6f539e41266af066c4320a23db[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Tue Aug 20 09:36:40 2024 -0400
+
+    Completed project 1.2 statement.
+    Fixed README.md.
+
+[33mcommit b3685fe5a8ffd08535c8ab1980c949b93f73b0c0[m
+Author: Claudio Álvarez Gómez <calvarez1@miuandes.cl>
+Date:   Sun Aug 18 20:28:39 2024 -0400
+
+    Updated project requirements documents.
+
+[33mcommit 5ee6fab6547bf361a3b9435a79f25398303c25f9[m
+Author: github-classroom[bot] <66690702+github-classroom[bot]@users.noreply.github.com>
+Date:   Fri Aug 16 21:08:10 2024 +0000
+
+    add online IDE url
+
+[33mcommit c78a7494b4c90a4d3ebd43a454bb2dbd61678f8e[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 15:46:13 2024 -0400
+
+    Improved doc
+
+[33mcommit 97020380dbf2a6c3a3313a84d738bb14032f8ae5[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 15:41:42 2024 -0400
+
+    Improved docs
+
+[33mcommit 8dc5252c4a9ec919d3c7d0e2feca5553f15a807e[m
+Author: github-classroom[bot] <66690702+github-classroom[bot]@users.noreply.github.com>
+Date:   Mon Aug 12 19:31:22 2024 +0000
+
+    Initial commit
+
+[33mcommit 4462a2a447e59f78d7860cd2ed425ab1e58d684a[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 15:21:23 2024 -0400
+
+    Removing unnecessary yarn.lock from the root path
+
+[33mcommit c2443ed3feeff2a7d7b26f14b53d1f6445811b45[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 13:30:05 2024 -0400
+
+    Doc fixed
+
+[33mcommit 7e0fe48949f0d5f461130dc7398b0138c112a2d4[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 13:26:59 2024 -0400
+
+    Improved docs.
+
+[33mcommit 701828a08c8998ca3377b7f7ff4cff27b351af73[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 13:22:10 2024 -0400
+
+    Docs updated.
+
+[33mcommit 18e9f6638c796558fd6a24a39580cd73dadfd034[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 13:19:03 2024 -0400
+
+    Fixed README.md
+
+[33mcommit 8accd9de043fe77b37f9fe422be7d7b6fa4fed11[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 13:18:22 2024 -0400
+
+    Improved README.md
+
+[33mcommit 9505d07b255ce47304a043958a92a1f43175f01d[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 13:13:37 2024 -0400
+
+    Doc fixed
+
+[33mcommit fac1d3e94d2bbe83af713d2ba337cffd241deebb[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Mon Aug 12 13:11:13 2024 -0400
+
+    Documentation ready
+
+[33mcommit e593b6eaa64bc539337381892301a97170426bb6[m
+Author: Claudio Álvarez Gómez <calvarez1@miuandes.cl>
+Date:   Sun Aug 11 21:56:34 2024 -0400
+
+    Moving on with documentation.
+
+[33mcommit ce2d6efa85cc72252272f267e41f36de20259e37[m
+Author: Claudio Álvarez Gómez <calvarez1@miuandes.cl>
+Date:   Sun Aug 11 21:54:26 2024 -0400
+
+    Updating documentation.
+    Adding directory for hybrid frontend.
+
+[33mcommit 9ca32dfde0fe55a63e904d30cfd38644559daceb[m
+Author: Claudio Álvarez Gómez <calvarez1@miuandes.cl>
+Date:   Sun Aug 11 21:33:31 2024 -0400
+
+    Adding documentation
+
+[33mcommit 2ab94045163f5afdc8cfdd86a58a4a78d59f931d[m
+Author: Claudio Álvarez Gómez <calvarez1@miuandes.cl>
+Date:   Sat Aug 10 16:40:22 2024 -0400
+
+    Adding documentation
+
+[33mcommit ac136b30ebcb94e62a55718fbdce653a316d6dc6[m
+Author: Claudio Álvarez Gómez <calvarez1@miuandes.cl>
+Date:   Sat Aug 10 15:58:21 2024 -0400
+
+    Adding default database configuration and updating .gitignore not to keep database files and the credentials file
+
+[33mcommit 0bc57c619421d701b9e6f26e93946d103adc4707[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Fri Aug 9 19:22:35 2024 -0400
+
+    Made Docker configuration work.
+
+[33mcommit 7b660a62d68dc83d828b09b6983d8ded105fdbc1[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Fri Aug 9 18:32:59 2024 -0400
+
+    Added initial frontend to the application
+
+[33mcommit fc0b9f08cafbf2a3cf5fe7b26f461d5b0e8255cc[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Fri Aug 9 18:00:56 2024 -0400
+
+    Docker development configuration quasi-complete.
+    Polished several features.
+
+[33mcommit 914c43afdcde4fc125cedc64c84aaa7fe2fdff5d[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Fri Aug 9 11:52:30 2024 -0400
+
+    Added association among bars and beers.
+    Started documenting (README.md).
+
+[33mcommit 5e73ce0c3eea9756f61ea9e335aaf44b3e5f0518[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Fri Aug 9 10:19:20 2024 -0400
+
+    Adding handle to User model
+
+[33mcommit b3d8bfddf59ef19d510a7c98bc1140d37ca79e73[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Fri Aug 9 10:03:09 2024 -0400
+
+    Added new models for handling events.
+
+[33mcommit af1ef055c82790bbedd917b18416119edad8af4e[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Fri Aug 9 08:59:32 2024 -0400
+
+    Controllers, tests and factories debugged.
+
+[33mcommit 47b77e2b2e641ded4a91a4b9d95b16e5fc523341[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Thu Aug 8 19:14:26 2024 -0400
+
+    Implementing tests for bars, beers and reviews
+
+[33mcommit 9cfe7e681632cc22281645b8cf7c5dddac005412[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Thu Aug 8 11:31:40 2024 -0400
+
+    Adding tests for bars and beers
+
+[33mcommit d969c4bf7c461488961b48a6d2270d185cb3e6c9[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Wed Aug 7 18:54:44 2024 -0400
+
+    Implemented bars, beers.
+    Added basic jmeter config.
+
+[33mcommit dcf5107c068bc1b4ff52fb570455e9100ee55ca9[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Wed Aug 7 11:50:57 2024 -0400
+
+    Added API authentication with devise and devise-jwt
+    Implemented tests
+
+[33mcommit b2793a53fab7d4210f1bb22e65c5280d46c0408e[m
+Author: Claudio Álvarez <calvarez@uandes.cl>
+Date:   Tue Aug 6 18:01:55 2024 -0400
+
+    Initial commit
+
+[33mcommit d8f19cc7cc5bf037ad1ba16a95c9904ac45439fd[m
+Author: Claudio Alvarez <calvarez@uandes.cl>
+Date:   Tue Aug 6 09:15:43 2024 -0400
+
+    Initial commit
