@@ -6,8 +6,13 @@ import LocalBarIcon from '@mui/icons-material/LocalBar';
 import BeerIcon from '@mui/icons-material/LocalBar'; // Usando LocalBar como ejemplo
 import EventIcon from '@mui/icons-material/Event';
 import PersonIcon from '@mui/icons-material/Person';
-
+import { useAuth } from './contexts/AuthContext'; 
 function Navbar() {
+  const { isAuthenticated, logout } = useAuth(); // Desestructura isAuthenticated y logout
+
+  const handleLogout = () => {
+    logout(); // Llama a la función logout del contexto
+  };
   return (
     <AppBar 
       position="fixed" 
@@ -57,6 +62,23 @@ function Navbar() {
           </IconButton>
           Users
         </Button>
+
+        {isAuthenticated ? (
+          <Button color="inherit" onClick={handleLogout} sx={{ mx: 1 }}>
+            <IconButton color="inherit">
+              <PersonIcon />
+            </IconButton>
+            Logout
+          </Button>
+        ) : (
+          <Button color="inherit" component={Link} to="/login" sx={{ mx: 1 }}>
+            <IconButton color="inherit">
+              <PersonIcon />
+            </IconButton>
+            Login
+          </Button>
+        )}
+
       </Toolbar>
     </AppBar>
   );

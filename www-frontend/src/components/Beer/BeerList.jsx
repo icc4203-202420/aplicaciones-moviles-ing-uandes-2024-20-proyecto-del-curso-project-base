@@ -42,44 +42,84 @@ const BeerList = () => {
   if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <div>
-      <Typography variant="h4" gutterBottom>
-        Lista de Cervezas
-      </Typography>
-      <TextField
-        label="Buscar cervezas..."
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+    <div style={{
+      position: 'relative',
+      height: '100vh',
+      margin: 0,
+      overflow: 'hidden',
+    }}>
+      <img
+        src="/images/IMG_2756.JPG"
+        alt="Background"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: -2,
+        }}
       />
-      <Paper>
-        <List>
-          {filteredBeers.length > 0 ? (
-            filteredBeers.map(beer => (
-              <ListItem button key={beer.id} onClick={() => handleBeerClick(beer)}>
-                <ListItemText primary={beer.name} secondary={beer.style} />
-              </ListItem>
-            ))
-          ) : (
-            <ListItem>
-              <ListItemText primary="No hay cervezas disponibles" />
-            </ListItem>
-          )}
-        </List>
-      </Paper>
-
-      {selectedBeer && (
-        <BeerPopup
-          open={openDialog}
-          onClose={handleCloseDialog}
-          beer={selectedBeer}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)', // Fondo negro con opacidad 60%
+        zIndex: -1,
+      }} />
+      <div style={{
+        position: 'relative',
+        padding: '20px',
+        zIndex: 1,
+      }}>
+        <Typography variant="h4" gutterBottom color="white">
+          Lista de Cervezas
+        </Typography>
+        <TextField
+          label="Buscar cervezas..."
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ color: 'white', '& .MuiInputLabel-root': { color: 'white' }, '& .MuiInputBase-root': { color: 'white' } }}
         />
-      )}
+        <Paper sx={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', padding: '10px', marginTop: '20px', color: 'white' }}>
+          <List>
+            {filteredBeers.length > 0 ? (
+              filteredBeers.map(beer => (
+                <ListItem button key={beer.id} onClick={() => handleBeerClick(beer)}>
+                  <ListItemText
+                    primary={beer.name}
+                    secondary={
+                      <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                        {beer.style}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              ))
+            ) : (
+              <ListItem>
+                <ListItemText primary="No hay cervezas disponibles" sx={{ color: 'white' }} />
+              </ListItem>
+            )}
+          </List>
+        </Paper>
+
+        {selectedBeer && (
+          <BeerPopup
+            open={openDialog}
+            onClose={handleCloseDialog}
+            beer={selectedBeer}
+          />
+        )}
+      </div>
     </div>
   );
 };
 
 export default BeerList;
-

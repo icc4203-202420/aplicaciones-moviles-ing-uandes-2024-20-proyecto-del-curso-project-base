@@ -4,9 +4,9 @@ import { Typography, List, ListItem, Button, Paper } from '@mui/material';
 
 function Home() {
   return (
-    <div style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', height: '100vh', overflow: 'hidden', margin: 0 }}>
       <img
-        src="/images/IMG_2759.JPG"
+        src="/images/IMG_6137.jpg"
         alt="Background"
         style={{
           position: 'absolute',
@@ -16,14 +16,15 @@ function Home() {
           height: '100%',
           objectFit: 'cover',
           zIndex: -2,
+          margin: 0,
         }}
       />
       <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
-        width: '100vw',
-        height: '100vh',
+        width: '100%',
+        height: '100%',
         backgroundColor: 'rgba(0, 0, 0, 0.6)', // Fondo negro con opacidad 60%
         zIndex: -1,
       }} />
@@ -36,6 +37,7 @@ function Home() {
         height: '100%',
         zIndex: 1,
         textAlign: 'center',
+        padding: '20px', // Añadir padding para evitar que el contenido toque los bordes
       }}>
         <Paper elevation={3} sx={{
           padding: 4,
