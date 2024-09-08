@@ -1,17 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // Importa useState y useEffect desde React
 import { Link } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, Button, Box } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Button } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import LocalBarIcon from '@mui/icons-material/LocalBar';
 import BeerIcon from '@mui/icons-material/LocalBar'; // Usando LocalBar como ejemplo
 import EventIcon from '@mui/icons-material/Event';
 import PersonIcon from '@mui/icons-material/Person';
-import { useAuth } from './contexts/AuthContext'; 
+import { useNavigate } from 'react-router-dom';
+import useLocalStorageState from 'use-local-storage-state';
+import axios from 'axios';
+import * as jwtDecode from 'jwt-decode'; 
+import LogoutIcon from '@mui/icons-material/Logout'; // Importar LogoutIcon si no está ya importado
+import LoginIcon from '@mui/icons-material/Login'
 function Navbar() {
-  const { isAuthenticated, logout } = useAuth(); // Desestructura isAuthenticated y logout
+  const [token, setToken] = useLocalStorageState('BeerApp/token', { defaultValue: '' });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [handle, setHandle] = useState('');
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setIsAuthenticated(true);
+        setUsername(decodedToken.handle); // Asumiendo que el nombre del usuario está en el token
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        setToken('');
+        setIsAuthenticated(false);
+      }
+    }
+  }, [token, setToken]);
 
   const handleLogout = () => {
-    logout(); // Llama a la función logout del contexto
+    axios.delete('http://localhost:3001/api/v1/logout', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then(() => {
+      setToken('');
+      setIsAuthenticated(false);
+      setHandle('');
+      navigate('/login');
+    })
+    .catch((error) => {
+      console.error('Error during logout:', error);
+    });
   };
   return (
     <AppBar 
@@ -19,9 +54,9 @@ function Navbar() {
       sx={{ 
         bottom: 0, 
         top: 'auto',
-        backgroundColor: '#884017', // Cambia el color según tu diseño
+        backgroundColor: '#884017',
         color: 'white',
-        height: '64px', // Asegúrate de que coincida con el padding-bottom en tu CSS
+        height: '64px', 
       }}
     >
       <Toolbar 
@@ -63,21 +98,21 @@ function Navbar() {
           Users
         </Button>
 
-        {isAuthenticated ? (
+        {/* {isAuthenticated ? (
           <Button color="inherit" onClick={handleLogout} sx={{ mx: 1 }}>
             <IconButton color="inherit">
-              <PersonIcon />
+              <LogoutIcon />
             </IconButton>
             Logout
           </Button>
         ) : (
           <Button color="inherit" component={Link} to="/login" sx={{ mx: 1 }}>
             <IconButton color="inherit">
-              <PersonIcon />
+              <LoginIcon />
             </IconButton>
             Login
           </Button>
-        )}
+        )} */}
 
       </Toolbar>
     </AppBar>
