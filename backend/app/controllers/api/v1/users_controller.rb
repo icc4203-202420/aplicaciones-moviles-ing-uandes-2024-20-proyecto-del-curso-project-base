@@ -8,7 +8,7 @@ class API::V1::UsersController < ApplicationController
   end
 
   def show
-
+    render json: @users, status: :ok
   end
 
   def create

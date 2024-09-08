@@ -18,7 +18,7 @@ import SignUp from './components/SignUp'; // Importamos el formulario de registr
 import AuthProvider, { useAuth } from './components/contexts/AuthContext'; // Importamos el proveedor de autenticación
 
 // Componente para proteger rutas privadas
-function CheckAuthentication({ element: Component }) {
+function Authenticate({ element: Component }) {
   const isAuthenticated = !!localStorage.getItem('JWT_TOKEN');
   return isAuthenticated ? <Component /> : <Navigate to="/login" />;
 }
@@ -32,11 +32,11 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/bars" element={<BarList />} />
             <Route path="/bars/:id/events" element={<BarEvents />} />
-            <Route path="/users" element={<CheckAuthentication element={UserSearch} />} /> 
+            <Route path="/users" element={<Authenticate element={UserSearch} />} /> 
             <Route path="/beers" element={<BeerList />} />
             <Route path="/beers/:id" element={<BeerDetail />} />
             <Route path="/beers/:id/reviews" element={<BeerReviewList />} />
-            <Route path="/beers/:id/review" element={<CheckAuthentication element={BeerReviewForm} />} /> 
+            <Route path="/beers/:id/review" element={<Authenticate element={BeerReviewForm} />} /> 
             <Route path="/login" element={<Login />} /> 
             <Route path="/signup" element={<SignUp />} />
           </Routes>

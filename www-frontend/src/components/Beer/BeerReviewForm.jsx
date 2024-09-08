@@ -87,6 +87,7 @@
 import React from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import axios from 'axios';
 import { TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle, Slider } from '@mui/material';
 
 const reviewValidation = Yup.object({
@@ -105,17 +106,49 @@ const initialValues = {
   rating: '',
 };
 
-const BeerReviewForm = ({ beer, open, onClose, onSubmit }) => {
+const BeerReviewForm = ({ beer, open, onClose, onSuccess }) => {
+  const handleReviewSubmit = async (values, { setSubmitting, setErrors }) => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      console.error('User is not authenticated');
+      // Maneja la falta de autenticación, como redirigir al usuario o mostrar un mensaje
+      setErrors({ text: 'User is not authenticated' });
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      await axios.post(
+        `http://localhost:3001/api/v1/beers/${beer.id}/reviews`,
+        {
+          review: {
+            rating: values.rating,
+            text: values.text
+          }
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      onSuccess(); // Llama a onSuccess si la revisión se envía correctamente
+      onClose(); // Cierra el formulario después de enviar
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      setErrors({ text: 'Error submitting review. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{beer.name} Review</DialogTitle>
       <Formik
         initialValues={initialValues}
         validationSchema={reviewValidation}
-        onSubmit={(values) => {
-          onSubmit(values);
-          onClose();
-        }}
+        onSubmit={handleReviewSubmit}
       >
         {({ errors, touched, isSubmitting }) => (
           <Form>
@@ -168,3 +201,4 @@ const BeerReviewForm = ({ beer, open, onClose, onSubmit }) => {
 };
 
 export default BeerReviewForm;
+
