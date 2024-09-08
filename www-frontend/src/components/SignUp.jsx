@@ -1,4 +1,3 @@
-// src/components/Signup.jsx
 import React, { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
@@ -10,14 +9,15 @@ import {
   Typography,
   InputAdornment,
   IconButton,
-  Link as MuiLink
+  Link as MuiLink,
+  Alert
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const validationSchema = Yup.object({
-  first_name: Yup.string().required('Name is required'),
+  first_name: Yup.string().required('First Name is required'),
   last_name: Yup.string().required('Last Name is required'),
   email: Yup.string().email('Invalid Email').required('Email is required'),
   handle: Yup.string().required('Handle is required').min(3, 'Handle must have at least 3 characters'),
@@ -39,9 +39,11 @@ const initialValues = {
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+  const [serverError, setServerError] = useState(''); // Estado para manejar errores del servidor
   const navigate = useNavigate();
 
-  const handleSubmit = (values) => {
+  const handleSubmit = (values, { setSubmitting }) => {
+    setServerError(''); // Limpiar errores previos
     axios.post('http://localhost:3001/api/v1/signup', { user: values })
       .then((response) => {
         const JWT_TOKEN = response.headers['authorization'];
@@ -54,7 +56,15 @@ export default function SignUp() {
         navigate('/login');
       })
       .catch((error) => {
-        console.error('Error during signup:', error.response ? error.response.data : error.message);
+        setSubmitting(false); // Detener la acción de "submit"
+        
+        // Manejo mejorado del error
+        if (error.response && error.response.data && error.response.data.status && error.response.data.status.message) {
+          console.error('Error during signup:', error.response.data.status.message);
+          setServerError(error.response.data.status.message); // Mostrar mensaje del error
+        } else {
+          setServerError('An error occurred. Please try again later.');
+        }
       });
   };
   
@@ -65,6 +75,13 @@ export default function SignUp() {
         <Typography variant="h4" align='center' gutterBottom>
           Sign Up
         </Typography>
+
+        {/* Mostrar el error del servidor */}
+        {serverError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {serverError}
+          </Alert>
+        )}
 
         <Formik
           initialValues={initialValues}

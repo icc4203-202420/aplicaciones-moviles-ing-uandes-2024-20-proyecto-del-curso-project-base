@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { TextField, Button, Box, Container, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
 import useAxios from 'axios-hooks';
 import axios from 'axios';
-import qs from 'qs';
 import { useNavigate } from 'react-router-dom';
 
-// Configura Axios con una URL base estática
-axios.defaults.baseURL = 'http://localhost:3001'; // Cambia esta URL a la de tu backend
+// Configura Axios con la URL base de la API
+axios.defaults.baseURL = 'http://localhost:3001/api/v1'; // Cambia esta URL a la de tu backend
 
 const validationSchema = Yup.object({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -21,31 +21,36 @@ const initialValues = {
 };
 
 const Login = ({ tokenHandler }) => {
-  const [serverError, setServerError] = useState(''); // Estado para manejar el error del servidor
-  const navigate = useNavigate(); // Hook para la navegación
+  const [serverError, setServerError] = useState('');
+  const navigate = useNavigate();
 
-  // Define el hook para la solicitud POST
-  const [{ data, loading, error }, executePost] = useAxios(
+  const [{ loading }, executePost] = useAxios(
     {
       url: '/login',
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      headers: { 'Content-Type': 'application/json' } // Cambiamos a JSON
     },
-    { manual: true } // Activar la solicitud manualmente en el envío del formulario
+    { manual: true }
   );
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await executePost({ data: qs.stringify(values) });
+      const response = await executePost({ data: JSON.stringify(values) });
       const receivedToken = response.data.token;
-      tokenHandler(receivedToken); // Maneja el token recibido
-      setServerError(''); // Limpiar mensajes de error si el inicio de sesión es exitoso
-      navigate('/'); // Redirigir a la página principal después del inicio de sesión exitoso
+
+      if (receivedToken) {
+        tokenHandler(receivedToken);
+      }
+
+      setServerError('');
+      navigate('/');
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setServerError('Incorrect email or password.');
+      } else if (err.response) {
+        setServerError(`Server error: ${err.response.status}. ${err.response.data.message || 'Please try again later.'}`);
       } else {
-        setServerError('Server error. Please try again later.');
+        setServerError('An unknown error occurred. Please try again later.');
       }
       console.error('Error during form submission:', err);
     } finally {
@@ -119,6 +124,11 @@ const Login = ({ tokenHandler }) => {
             </Form>
           )}
         </Formik>
+        <Box sx={{ mt: 2 }}>
+          <p>
+            Don't have an account? <Link to="/signup">Sign up here</Link>
+          </p>
+        </Box>
       </Box>
     </Container>
   );
