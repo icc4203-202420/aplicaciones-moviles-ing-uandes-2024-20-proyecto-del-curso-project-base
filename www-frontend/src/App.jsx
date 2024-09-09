@@ -14,8 +14,8 @@ import Navbar from './components/Navbar';
 import Login from './components/Login';  // Importamos el formulario de login
 import SignUp from './components/SignUp'; // Importamos el formulario de registro
 import AuthProvider, { useAuth } from './components/contexts/AuthContext'; // Importamos el proveedor de autenticación
+import { Navigate } from 'react-router-dom';
 
-// Componente para proteger rutas privadas
 function Authenticate({ element: Component }) {
   const isAuthenticated = !!localStorage.getItem('JWT_TOKEN');
   return isAuthenticated ? <Component /> : <Navigate to="/login" />;

@@ -37,7 +37,7 @@ const BeerReviewList = ({ reviews }) => {
                             <Divider />
                             <CardContent>
                                 <Typography variant="body2">
-                                    {review.text} {/* Texto de la reseña */}
+                                    {review.text} 
                                 </Typography>
                             </CardContent>
                         </Card>
