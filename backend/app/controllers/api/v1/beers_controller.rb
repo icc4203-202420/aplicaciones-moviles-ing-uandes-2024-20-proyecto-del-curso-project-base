@@ -48,8 +48,18 @@ class API::V1::BeersController < ApplicationController
         thumbnail_url: url_for(@beer.thumbnail)
       })
     end
-
-    render json: { beer: beer_data }, status: :ok
+    
+    reviews_data = @beer.reviews.map do |review|
+      {
+        rating: review.rating,
+        text: review.text,
+        user: {
+          id: review.user.id,
+          handle: review.user.handle
+        }
+      }
+    end
+    render json: { beer: beer_data, reviews: reviews_data }, status: :ok
   end
 
   # POST /beers

@@ -34,6 +34,7 @@ const BeerDetail = () => {
   useEffect(() => {
     axios.get(`http://localhost:3001/api/v1/beers/${id}`)
       .then(response => {
+        console.log('Beer details response:', response.data);
         setBeer(response.data.beer);
         setReviews(response.data.reviews || []); // Obtener reseñas
       })
@@ -45,14 +46,17 @@ const BeerDetail = () => {
   const handleReviewSubmit = (values) => {
     axios.post(`http://localhost:3001/api/v1/beers/${id}/reviews`, values)
       .then(response => {
-        // Actualizar las reseñas después de enviar una nueva
+        console.log('New review response:', response.data.review);
         setReviews([...reviews, response.data.review]);
       })
       .catch(error => {
         console.error('Error submitting review:', error);
       });
   };
-
+  const handleSuccess = () => {
+    console.log('Review successfully submitted!');
+    setOpenReviewForm(false);
+  };
   if (!beer) return <div>Loading...</div>;
 
   return (
@@ -131,7 +135,7 @@ const BeerDetail = () => {
               sx={{ color: 'white' }}
             />
             <Typography variant="body2" sx={{ marginTop: '8px', color: 'white' }}>
-              {beer.avg_rating} ({beer.reviews_count || 'N/A'} Reviews)
+              {beer.avg_rating.toFixed(1)} ({beer.reviews_count || 'N/A'} Reviews)
             </Typography>
             <Button
               onClick={() => setOpenReviewForm(true)}
@@ -149,7 +153,9 @@ const BeerDetail = () => {
           beer={beer}
           open={openReviewForm}
           onClose={() => setOpenReviewForm(false)}
+          onSuccess={handleSuccess}
           onSubmit={handleReviewSubmit}
+          // onSubmit={handleReviewSubmit}
         />
       </div>
     </div>
