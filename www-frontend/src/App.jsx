@@ -6,13 +6,11 @@ import BarList from './components/BarList';
 import BeerList from './components/Beer/BeerList';
 import BarEvents from './components/BarEvents';
 import UserSearch from './components/UserSearch';
-import Navbar from './components/Navbar';
-
 import BeerDetail from './components/Beer/BeerDetail';
 import BeerPopup from './components/Beer/BeerPopup';
 import BeerReviewForm from './components/Beer/BeerReviewForm';
 import BeerReviewList from './components/Beer/BeerReviewList';
-
+import Navbar from './components/Navbar';
 import Login from './components/Login';  // Importamos el formulario de login
 import SignUp from './components/SignUp'; // Importamos el formulario de registro
 import AuthProvider, { useAuth } from './components/contexts/AuthContext'; // Importamos el proveedor de autenticación

@@ -294,7 +294,7 @@ const initialValues = {
   password: '',
 };
 
-export default function Login() {
+function Login() {
   const [showPassword, setShowPassword] = useState(false); // Control de visibilidad de contraseña
   const [loginSuccess, setLoginSuccess] = useState(false); // Estado para éxito de inicio de sesión
   const [loginError, setLoginError] = useState(''); // Estado para el manejo de errores
@@ -427,3 +427,4 @@ export default function Login() {
     );
 }
 
+export default Login;
