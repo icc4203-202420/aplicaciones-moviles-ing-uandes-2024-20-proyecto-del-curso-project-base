@@ -32,7 +32,9 @@ class API::V1::UsersController < ApplicationController
   private
 
   def set_user
-    @user = User.find(params[:id])
+    # @user = User.find(params[:id])
+    @user = current_user
+    render json: { error: "User not authenticated" }, status: :unauthorized unless @user
   end
 
   def user_params

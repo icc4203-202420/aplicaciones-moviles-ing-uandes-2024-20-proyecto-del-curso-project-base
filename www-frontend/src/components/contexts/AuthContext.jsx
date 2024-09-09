@@ -44,21 +44,35 @@ const AuthContext = createContext();
 // };
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('JWT_TOKEN'));
-  
-    const login = (token, userId) => {
-      localStorage.setItem('JWT_TOKEN', token);
-      localStorage.setItem('CURRENT_USER_ID', userId);
-      setIsAuthenticated(true);  // Actualiza el estado de autenticación
+    const [token, setToken] = useState(localStorage.getItem('JWT_TOKEN'));
+
+    const login = (newToken, userId) => {
+        localStorage.setItem('JWT_TOKEN', newToken);
+        localStorage.setItem('CURRENT_USER_ID', userId);
+        setToken(newToken); // Actualiza el estado del token
+        setIsAuthenticated(true);
     };
   
     const logout = () => {
-      localStorage.removeItem('JWT_TOKEN');
-      localStorage.removeItem('CURRENT_USER_ID');
-      setIsAuthenticated(false);  // Actualiza el estado a no autenticado
+        localStorage.removeItem('JWT_TOKEN');
+        localStorage.removeItem('CURRENT_USER_ID');
+        setToken(null); // Limpia el token del estado
+        setIsAuthenticated(false);
     };
-  
+    
+    useEffect(() => {
+        const currentToken = localStorage.getItem('JWT_TOKEN');
+        if (currentToken) {
+            setIsAuthenticated(true);
+            setToken(currentToken);
+        } else {
+            setIsAuthenticated(false);
+            setToken(null);
+        }
+    }, []);
+
     return (
-      <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+      <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
         {children}
       </AuthContext.Provider>
     );
