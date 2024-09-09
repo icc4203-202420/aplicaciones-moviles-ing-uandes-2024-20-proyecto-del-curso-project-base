@@ -135,7 +135,7 @@ const BeerDetail = () => {
               sx={{ color: 'white' }}
             />
             <Typography variant="body2" sx={{ marginTop: '8px', color: 'white' }}>
-              {beer.avg_rating.toFixed(1)} ({beer.reviews_count || 'N/A'} Reviews)
+              {(beer.avg_rating ?? 0).toFixed(1)} ({beer.reviews_count || 'N/A'} Reviews)
             </Typography>
             <Button
               onClick={() => setOpenReviewForm(true)}
