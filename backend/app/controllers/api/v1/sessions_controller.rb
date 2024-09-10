@@ -4,7 +4,7 @@ class API::V1::SessionsController < Devise::SessionsController
   private
   def respond_with(current_user, _opts = {})
     render json: {
-      status: { 
+      status: {
         code: 200, message: 'Logged in successfully.',
         data: { user: UserSerializer.new(current_user).serializable_hash[:data][:attributes] }
       }
@@ -20,7 +20,7 @@ class API::V1::SessionsController < Devise::SessionsController
       ).first
       current_user = User.find(jwt_payload['sub'])
     end
-    
+
     if current_user
       render json: {
         status: 200,
