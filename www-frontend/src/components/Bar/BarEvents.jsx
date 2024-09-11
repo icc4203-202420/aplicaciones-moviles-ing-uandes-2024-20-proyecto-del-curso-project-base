@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, List, ListItem, ListItemText, Typography, Container, CircularProgress, Paper } from '@mui/material';
-
+import { TextField, List, ListItem, ListItemText, Typography, Container, CircularProgress, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@mui/material';
+import { toast } from 'react-toastify'; 
 function BarEvents() {
   const [bars, setBars] = useState([]);
   const [selectedBar, setSelectedBar] = useState(null);
@@ -9,6 +9,8 @@ function BarEvents() {
   const [events, setEvents] = useState([]);
   const [loadingBars, setLoadingBars] = useState(true);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Obtener la lista de bares
   useEffect(() => {
@@ -41,6 +43,35 @@ function BarEvents() {
         console.error('Error fetching events:', error);
         setLoadingEvents(false);
       });
+  };
+
+  // Manejar la selección de un evento
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    setDialogOpen(true);
+  };
+
+  // Cerrar el diálogo
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedEvent(null);
+  };
+
+  // Realizar el check-in para el evento seleccionado
+  const handleCheckIn = () => {
+    if (selectedEvent) {
+      axios.post(`/api/v1/events/${selectedEvent.id}/check_in`, { /* Puedes agregar datos adicionales aquí */ })
+        .then(response => {
+          // Actualiza la lista de eventos si es necesario
+          setEvents(events.map(event =>
+            event.id === selectedEvent.id ? { ...event, checked_in: true } : event
+          ));
+          handleCloseDialog();
+        })
+        .catch(error => {
+          console.error('Error checking in:', error);
+        });
+    }
   };
 
   return (
@@ -89,7 +120,7 @@ function BarEvents() {
               <List>
                 {events.length > 0 ? (
                   events.map(event => (
-                    <ListItem key={event.id}>
+                    <ListItem button key={event.id} onClick={() => handleEventClick(event)}>
                       <ListItemText primary={event.name} />
                     </ListItem>
                   ))
@@ -100,6 +131,22 @@ function BarEvents() {
             </Paper>
           )}
         </div>
+      )}
+
+      {/* Diálogo para mostrar detalles del evento */}
+      {selectedEvent && (
+        <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+          <DialogTitle>Event Details</DialogTitle>
+          <DialogContent>
+            <Typography variant="h6">{selectedEvent.name}</Typography>
+            <Typography>{selectedEvent.description}</Typography>
+            <Typography>Date: {new Date(selectedEvent.date).toLocaleDateString()}</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="primary">Close</Button>
+            <Button onClick={handleCheckIn} color="primary">Check In</Button>
+          </DialogActions>
+        </Dialog>
       )}
     </Container>
   );

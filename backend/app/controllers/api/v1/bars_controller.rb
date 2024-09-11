@@ -7,8 +7,19 @@ class API::V1::BarsController < ApplicationController
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
   def index
-    @bars = Bar.all
-    render json: { bars: @bars }, status: :ok
+    if params[:query].present?
+      bars = Bar.joins(:address)
+                .where('bars.name ILIKE ? OR addresses.city ILIKE ? OR addresses.country ILIKE ? OR addresses.street ILIKE ? OR addresses.number ILIKE ?',
+                       "%#{params[:query]}%",
+                       "%#{params[:query]}%",
+                       "%#{params[:query]}%",
+                       "%#{params[:query]}%",
+                       "%#{params[:query]}%")
+    else
+      bars = Bar.all
+    end
+
+    render json: { bars: bars }, status: :ok
   end
 
   def show

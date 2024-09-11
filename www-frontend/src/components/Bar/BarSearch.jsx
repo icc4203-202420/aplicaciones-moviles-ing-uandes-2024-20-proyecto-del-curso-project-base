@@ -2,18 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import { Loader } from '@googlemaps/js-api-loader';
 import axios from 'axios';
-import { useLoadGMapsLibraries } from './useLoadGMapsLibraries'; // Hook para cargar las librerías
-import { MAPS_LIBRARY, MARKER_LIBRARY } from './constants'; // Constantes utilizadas
+import { useLoadGMapsLibraries } from '../useLoadGMapsLibraries'; // Hook para cargar las librerías
+import { MAPS_LIBRARY, MARKER_LIBRARY } from '../constants'; // Constantes utilizadas
 
 const BarSearch = () => {
   const [bars, setBars] = useState([]); // Estado para almacenar los bares
   const [userLocation, setUserLocation] = useState(null); // Estado para almacenar la ubicación del usuario
+  const [searchQuery, setSearchQuery] = useState('');
   const libraries = useLoadGMapsLibraries();
   const markerCluster = useRef();
   const mapNodeRef = useRef();
   const mapRef = useRef();
 
-  // Obtener la ubicación actual del usuario
+  // ubicación actual del usuario
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -51,7 +52,7 @@ const BarSearch = () => {
         console.error('Error al cargar los bares', error);
         setBars([]); // En caso de error, asegúrate de que sea un arreglo vacío
       });
-  }, []);
+  }, [searchQuery]);
   
 
   // Inicializar el mapa y los marcadores una vez que se cargan las librerías y la ubicación del usuario
@@ -83,7 +84,18 @@ const BarSearch = () => {
     return <h1>Cargando. . .</h1>;
   }
 
-  return <div ref={mapNodeRef} style={{ width: '100vw', height: '100vh' }} />;
+  return (
+    <div>
+      <input
+        type="text"
+        placeholder="Buscar bares por nombre o dirección"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
+      />
+      <div ref={mapNodeRef} style={{ width: '100vw', height: '100vh' }} />
+    </div>
+  );
 };
 
 export default BarSearch;

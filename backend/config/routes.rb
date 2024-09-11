@@ -28,7 +28,11 @@ Rails.application.routes.draw do
         resources :reviews, only: [:create, :index, :show, :update, :destroy]
         resources :bars
       end
-      resources :events, only: [:show, :create, :update, :destroy]
+      resources :events, only: [:show, :create, :update, :destroy] do
+        member do
+          post 'check_in'  # Esto creará una ruta para /api/v1/events/:id/check_in
+        end
+      end
       resources :users do
         resources :reviews, only: [:index]
         resources :friendships, only: [:index, :create]
