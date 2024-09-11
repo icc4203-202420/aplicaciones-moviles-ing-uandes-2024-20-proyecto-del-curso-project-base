@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { TextField, List, ListItem, ListItemText, Typography, Container, CircularProgress, Paper, Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@mui/material';
-import { toast } from 'react-toastify'; 
+import { toast, ToastContainer } from 'react-toastify'; // Importa ToastContainer
+import 'react-toastify/dist/ReactToastify.css'; // Estilos para el toast
+
 function BarEvents() {
   const [bars, setBars] = useState([]);
   const [selectedBar, setSelectedBar] = useState(null);
@@ -66,9 +68,11 @@ function BarEvents() {
           setEvents(events.map(event =>
             event.id === selectedEvent.id ? { ...event, checked_in: true } : event
           ));
+          toast.success('Check-in successful!'); // Notificación de éxito
           handleCloseDialog();
         })
         .catch(error => {
+          toast.error('Error checking in!'); // Notificación de error
           console.error('Error checking in:', error);
         });
     }
@@ -148,6 +152,9 @@ function BarEvents() {
           </DialogActions>
         </Dialog>
       )}
+
+      {/* Contenedor de notificaciones de Toast */}
+      <ToastContainer />
     </Container>
   );
 }

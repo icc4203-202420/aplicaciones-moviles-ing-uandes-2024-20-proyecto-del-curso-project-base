@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@mui/material';
 import api from '../api/axios';
 import { useAuth } from '../contexts/AuthContext'; 
-function LogoutButton() {
+function Logout() {
   const { logout } = useAuth();
 
   const handleLogout = async () => {
@@ -21,4 +21,4 @@ function LogoutButton() {
   );
 }
 
-export default LogoutButton;
+export default Logout;
