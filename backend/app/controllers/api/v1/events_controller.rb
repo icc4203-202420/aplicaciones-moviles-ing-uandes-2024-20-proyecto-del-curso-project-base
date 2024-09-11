@@ -97,4 +97,11 @@ class API::V1::EventsController < ApplicationController
       authenticate_user!
       head :unauthorized unless current_user
     end
+    def bar_json(bar)
+      {
+        id: bar.id,
+        name: bar.name,
+        event_count: bar.events.count # Aquí se incluye el número de eventos
+      }
+    end
   end

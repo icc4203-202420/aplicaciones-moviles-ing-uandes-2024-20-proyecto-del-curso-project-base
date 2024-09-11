@@ -1,20 +1,21 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import React from 'react';
 import Home from './components/Home';
-import BarList from './components/Bar/BarList';
 import BarSearch from './components/Bar/BarSearch';
-import BeerList from './components/Beer/BeerList';
 import BarEvents from './components/Bar/BarEvents';
 import UserSearch from './components/UserSearch';
+import BeerList from './components/Beer/BeerList';
 import BeerDetail from './components/Beer/BeerDetail';
-import BeerPopup from './components/Beer/BeerPopup';
-import BeerReviewForm from './components/Beer/BeerReviewForm';
 import BeerReviewList from './components/Beer/BeerReviewList';
+import BeerReviewForm from './components/Beer/BeerReviewForm';
 import Navbar from './components/Navbar';
-import Login from './components/Login';  // Importamos el formulario de login
-import SignUp from './components/SignUp'; // Importamos el formulario de registro
-import AuthProvider, { useAuth } from './components/contexts/AuthContext'; // Importamos el proveedor de autenticación
+import Login from './components/Login';
+import SignUp from './components/SignUp';
+import AuthProvider from './components/contexts/AuthContext';
+import { CheckInProvider } from './components/contexts/CheckInContext'; // Importa el CheckInProvider
 import { Navigate } from 'react-router-dom';
 
 function Authenticate({ element: Component }) {
@@ -25,24 +26,26 @@ function Authenticate({ element: Component }) {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="app">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            {/* <Route path="/bars" element={<BarList />} /> */}
-            <Route path="/bars" element={<BarSearch/>} />
-            <Route path="/bars/:id/events" element={<BarEvents />} />
-            <Route path="/users" element={<Authenticate element={UserSearch} />} /> 
-            <Route path="/beers" element={<BeerList />} />
-            <Route path="/beers/:id" element={<BeerDetail />} />
-            <Route path="/beers/:id/reviews" element={<BeerReviewList />} />
-            <Route path="/beers/:id/review" element={<Authenticate element={BeerReviewForm} />} /> 
-            <Route path="/login" element={<Login />} /> 
-            <Route path="/signup" element={<SignUp />} />
-          </Routes>
-          <Navbar />
-        </div>
-      </Router>
+      <CheckInProvider> {/* Envuelve tu aplicación con CheckInProvider */}
+        <Router>
+          <div className="app">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/bars" element={<BarSearch />} />
+              <Route path="/bars/:id/events" element={<BarEvents />} />
+              <Route path="/users" element={<Authenticate element={UserSearch} />} />
+              <Route path="/beers" element={<BeerList />} />
+              <Route path="/beers/:id" element={<BeerDetail />} />
+              <Route path="/beers/:id/reviews" element={<BeerReviewList />} />
+              <Route path="/beers/:id/review" element={<Authenticate element={BeerReviewForm} />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+            </Routes>
+            <Navbar />
+            <ToastContainer />
+          </div>
+        </Router>
+      </CheckInProvider>
     </AuthProvider>
   );
 }

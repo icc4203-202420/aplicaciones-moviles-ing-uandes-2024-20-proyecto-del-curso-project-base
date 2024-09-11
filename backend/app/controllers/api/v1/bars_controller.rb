@@ -18,18 +18,22 @@ class API::V1::BarsController < ApplicationController
     else
       bars = Bar.all
     end
+    bars_with_event_count = bars.map do |bar|
+      bar.as_json.merge(event_count: bar.event_count)
+    end
 
-    render json: { bars: bars }, status: :ok
+    render json: { bars: bars_with_event_count }, status: :ok
   end
 
   def show
     if @bar.image.attached?
       render json: @bar.as_json.merge({
         image_url: url_for(@bar.image),
-        thumbnail_url: url_for(@bar.thumbnail) }),
-        status: :ok
+        thumbnail_url: url_for(@bar.thumbnail),
+        event_count: @bar.event_count  # Incluye el conteo de eventos
+      }), status: :ok
     else
-      render json: { bar: @bar.as_json }, status: :ok
+      render json: @bar.as_json.merge(event_count: @bar.event_count), status: :ok
     end
   end
 
