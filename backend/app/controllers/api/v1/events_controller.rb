@@ -23,6 +23,14 @@ class API::V1::EventsController < ApplicationController
       render json: { error: "Event not found." }, status: :not_found
     end
 
+    def attendees
+      event = Event.find(params[:id])
+      attendees = event.users.select(:id, :first_name, :last_name, :handle)
+      render json: { attendees: attendees }, status: :ok
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: 'Event not found' }, status: :not_found
+    end
+
     def index
       # set_bar
       if @bar

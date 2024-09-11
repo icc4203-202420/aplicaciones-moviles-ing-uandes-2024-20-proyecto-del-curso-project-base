@@ -13,6 +13,8 @@ function BarEvents() {
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [attendees, setAttendees] = useState([]); // Estado para almacenar asistentes
+  const [loadingAttendees, setLoadingAttendees] = useState(false); // Estado para la carga de asistentes
 
   // Obtener la lista de bares
   useEffect(() => {
@@ -47,16 +49,29 @@ function BarEvents() {
       });
   };
 
-  // Manejar la selección de un evento
+  // Manejar la selección de un evento y cargar los asistentes
   const handleEventClick = (event) => {
     setSelectedEvent(event);
     setDialogOpen(true);
+    setLoadingAttendees(true);
+
+    // Obtener los asistentes del evento
+    axios.get(`/api/v1/events/${event.id}/attendees`)
+      .then(response => {
+        setAttendees(response.data.attendees);
+        setLoadingAttendees(false);
+      })
+      .catch(error => {
+        console.error('Error fetching attendees:', error);
+        setLoadingAttendees(false);
+      });
   };
 
   // Cerrar el diálogo
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setSelectedEvent(null);
+    setAttendees([]); // Limpiar los asistentes al cerrar el diálogo
   };
 
   // Realizar el check-in para el evento seleccionado
@@ -68,11 +83,11 @@ function BarEvents() {
           setEvents(events.map(event =>
             event.id === selectedEvent.id ? { ...event, checked_in: true } : event
           ));
-          toast.success('Has confirmado tu asistencia!'); // Notificación de éxito
+          toast.success('You have confirmed your attendance!'); // Notificación de éxito
           handleCloseDialog();
         })
         .catch(error => {
-          toast.error('Error checking in!'); // Notificación de error
+          toast.error('Error confirming your attendance!'); // Notificación de error
           console.error('Error checking in:', error);
         });
     }
@@ -145,10 +160,32 @@ function BarEvents() {
             <Typography variant="h6">{selectedEvent.name}</Typography>
             <Typography>{selectedEvent.description}</Typography>
             <Typography>Date: {new Date(selectedEvent.date).toLocaleDateString()}</Typography>
+
+            {/* Mostrar asistentes */}
+            <Typography variant="h6" gutterBottom>Asistentes</Typography>
+            {loadingAttendees ? (
+              <CircularProgress />
+            ) : (
+              attendees.length > 0 ? (
+                <List>
+                  {attendees.map(attendee => (
+                    <ListItem key={attendee.id}>
+                      <ListItemText primary={`${attendee.first_name} ${attendee.last_name}`} secondary={`@${attendee.handle}`} />
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Typography>No hay asistentes aún.</Typography>
+              )
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog} color="primary">Close</Button>
-            <Button onClick={handleCheckIn} color="primary">Check In</Button>
+            {selectedEvent.checked_in ? (
+              <Typography variant="body1" color="textSecondary">You have confirmed your attendance</Typography>
+            ) : (
+              <Button onClick={handleCheckIn} color="primary">Check-in</Button>
+            )}
           </DialogActions>
         </Dialog>
       )}
