@@ -68,7 +68,7 @@ function BarEvents() {
           setEvents(events.map(event =>
             event.id === selectedEvent.id ? { ...event, checked_in: true } : event
           ));
-          toast.success('Check-in successful!'); // Notificación de éxito
+          toast.success('Has confirmado tu asistencia!'); // Notificación de éxito
           handleCloseDialog();
         })
         .catch(error => {
