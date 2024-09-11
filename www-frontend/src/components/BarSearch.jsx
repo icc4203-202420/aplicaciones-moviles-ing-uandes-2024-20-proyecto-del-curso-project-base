@@ -2,35 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import { Loader } from '@googlemaps/js-api-loader';
 import axios from 'axios';
-// import { useLoadGMapsLibraries } from './useLoadGMapsLibraries'; // Hook para cargar las librerías
-// import { MAPS_LIBRARY, MARKER_LIBRARY } from './constants'; // Constantes utilizadas
-// Constantes para las bibliotecas de Google Maps
-const MAPS_LIBRARY = 'maps';
-const MARKER_LIBRARY = 'marker';
-const GOOGLE_MAPS_LIBRARIES = [MAPS_LIBRARY, MARKER_LIBRARY];
+import { useLoadGMapsLibraries } from './useLoadGMapsLibraries'; // Hook para cargar las librerías
+import { MAPS_LIBRARY, MARKER_LIBRARY } from './constants'; // Constantes utilizadas
 
-// Hook para cargar las librerías de Google Maps
-const useLoadGMapsLibraries = () => {
-  const [libraries, setLibraries] = useState();
-
-  useEffect(() => {
-    const loader = new Loader({
-      // apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-      apiKey: 'AIzaSyDSwzAGB40l_dEfS2GmiDerTrn5WrLi4Hg',
-      version: 'weekly',
-    });
-
-    const promises = GOOGLE_MAPS_LIBRARIES.map((name) =>
-      loader.importLibrary(name).then((lib) => [name, lib])
-    );
-
-    Promise.all(promises).then((libs) =>
-      setLibraries(Object.fromEntries(libs))
-    );
-  }, []);
-
-  return libraries;
-};
 const BarSearch = () => {
   const [bars, setBars] = useState([]); // Estado para almacenar los bares
   const [userLocation, setUserLocation] = useState(null); // Estado para almacenar la ubicación del usuario
