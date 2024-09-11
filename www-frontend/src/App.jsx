@@ -3,6 +3,7 @@ import './App.css';
 import React from 'react';
 import Home from './components/Home';
 import BarList from './components/BarList';
+import BarSearch from './components/BarSearch';
 import BeerList from './components/Beer/BeerList';
 import BarEvents from './components/BarEvents';
 import UserSearch from './components/UserSearch';
@@ -28,7 +29,8 @@ function App() {
         <div className="app">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/bars" element={<BarList />} />
+            {/* <Route path="/bars" element={<BarList />} /> */}
+            <Route path="/bars" element={<BarSearch/>} />
             <Route path="/bars/:id/events" element={<BarEvents />} />
             <Route path="/users" element={<Authenticate element={UserSearch} />} /> 
             <Route path="/beers" element={<BeerList />} />
