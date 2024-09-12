@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Typography, List, ListItem, Button, Paper } from '@mui/material';
 import { useAuth } from './contexts/AuthContext'; 
+
 function Home() {
   const { isAuthenticated } = useAuth(); 
+
   return (
     <div style={{ position: 'relative', height: '100vh', overflow: 'hidden', margin: 0 }}>
       <img
@@ -57,7 +59,14 @@ function Home() {
             <ListItem>
               <Button
                 variant="contained"
-                sx={{ backgroundColor: '#c28744', color: '#fff', '&:hover': { backgroundColor: '#a2743c' } }}
+                sx={{
+                  backgroundColor: '#c28744',
+                  color: '#fff',
+                  '&:hover': {
+                    backgroundColor: '#BD793D',
+                    color: '#f0e0d5', // Cambia el color del texto en hover
+                  }
+                }}
                 component={Link}
                 to="/beers"
                 fullWidth
@@ -68,7 +77,14 @@ function Home() {
             <ListItem>
               <Button
                 variant="contained"
-                sx={{ backgroundColor: '#c28744', color: '#fff', '&:hover': { backgroundColor: '#a2743c' } }}
+                sx={{
+                  backgroundColor: '#c28744',
+                  color: '#fff',
+                  '&:hover': {
+                    backgroundColor: '#BD793D',
+                    color: '#f0e0d5', // Cambia el color del texto en hover
+                  }
+                }}
                 component={Link}
                 to="/bars"
                 fullWidth
@@ -79,7 +95,14 @@ function Home() {
             <ListItem>
               <Button
                 variant="contained"
-                sx={{ backgroundColor: '#c28744', color: '#fff', '&:hover': { backgroundColor: '#a2743c' } }}
+                sx={{
+                  backgroundColor: '#c28744',
+                  color: '#fff',
+                  '&:hover': {
+                    backgroundColor: '#BD793D',
+                    color: '#f0e0d5', // Cambia el color del texto en hover
+                  }
+                }}
                 component={Link}
                 to="/events"
                 fullWidth
@@ -90,7 +113,14 @@ function Home() {
             <ListItem>
               <Button
                 variant="contained"
-                sx={{ backgroundColor: '#c28744', color: '#fff', '&:hover': { backgroundColor: '#a2743c' } }}
+                sx={{
+                  backgroundColor: '#c28744',
+                  color: '#fff',
+                  '&:hover': {
+                    backgroundColor: '#BD793D',
+                    color: '#f0e0d5', // Cambia el color del texto en hover
+                  }
+                }}
                 component={Link}
                 to="/users"
                 fullWidth
@@ -102,7 +132,14 @@ function Home() {
               <ListItem>
                 <Button
                   variant="contained"
-                  sx={{ backgroundColor: '#905423', color: '#fff', '&:hover': { backgroundColor: '#a2743c' } }}
+                  sx={{
+                    backgroundColor: '#905423',
+                    color: '#fff',
+                    '&:hover': {
+                      backgroundColor: '#8B4F1D',
+                      color: '#f0e0d5', // Cambia el color del texto en hover
+                    }
+                  }}
                   component={Link}
                   to="/account"
                   fullWidth

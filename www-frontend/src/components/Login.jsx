@@ -39,10 +39,10 @@ function Login() {
           localStorage.setItem('JWT_TOKEN', JWT_TOKEN);
           toast.success('Succesfully Logged In'); // Mostrar mensaje de éxito
           
-          // Redirigir al home después de 2 segundos
+          // Redirigir al home después de 1 s
           setTimeout(() => {
             navigate('/');
-          }, 2000);
+          }, 1000);
         }
       })
       .catch(error => {
