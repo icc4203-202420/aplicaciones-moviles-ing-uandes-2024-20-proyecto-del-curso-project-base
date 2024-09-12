@@ -3,11 +3,16 @@ class API::V1::EventsController < ApplicationController
     include Authenticable
     respond_to :json
     before_action :set_bar, only: [:index, :create]
-    before_action :set_event, only: [:show, :update, :destroy]
-    before_action :verify_jwt_token, only: [:create, :update, :destroy]
+    before_action :set_event, only: [:show, :update, :destroy, :attendees]
+    before_action :verify_jwt_token, only: [:create, :update, :destroy, :check_in]
 
     def check_in
       event = Event.find(params[:id])
+
+      # Asegúrate de que current_user esté definido
+      unless current_user
+        return render json: { error: "User not authenticated" }, status: :unauthorized
+      end
 
       # Buscar si ya existe una relación de asistencia para este evento y usuario
       attendance = Attendance.find_or_initialize_by(user: current_user, event: event)
@@ -15,17 +20,21 @@ class API::V1::EventsController < ApplicationController
       if attendance.checked_in
         render json: { message: "You have already checked in to this event." }, status: :unprocessable_entity
       else
-        # Marcar el check-in como completado
-        attendance.check_in
-        render json: { message: "Check-in successful." }, status: :ok
+        attendance.checked_in = true
+        if attendance.save
+          render json: { message: "Check-in successful." }, status: :ok
+        else
+          render json: { error: "Check-in failed." }, status: :unprocessable_entity
+        end
       end
     rescue ActiveRecord::RecordNotFound
       render json: { error: "Event not found." }, status: :not_found
     end
 
+
+
     def attendees
-      event = Event.find(params[:id])
-      attendees = event.users.select(:id, :first_name, :last_name, :handle)
+      attendees = @event.users.select(:id, :first_name, :last_name, :handle)
       render json: { attendees: attendees }, status: :ok
     rescue ActiveRecord::RecordNotFound
       render json: { error: 'Event not found' }, status: :not_found
@@ -97,6 +106,26 @@ class API::V1::EventsController < ApplicationController
       authenticate_user!
       head :unauthorized unless current_user
     end
+    # def verify_jwt_token
+    #   token = request.headers['Authorization']&.split(' ')&.last
+    #   Rails.logger.debug("Received token: #{token}")
+    #   return head :unauthorized unless token
+
+    #   begin
+    #     decoded_token = JWT.decode(token, Rails.application.credentials.secret_key_base)[0]
+    #     user_id = decoded_token['user_id']
+    #     @current_user = User.find(user_id)
+    #     Rails.logger.debug("Authenticated user ID: #{user_id}")
+    #   rescue JWT::DecodeError, ActiveRecord::RecordNotFound
+    #     Rails.logger.debug("JWT decoding error or user not found")
+    #     head :unauthorized
+    #   end
+    # end
+
+    def current_user
+      @current_user
+    end
+
     def bar_json(bar)
       {
         id: bar.id,

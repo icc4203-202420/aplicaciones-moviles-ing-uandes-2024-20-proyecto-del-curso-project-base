@@ -30,7 +30,7 @@ Rails.application.routes.draw do
       end
       resources :events, only: [:show, :create, :update, :destroy] do
         member do
-          get 'attendees'
+          get :attendees
           post 'check_in'  # Esto creará una ruta para /api/v1/events/:id/check_in
         end
       end
