@@ -12,41 +12,6 @@ import * as jwtDecode from 'jwt-decode';
 import { useAuth } from './contexts/AuthContext'; 
 
 function Navbar() {
-  // const [isAuthenticated, setIsAuthenticated] = useState(false);
-  // const [userId, setUserId] = useState(null);
-  // useEffect(() => {
-  //   const checkAuth = () => {
-  //     const token = localStorage.getItem('JWT_TOKEN');
-  //     const currentUserId = localStorage.getItem('CURRENT_USER_ID');
-  //     if (token && currentUserId) {
-  //       setIsAuthenticated(true);
-  //       setUserId(currentUserId);
-  //     } else {
-  //       setIsAuthenticated(false);
-  //     }
-  //   };
-
-  //   checkAuth();
-
-  //   // Monitorear cambios en localStorage
-  //   window.addEventListener('storage', checkAuth);
-
-  //   // Limpiar el event listener
-  //   return () => {
-  //     window.removeEventListener('storage', checkAuth);
-  //   };
-  // }, []);
-  // const token = localStorage.getItem('JWT_TOKEN');
-  // const userId = localStorage.getItem('CURRENT_USER_ID');
-  // const isAuthenticated = token && userId;
-
-  // const handleLogout = () => {
-  //   localStorage.removeItem('JWT_TOKEN');
-  //   localStorage.removeItem('CURRENT_USER_ID');
-  //   setIsAuthenticated(false);
-  //   // window.location.reload();
-  //   const navigate = useNavigate(); // Necesitarás llamar a useNavigate() aquí si decides redirigir
-  // };
   const { isAuthenticated, logout } = useAuth();
   return (
     <AppBar 
