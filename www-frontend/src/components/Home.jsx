@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Typography, List, ListItem, Button, Paper } from '@mui/material';
-
+import { useAuth } from './contexts/AuthContext'; 
 function Home() {
+  const { isAuthenticated } = useAuth(); 
   return (
     <div style={{ position: 'relative', height: '100vh', overflow: 'hidden', margin: 0 }}>
       <img
@@ -44,6 +45,7 @@ function Home() {
           backgroundColor: 'transparent', // Fondo transparente para ver el negro debajo
           color: '#fff', // Color del texto blanco
           maxWidth: 'md', // Ajusta el tamaño del contenedor si es necesario
+          boxShadow: 'none', // Elimina la sombra del Paper
         }}>
           <Typography variant="h2" gutterBottom>
             Welcome to Beer Explorer!
@@ -79,7 +81,7 @@ function Home() {
                 variant="contained"
                 sx={{ backgroundColor: '#c28744', color: '#fff', '&:hover': { backgroundColor: '#a2743c' } }}
                 component={Link}
-                to="/bars/:id/events"
+                to="/events"
                 fullWidth
               >
                 Events
@@ -96,6 +98,19 @@ function Home() {
                 Users
               </Button>
             </ListItem>
+            {isAuthenticated && ( // Solo muestra el botón si el usuario está autenticado
+              <ListItem>
+                <Button
+                  variant="contained"
+                  sx={{ backgroundColor: '#905423', color: '#fff', '&:hover': { backgroundColor: '#a2743c' } }}
+                  component={Link}
+                  to="/account"
+                  fullWidth
+                >
+                  Your Account
+                </Button>
+              </ListItem>
+            )}
           </List>
         </Paper>
       </div>

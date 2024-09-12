@@ -4,7 +4,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 import axios from 'axios';
 import { useLoadGMapsLibraries } from '../useLoadGMapsLibraries'; // Hook para cargar las librerías
 import { MAPS_LIBRARY, MARKER_LIBRARY } from '../constants'; // Constantes utilizadas
-
+import { CircularProgress, Box } from '@mui/material';
 const BarSearch = () => {
   const [bars, setBars] = useState([]); // Estado para almacenar los bares
   const [userLocation, setUserLocation] = useState(null); // Estado para almacenar la ubicación del usuario
@@ -81,14 +81,23 @@ const BarSearch = () => {
   }, [libraries, userLocation, bars]);
 
   if (!libraries || !userLocation) {
-    return <h1>Cargando. . .</h1>;
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        style={{ height: '100vh', width: '100vw' }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
     <div>
       <input
         type="text"
-        placeholder="Buscar bares por nombre o dirección"
+        placeholder="Search Bars"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}

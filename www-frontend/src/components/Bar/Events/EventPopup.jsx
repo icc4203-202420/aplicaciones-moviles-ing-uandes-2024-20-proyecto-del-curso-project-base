@@ -3,8 +3,8 @@ import axios from 'axios';
 import { Typography, List, ListItem, ListItemText, Dialog, DialogContent, DialogActions, ListItemAvatar, Avatar, CircularProgress, Card, CardActions, CardContent, Button } from '@mui/material';
 import { toast } from 'react-toastify';
 import AccountCircle from '@mui/icons-material/AccountCircle'; // Importa el ícono de MUI
-import { useCheckIn } from '../contexts/CheckInContext';
-import { useAuth } from '../contexts/AuthContext'; // Asegúrate de importar el hook
+import { useCheckIn } from '../../contexts/CheckInContext';
+import { useAuth } from '../../contexts/AuthContext'; // Asegúrate de importar el hook
 
 function EventPopup({ open, onClose, event, onCheckIn }) {
   const { isAuthenticated, token } = useAuth(); // Usa el hook de autenticación

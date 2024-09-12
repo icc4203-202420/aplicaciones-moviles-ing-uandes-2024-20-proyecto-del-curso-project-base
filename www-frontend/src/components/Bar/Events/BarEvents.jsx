@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import EventPopup from './EventPopup'; // Asegúrate de que la ruta sea correcta
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
-import { useCheckIn } from '../contexts/CheckInContext'; 
+import { useCheckIn } from '../../contexts/CheckInContext'; 
 // Estilo personalizado para el Accordion
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
   backgroundColor: 'rgba(0, 0, 0, 0.4)', // Negro con opacidad 60%

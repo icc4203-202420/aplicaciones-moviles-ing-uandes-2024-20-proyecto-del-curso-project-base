@@ -8,7 +8,11 @@ class API::V1::UsersController < ApplicationController
   end
 
   def show
-    render json: @users, status: :ok
+    if @user.nil?
+      render json: { error: "User not found" }, status: :not_found
+    else
+      render json: @user, status: :ok
+    end
   end
 
   def create
@@ -23,7 +27,8 @@ class API::V1::UsersController < ApplicationController
   def update
     #byebug
     if @user.update(user_params)
-      render :show, status: :ok, location: api_v1_users_path(@user)
+      # render :show, status: :ok, location: api_v1_users_path(@user)
+      render json: @user, status: :ok
     else
       render json: @user.errors, status: :unprocessable_entity
     end
@@ -31,12 +36,20 @@ class API::V1::UsersController < ApplicationController
 
   private
 
+  # def set_user
+  #   # @user = User.find(params[:id])
+  #   @user = current_user
+  #   render json: { error: "User not authenticated" }, status: :unauthorized unless @user
+  # end
   def set_user
-    # @user = User.find(params[:id])
-    @user = current_user
-    render json: { error: "User not authenticated" }, status: :unauthorized unless @user
+    if params[:id]
+      @user = User.find_by(id: params[:id])
+      render json: { error: "User not found" }, status: :not_found unless @user
+    else
+      @user = current_user
+      render json: { error: "User not authenticated" }, status: :unauthorized unless @user
+    end
   end
-
   def user_params
     params.fetch(:user, {}).
         permit(:id, :first_name, :last_name, :email, :age,
