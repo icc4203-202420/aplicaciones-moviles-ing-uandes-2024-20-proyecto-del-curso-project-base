@@ -76,10 +76,10 @@ const BeerList = () => {
         zIndex: 1,
       }}>
         <Typography variant="h4" gutterBottom color="white">
-          Lista de Cervezas
+          Search a Beer
         </Typography>
         <TextField
-          label="Buscar cervezas..."
+          label="Search beers"
           variant="outlined"
           fullWidth
           margin="normal"

@@ -4,13 +4,15 @@ import { Typography, List, ListItem, ListItemText, Dialog, DialogContent, Dialog
 import { toast } from 'react-toastify';
 import AccountCircle from '@mui/icons-material/AccountCircle'; // Importa el ícono de MUI
 import { useCheckIn } from '../contexts/CheckInContext';
+import { useAuth } from '../contexts/AuthContext'; // Asegúrate de importar el hook
 
 function EventPopup({ open, onClose, event, onCheckIn }) {
+  const { isAuthenticated, token } = useAuth(); // Usa el hook de autenticación
+  const { checkIns, updateCheckIn } = useCheckIn(); // Usa el contexto de check-ins
   const [attendees, setAttendees] = useState([]);
   const [loadingAttendees, setLoadingAttendees] = useState(false);
-  const { checkIns, updateCheckIn } = useCheckIn(); // Usa el contexto de check-ins
   const [checkedIn, setCheckedIn] = useState(checkIns[event?.id] || false);
-
+    
   useEffect(() => {
     if (event) {
       setLoadingAttendees(true);
@@ -30,18 +32,28 @@ function EventPopup({ open, onClose, event, onCheckIn }) {
     setCheckedIn(checkIns[event?.id] || false); // Actualiza el estado local del check-in
   }, [checkIns, event]);
 
-  const handleCheckIn = () => {
-    axios.post(`/api/v1/events/${event.id}/check_in`)
-      .then(response => {
-        updateCheckIn(event.id, true); // Actualiza el estado global de check-in
-        setCheckedIn(true); // Actualiza el estado local de check-in
-        toast.success('Check-in successful!');
-        if (onCheckIn) onCheckIn();
-      })
-      .catch(error => {
-        console.error('Error during check-in:', error);
-        toast.error('Check-in failed.');
+  const handleCheckIn = async () => {
+    console.log('Authenticated:', isAuthenticated); // Debugging
+    if (!isAuthenticated || !token) {
+      toast.error('You must be logged in to check in.'); // Muestra un toast si no está autenticado
+      return;
+    }
+
+    try {
+      const response = await axios.post(`/api/v1/events/${event.id}/check_in`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
+      updateCheckIn(event.id, true); // Actualiza el estado global de check-in
+      setCheckedIn(true); // Actualiza el estado local de check-in
+      toast.success('Check-in successful!');
+      if (onCheckIn) onCheckIn();
+    } catch (error) {
+      console.error('Error during check-in:', error);
+      toast.error('Check-in failed.');
+    }
   };
 
   if (!event) return null;
