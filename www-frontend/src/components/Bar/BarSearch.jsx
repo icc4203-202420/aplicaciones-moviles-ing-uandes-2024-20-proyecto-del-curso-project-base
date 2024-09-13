@@ -40,19 +40,18 @@ const BarSearch = () => {
   useEffect(() => {
     axios
       .get('/api/v1/bars')
-      // .get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/bars`)
       .then((response) => {
-        // Accede a los bares dentro de la clave "bars"
-        // console.log('Fetched bars:', response.data);
         const barsData = Array.isArray(response.data.bars) ? response.data.bars : [];
-        setBars(barsData);
-        console.log(barsData);
+        const filteredBars = barsData.filter(bar => 
+          bar.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setBars(filteredBars);  // Actualiza el estado con bares filtrados
       })
       .catch((error) => {
         console.error('Error al cargar los bares', error);
-        setBars([]); // En caso de error, asegúrate de que sea un arreglo vacío
+        setBars([]);  // En caso de error, asegura un arreglo vacío
       });
-  }, [searchQuery]);
+  }, [searchQuery]);  // Se actualiza cada vez que cambie el valor de búsqueda
   
 
   // Inicializar el mapa y los marcadores una vez que se cargan las librerías y la ubicación del usuario

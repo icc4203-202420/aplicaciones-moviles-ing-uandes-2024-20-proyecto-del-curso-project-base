@@ -39,7 +39,10 @@ function BarList() {
           {filteredBars.length > 0 ? (
             filteredBars.map(bar => (
               <ListItem key={bar.id}>
-                <ListItemText primary={bar.name} />
+                <ListItemText 
+                  primary={bar.name} 
+                  secondary={`${bar.address.line1}, ${bar.address.city}, ${bar.address.country}`} 
+                />
               </ListItem>
             ))
           ) : (
@@ -47,6 +50,7 @@ function BarList() {
               <ListItemText primary="No hay bares disponibles" />
             </ListItem>
           )}
+
         </List>
       </Paper>
     </Container>
