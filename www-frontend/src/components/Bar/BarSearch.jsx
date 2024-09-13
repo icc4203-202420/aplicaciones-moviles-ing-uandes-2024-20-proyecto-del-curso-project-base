@@ -16,7 +16,7 @@ const BarSearch = () => {
   const mapRef = useRef();
   const markersRef = useRef([]);
   const infoWindowRef = useRef(null); // Referencia para InfoWindow
-
+    
   // Obtener la ubicación actual del usuario
   useEffect(() => {
     if (navigator.geolocation) {
