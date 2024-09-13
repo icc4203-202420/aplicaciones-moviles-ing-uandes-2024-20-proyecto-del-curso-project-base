@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { TextField, Button, Box, Container, Typography, InputAdornment, IconButton } from '@mui/material';
+import { TextField, Button, Box, Container, Typography, InputAdornment, IconButton, Link } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -37,7 +37,7 @@ function Login() {
         }
         if (JWT_TOKEN) {
           localStorage.setItem('JWT_TOKEN', JWT_TOKEN);
-          toast.success('Succesfully Logged In'); // Mostrar mensaje de éxito
+          toast.success('Successfully Logged In'); // Mostrar mensaje de éxito
           
           // Redirigir al home después de 1 s
           setTimeout(() => {
@@ -55,7 +55,7 @@ function Login() {
   return (
     <Container maxWidth="xs">
       <Box mt={5}>
-        <Typography variant="h4" align="center" gutterBottom sx={{ color: 'white' }}>
+        <Typography variant="h4" align="center" gutterBottom sx={{ color: '#91480c' }}>
           Log In
         </Typography>
 
@@ -66,7 +66,6 @@ function Login() {
         >
           {({ errors, touched, isSubmitting }) => (
             <Form>
-              {/* Campo para el email */}
               <Field
                 as={TextField}
                 name="email"
@@ -76,13 +75,12 @@ function Login() {
                 error={touched.email && Boolean(errors.email)}
                 helperText={touched.email && errors.email}
                 InputProps={{
-                  style: { borderColor: '#91480c', color: 'white' },
+                  style: { borderColor: '#91480c', color: '#91480c' },
                 }}
                 InputLabelProps={{
-                  style: { color: 'white' },
+                  style: { color: '#91480c' },
                 }}
               />
-              {/* Campo para la contraseña */}
               <Field
                 as={TextField}
                 name="password"
@@ -93,7 +91,7 @@ function Login() {
                 error={touched.password && Boolean(errors.password)}
                 helperText={touched.password && errors.password}
                 InputProps={{
-                  style: { borderColor: '#91480c', color: 'white' },
+                  style: { borderColor: '#91480c', color: '#91480c' },
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -107,10 +105,9 @@ function Login() {
                   ),
                 }}
                 InputLabelProps={{
-                  style: { color: 'white' },
+                  style: { color: '#91480c' },
                 }}
               />
-              {/* Botón de envío */}
               <Box mt={2}>
                 <Button
                   type="submit"
@@ -132,12 +129,20 @@ function Login() {
           )}
         </Formik>
 
-        {/* Mostrar mensaje de error si hay algún error de inicio de sesión */}
         {loginError && (
           <Typography color="error" variant="body2" align="center" sx={{ mt: 2 }}>
             {loginError}
           </Typography>
         )}
+
+        <Box mt={2} textAlign="center">
+          <Typography variant="body2" sx={{ color: '#91480c' }}>
+            ¿No tienes una cuenta?{' '}
+            <Link href="/signup" sx={{ color: '#91480c', fontWeight: 'bold' }}>
+              Regístrate aquí
+            </Link>
+          </Typography>
+        </Box>
       </Box>
     </Container>
   );

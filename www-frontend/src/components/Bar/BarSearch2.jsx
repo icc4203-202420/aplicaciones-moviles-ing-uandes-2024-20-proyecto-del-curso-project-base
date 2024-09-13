@@ -15,9 +15,8 @@ const BarSearch = () => {
   const mapNodeRef = useRef();
   const mapRef = useRef();
   const markersRef = useRef([]);
-  const infoWindowRef = useRef(null); // Referencia para InfoWindow
 
-  // Obtener la ubicación actual del usuario
+  // ubicación actual del usuario
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -77,19 +76,14 @@ const BarSearch = () => {
       return;
     }
 
-    const { Map, InfoWindow } = libraries[MAPS_LIBRARY];
-    const { AdvancedMarkerElement: Marker } = libraries[MARKER_LIBRARY];
-    
+    const { Map } = libraries[MAPS_LIBRARY];
     mapRef.current = new Map(mapNodeRef.current, {
       mapId: 'BARS_MAP_ID', // Reemplaza esto con tu propio ID de mapa
       center: userLocation,
       zoom: 15,
     });
 
-    // Crear un InfoWindow
-    infoWindowRef.current = new InfoWindow({
-      ariaLabel: "Info Window",
-    });
+    const { AdvancedMarkerElement: Marker } = libraries[MARKER_LIBRARY];
 
     // Crear los marcadores y almacenarlos en markersRef
     markersRef.current = bars.map((bar) => {
@@ -97,24 +91,6 @@ const BarSearch = () => {
         position: { lat: bar.latitude, lng: bar.longitude },
         title: bar.name,
       });
-
-      // Crear contenido para el InfoWindow
-      const contentString = `
-        <div id="content">
-          <div id="siteNotice"></div>
-          <h1 id="firstHeading" class="firstHeading">${bar.name}</h1>
-          <div id="bodyContent">
-            <p>${bar.address?.line1 || 'Dirección no disponible'}, ${bar.address?.city || 'Ciudad no disponible'}</p>
-          </div>
-        </div>
-      `;
-
-      // Asignar contenido al InfoWindow
-      marker.addListener('click', () => {
-        infoWindowRef.current.setContent(contentString);
-        infoWindowRef.current.open(mapRef.current, marker);
-      });
-
       return marker;
     });
 
@@ -130,7 +106,7 @@ const BarSearch = () => {
       markerCluster.current.clearMarkers();
       markerCluster.current.addMarkers(
         filteredBars.map((bar) => {
-          return new google.maps.marker.AdvancedMarkerElement({
+          return new google.maps.Marker({
             position: { lat: bar.latitude, lng: bar.longitude },
             title: bar.name,
           });
@@ -197,4 +173,4 @@ const BarSearch = () => {
   );
 };
 
-export default BarSearch;
+export default BarSearch;

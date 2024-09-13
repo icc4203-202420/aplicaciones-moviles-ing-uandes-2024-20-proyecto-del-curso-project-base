@@ -9,8 +9,7 @@ class API::V1::BarsController < ApplicationController
   def index
     if params[:query].present?
       bars = Bar.joins(:address)
-                .where('bars.name ILIKE ? OR addresses.city ILIKE ? OR addresses.country ILIKE ? OR addresses.street ILIKE ? OR addresses.number ILIKE ?',
-                       "%#{params[:query]}%",
+                .where('bars.name ILIKE ? OR addresses.city ILIKE ? OR addresses.line1 ILIKE ? OR addresses.line2 ILIKE ?',
                        "%#{params[:query]}%",
                        "%#{params[:query]}%",
                        "%#{params[:query]}%",
@@ -19,7 +18,10 @@ class API::V1::BarsController < ApplicationController
       bars = Bar.all
     end
     bars_with_event_count = bars.map do |bar|
-      bar.as_json.merge(event_count: bar.event_count)
+      bar.as_json.merge(
+        event_count: bar.event_count,
+        address: bar.address.as_json(only: [:line1, :line2, :city, :country_id]) # Incluye los campos de la dirección
+      )
     end
 
     render json: { bars: bars_with_event_count }, status: :ok
@@ -30,10 +32,14 @@ class API::V1::BarsController < ApplicationController
       render json: @bar.as_json.merge({
         image_url: url_for(@bar.image),
         thumbnail_url: url_for(@bar.thumbnail),
-        event_count: @bar.event_count  # Incluye el conteo de eventos
+        event_count: @bar.event_count,  # Incluye el conteo de eventos
+        address: @bar.address.as_json(only: [:line1, :line2, :city, :country_id])
       }), status: :ok
     else
-      render json: @bar.as_json.merge(event_count: @bar.event_count), status: :ok
+      render json: @bar.as_json.merge({
+        event_count: @bar.event_count,
+        address: @bar.address.as_json(only: [:line1, :line2, :city, :country_id]) # Incluye los campos de la dirección
+      }), status: :ok
     end
   end
 
