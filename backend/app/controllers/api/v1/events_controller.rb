@@ -4,15 +4,10 @@ class API::V1::EventsController < ApplicationController
     respond_to :json
     before_action :set_bar, only: [:index, :create]
     before_action :set_event, only: [:show, :update, :destroy, :attendees]
-    before_action :verify_jwt_token, only: [:create, :update, :destroy, :check_in]
+    before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
     def check_in
       event = Event.find(params[:id])
-
-      # Asegúrate de que current_user esté definido
-      unless current_user
-        return render json: { error: "User not authenticated" }, status: :unauthorized
-      end
 
       # Buscar si ya existe una relación de asistencia para este evento y usuario
       attendance = Attendance.find_or_initialize_by(user: current_user, event: event)
@@ -20,12 +15,9 @@ class API::V1::EventsController < ApplicationController
       if attendance.checked_in
         render json: { message: "You have already checked in to this event." }, status: :unprocessable_entity
       else
-        attendance.checked_in = true
-        if attendance.save
-          render json: { message: "Check-in successful." }, status: :ok
-        else
-          render json: { error: "Check-in failed." }, status: :unprocessable_entity
-        end
+        # Marcar el check-in como completado
+        attendance.check_in
+        render json: { message: "Check-in successful." }, status: :ok
       end
     rescue ActiveRecord::RecordNotFound
       render json: { error: "Event not found." }, status: :not_found
