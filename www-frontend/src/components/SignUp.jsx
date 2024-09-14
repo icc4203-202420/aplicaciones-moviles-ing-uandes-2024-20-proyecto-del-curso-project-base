@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { TextField,Button,Box,Container,Typography,InputAdornment,IconButton,Link as MuiLink,Alert} from '@mui/material';
+import { TextField, Button, Box, Container, Typography, InputAdornment, IconButton, Link as MuiLink, Alert } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -29,11 +29,11 @@ const initialValues = {
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
-  const [serverError, setServerError] = useState(''); // Estado para manejar errores del servidor
+  const [serverError, setServerError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = (values, { setSubmitting }) => {
-    setServerError(''); // Limpiar errores previos
+    setServerError('');
     axios.post('http://localhost:3001/api/v1/signup', { user: values })
       .then((response) => {
         const JWT_TOKEN = response.headers['authorization'];
@@ -42,31 +42,36 @@ export default function SignUp() {
         if (JWT_TOKEN) {
           localStorage.setItem('JWT_TOKEN', JWT_TOKEN);
         }
-        
         navigate('/login');
       })
       .catch((error) => {
-        setSubmitting(false); // Detener la acción de "submit"
-        
-        // Manejo mejorado del error
+        setSubmitting(false);
         if (error.response && error.response.data && error.response.data.status && error.response.data.status.message) {
-          console.error('Error during signup:', error.response.data.status.message);
-          setServerError(error.response.data.status.message); // Mostrar mensaje del error
+          setServerError(error.response.data.status.message);
         } else {
           setServerError('An error occurred. Please try again later.');
         }
       });
   };
-  
 
   return (
-    <Container maxWidth="xs">
-      <Box mt={5}>
-        <Typography variant="h4" align='center' gutterBottom>
-          Sign Up
+    <Container maxWidth="xs" sx={{
+      backgroundImage: 'url(/images/IMG_2757.JPG)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      height: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <Box mt={5} sx={{ backgroundColor: '#CB9650', padding: 4, borderRadius: 2 }}>
+        <Typography variant="h4" align='center' gutterBottom sx={{ color: '#F0DAAE' }}>
+          Welcome!
+        </Typography>
+        <Typography align="center" sx={{ color: '#F0DAAE', mb: 2 }}>
+          Create an account to join
         </Typography>
 
-        {/* Mostrar el error del servidor */}
         {serverError && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {serverError}
@@ -88,6 +93,8 @@ export default function SignUp() {
                 margin="normal"
                 error={touched.first_name && Boolean(errors.first_name)}
                 helperText={touched.first_name && errors.first_name}
+                InputProps={{ style: { borderColor: '#91480c', color: '#452216' }}}
+                InputLabelProps={{ style: { color: '#452216' }}}
               />
               <Field
                 as={TextField}
@@ -97,6 +104,8 @@ export default function SignUp() {
                 margin="normal"
                 error={touched.last_name && Boolean(errors.last_name)}
                 helperText={touched.last_name && errors.last_name}
+                InputProps={{ style: { borderColor: '#91480c', color: '#452216' }}}
+                InputLabelProps={{ style: { color: '#452216' }}}
               />
               <Field
                 as={TextField}
@@ -106,6 +115,8 @@ export default function SignUp() {
                 margin="normal"
                 error={touched.email && Boolean(errors.email)}
                 helperText={touched.email && errors.email}
+                InputProps={{ style: { borderColor: '#91480c', color: '#452216' }}}
+                InputLabelProps={{ style: { color: '#452216' }}}
               />
               <Field
                 as={TextField}
@@ -115,6 +126,8 @@ export default function SignUp() {
                 margin="normal"
                 error={touched.handle && Boolean(errors.handle)}
                 helperText={touched.handle && errors.handle}
+                InputProps={{ style: { borderColor: '#91480c', color: '#452216' }}}
+                InputLabelProps={{ style: { color: '#452216' }}}
               />
               <Field
                 as={TextField}
@@ -126,6 +139,7 @@ export default function SignUp() {
                 error={touched.password && Boolean(errors.password)}
                 helperText={touched.password && errors.password}
                 InputProps={{
+                  style: { borderColor: '#91480c', color: '#452216' },
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -138,6 +152,7 @@ export default function SignUp() {
                     </InputAdornment>
                   ),
                 }}
+                InputLabelProps={{ style: { color: '#452216' }}}
               />
               <Field
                 as={TextField}
@@ -149,6 +164,7 @@ export default function SignUp() {
                 error={touched.password_confirmation && Boolean(errors.password_confirmation)}
                 helperText={touched.password_confirmation && errors.password_confirmation}
                 InputProps={{
+                  style: { borderColor: '#91480c', color: '#452216' },
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -161,26 +177,24 @@ export default function SignUp() {
                     </InputAdornment>
                   ),
                 }}
+                InputLabelProps={{ style: { color: '#452216' }}}
               />
-              
               <Box mt={3}>
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
-                  color="primary"
+                  sx={{
+                    backgroundColor: '#91480c',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: '#702f07',
+                    },
+                  }}
                   disabled={isSubmitting}
                 >
                   Sign Up
                 </Button>
-              </Box>
-              <Box mt={2} textAlign="center">
-                <Typography variant="body2">
-                  Already have an account?{' '}
-                  <MuiLink href="/login" color="primary">
-                    Sign In
-                  </MuiLink>
-                </Typography>
               </Box>
             </Form>
           )}
