@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import { useLoadGMapsLibraries } from '../useLoadGMapsLibraries'; // Hook para cargar las librerías
 import { MAPS_LIBRARY, MARKER_LIBRARY } from '../constants'; // Constantes utilizadas
 import { CircularProgress, Box, Autocomplete, TextField } from '@mui/material'; // Importar Autocomplete de Material-UI
@@ -10,11 +11,13 @@ const BarSearch = () => {
   const [filteredBars, setFilteredBars] = useState([]); // Estado para almacenar los bares filtrados
   const [userLocation, setUserLocation] = useState(null); // Estado para almacenar la ubicación del usuario
   const [searchQuery, setSearchQuery] = useState(''); // Estado para almacenar la búsqueda
+  const [nearestBar, setNearestBar] = useState(null); // Estado para el bar más cercano
   const libraries = useLoadGMapsLibraries();
   const markerCluster = useRef();
   const mapNodeRef = useRef();
   const mapRef = useRef();
   const markersRef = useRef([]);
+  const navigate = useNavigate(); // Hook for navigation
 
   // ubicación actual del usuario
   useEffect(() => {
@@ -54,7 +57,7 @@ const BarSearch = () => {
       });
   }, []);
 
-  // Filtrar bares según el query de búsqueda
+  // Filtrar bares según el query de búsqueda y encontrar el bar más cercano
   useEffect(() => {
     const filtered = bars.filter((bar) =>
       bar.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -68,7 +71,39 @@ const BarSearch = () => {
       mapRef.current.panTo(latLng);
       mapRef.current.setZoom(17);
     }
-  }, [searchQuery, bars]);
+
+    // Encontrar el bar más cercano al usuario
+    if (userLocation && filtered.length > 0) {
+      let nearest = filtered[0];
+      let minDistance = distanceBetweenCoords(userLocation, nearest);
+
+      filtered.forEach((bar) => {
+        const dist = distanceBetweenCoords(userLocation, bar);
+        if (dist < minDistance) {
+          nearest = bar;
+          minDistance = dist;
+        }
+      });
+
+      setNearestBar(nearest); // Establecer el bar más cercano
+    }
+  }, [searchQuery, bars, userLocation]);
+
+  // Función para calcular la distancia entre dos coordenadas
+  const distanceBetweenCoords = (location1, location2) => {
+    const R = 6371; // Radio de la tierra en km
+    const dLat = deg2rad(location2.latitude - location1.lat);
+    const dLng = deg2rad(location2.longitude - location1.lng);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(location1.lat)) * Math.cos(deg2rad(location2.latitude)) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distancia en km
+    return distance;
+  };
+
+  const deg2rad = (deg) => deg * (Math.PI / 180);
 
   // Inicializar el mapa y los marcadores una vez que se cargan las librerías y la ubicación del usuario
   useEffect(() => {
@@ -115,15 +150,10 @@ const BarSearch = () => {
     }
   }, [filteredBars]);
 
-  // Función para centrar el mapa en el bar seleccionado al presionar "Enter"
-  const handleEnterKey = (event) => {
-    if (event.key === 'Enter' && filteredBars.length > 0) {
-      const firstBar = filteredBars[0]; // Tomar el primer bar coincidente
-      if (firstBar && mapRef.current) {
-        const latLng = new google.maps.LatLng(firstBar.latitude, firstBar.longitude);
-        mapRef.current.panTo(latLng);
-        mapRef.current.setZoom(17);
-      }
+  // Función para manejar el clic y redirigir al review del bar más cercano
+  const handleNearestBarClick = () => {
+    if (nearestBar) {
+      navigate(`/bars/${nearestBar.id}/reviews`); // Redirigir a la página de reviews del bar más cercano
     }
   };
 
@@ -152,23 +182,44 @@ const BarSearch = () => {
             {...params}
             label="Search Bars"
             variant="outlined"
-            onKeyDown={handleEnterKey} // Detectar presionar "Enter"
             sx={{ 
               position: 'absolute', 
-              top: '20px', // Ajusta la distancia desde la parte superior
+              top: '10px', // Ajusta la distancia desde la parte superior
               left: '50%', 
               transform: 'translateX(-50%)', // Esto centra el elemento horizontalmente
               zIndex: 1000,
               backgroundColor: 'white',
-              borderRadius: '4px',
-              width: '300px', // Ajusta el ancho según tu preferencia
-              boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Agrega una pequeña sombra para que se vea flotante
+              borderRadius: '20px', // Bordes más redondeados
+              width: '80%', // Ajustar el ancho a 80% de la pantalla
+              maxWidth: '600px', // Definir un ancho máximo para pantallas grandes
+              boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // Agregar una pequeña sombra para que se vea flotante
             }}
           />
         )}
       />
 
-      <div ref={mapNodeRef} style={{ width: '100vw', height: '100vh' }} />
+      <div ref={mapNodeRef} style={{ width: '100vw', height: '70vh' }} /> {/* Mapa reducido a 70vh */}
+      
+      <Box
+        sx={{
+          backgroundColor: '#fff',
+          padding: '20px',
+          borderTopLeftRadius: '20px',
+          borderTopRightRadius: '20px',
+          boxShadow: '0 -4px 10px rgba(0, 0, 0, 0.1)',
+          position: 'relative',
+          zIndex: 1000,
+          cursor: nearestBar ? 'pointer' : 'default', // Mostrar que es clicable si hay un bar cercano
+        }}
+        onClick={handleNearestBarClick} // Añadir evento click para redirigir
+      >
+        <h2>Nearest Bar</h2>
+        {nearestBar ? (
+          <p>{nearestBar.name}</p>
+        ) : (
+          <p>No nearby bars found</p>
+        )}
+      </Box>
     </div>
   );
 };
