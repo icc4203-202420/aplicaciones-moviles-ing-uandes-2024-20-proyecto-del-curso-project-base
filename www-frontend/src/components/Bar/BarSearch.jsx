@@ -166,7 +166,7 @@ const BarSearch = () => {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        style={{ height: '100vh', width: '100vw' }}
+        style={{ height: '100%', width: '100%' }}
       >
         <CircularProgress />
       </Box>

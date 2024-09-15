@@ -14,7 +14,7 @@ const BeerReviewList = ({ reviews }) => {
             ) : (
                 <Box 
                     sx={{ 
-                        maxHeight: '400px',  // Ajusta la altura máxima según sea necesario
+                        maxHeight: '350px',  // Ajusta la altura máxima según sea necesario
                         overflowY: 'auto',   // Habilita el desplazamiento vertical
                         mb: 2                // Añade margen inferior si es necesario
                     }}

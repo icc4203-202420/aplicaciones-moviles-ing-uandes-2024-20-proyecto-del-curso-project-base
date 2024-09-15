@@ -53,36 +53,44 @@ const BeerDetail = () => {
         console.error('Error submitting review:', error);
       });
   };
+
   const handleSuccess = () => {
     console.log('Review successfully submitted!');
     setOpenReviewForm(false);
   };
+
   if (!beer) return <div>Loading...</div>;
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      backgroundImage: 'url(/images/IMG_2754.JPG)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      overflow: 'hidden',
-    }}>
-      <div style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        color: 'white',
-        height: '100%',
-        padding: '20px',
-        boxSizing: 'border-box',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundImage: 'url(/images/IMG_2754.JPG)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        overflow: 'hidden',
+        mt: 4, // Margin top
+        mb: 10, // Margin bottom
+      }}
+    >
+      <Box
+        sx={{
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          color: 'white',
+          height: '100%',
+          padding: '20px',
+          boxSizing: 'border-box',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <IconButton 
           onClick={handleBackClick} 
           sx={{
@@ -155,12 +163,10 @@ const BeerDetail = () => {
           onClose={() => setOpenReviewForm(false)}
           onSuccess={handleSuccess}
           onSubmit={handleReviewSubmit}
-          // onSubmit={handleReviewSubmit}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
 export default BeerDetail;
-

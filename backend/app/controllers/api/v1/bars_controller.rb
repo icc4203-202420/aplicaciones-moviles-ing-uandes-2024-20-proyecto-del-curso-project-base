@@ -25,15 +25,32 @@ class API::V1::BarsController < ApplicationController
     render json: { bars: bars_with_event_count }, status: :ok
   end
 
+  # def show
+  #   if @bar.image.attached?
+  #     render json: @bar.as_json.merge({
+  #       image_url: url_for(@bar.image),
+  #       thumbnail_url: url_for(@bar.thumbnail),
+  #       event_count: @bar.event_count  # Incluye el conteo de eventos
+  #     }), status: :ok
+  #   else
+  #     render json: @bar.as_json.merge(event_count: @bar.event_count), status: :ok
+  #   end
+  # end
   def show
     if @bar.image.attached?
       render json: @bar.as_json.merge({
         image_url: url_for(@bar.image),
         thumbnail_url: url_for(@bar.thumbnail),
-        event_count: @bar.event_count  # Incluye el conteo de eventos
+        event_count: @bar.event_count,
+        events: @bar.events.as_json, # Añadir eventos
+        beers: @bar.beers.as_json # Añadir cervezas
       }), status: :ok
     else
-      render json: @bar.as_json.merge(event_count: @bar.event_count), status: :ok
+      render json: @bar.as_json.merge({
+        event_count: @bar.event_count,
+        events: @bar.events.as_json, # Añadir eventos
+        beers: @bar.beers.as_json # Añadir cervezas
+      }), status: :ok
     end
   end
 
