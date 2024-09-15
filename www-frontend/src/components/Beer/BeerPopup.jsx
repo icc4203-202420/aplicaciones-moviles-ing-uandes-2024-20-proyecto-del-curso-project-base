@@ -1,104 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Typography, List, ListItem, ListItemText, Dialog, DialogTitle, DialogContent, ListItemAvatar, Avatar, CircularProgress, Card, CardActions, CardContent, Button, IconButton } from '@mui/material';
-import { toast } from 'react-toastify';
-import AccountCircle from '@mui/icons-material/AccountCircle'; // Importa el ícono de MUI
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, List, ListItem, ListItemText, IconButton, CircularProgress } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { useCheckIn } from '../contexts/CheckInContext';
+import axios from 'axios';
 
-function EventPopup({ open, onClose, event, onCheckIn }) {
-  const [attendees, setAttendees] = useState([]);
-  const [loadingAttendees, setLoadingAttendees] = useState(false);
-  const { checkIns, updateCheckIn } = useCheckIn(); // Usa el contexto de check-ins
-  const [checkedIn, setCheckedIn] = useState(checkIns[event?.id] || false);
+const BeerPopup = ({ open, onClose, beer }) => {
+  const [beerDetails, setBeerDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (event) {
-      setLoadingAttendees(true);
-      axios.get(`/api/v1/events/${event.id}/attendees`)
+    if (beer) {
+      axios.get(`http://localhost:3001/api/v1/beers/${beer.id}`)
         .then(response => {
-          setAttendees(response.data.attendees);
-          setLoadingAttendees(false);
+          setBeerDetails(response.data.beer);
+          setLoading(false);
         })
         .catch(error => {
-          console.error('Error fetching attendees:', error);
-          setLoadingAttendees(false);
+          console.error('Error fetching beer details:', error);
+          setError('Failed to load beer details');
+          setLoading(false);
         });
     }
-  }, [event]);
+  }, [beer]);
 
-  useEffect(() => {
-    setCheckedIn(checkIns[event?.id] || false); // Actualiza el estado local del check-in
-  }, [checkIns, event]);
-
-  const handleCheckIn = () => {
-    const token = localStorage.getItem('JWT_TOKEN'); // Verifica si el token está presente en el localStorage
-
-    if (!token) {
-      toast.error('You must be logged in to check in'); // Muestra el toast si no está autenticado
-      return;
+  const handleSeeDetailsClick = () => {
+    if (beerDetails) {
+      window.location.href = `/beers/${beerDetails.id}`;
     }
-
-    axios.post(`/api/v1/events/${event.id}/check_in`)
-      .then(response => {
-        updateCheckIn(event.id, true); // Actualiza el estado global de check-in
-        setCheckedIn(true); // Actualiza el estado local de check-in
-        toast.success('Check-in successful!');
-        if (onCheckIn) onCheckIn();
-      })
-      .catch(error => {
-        console.error('Error during check-in:', error);
-        toast.error('Check-in failed.');
-      });
+    onClose();
   };
 
-  if (!event) return null;
+  if (loading) return <CircularProgress />;
+  if (error) return <Typography color="error">{error}</Typography>;
+  if (!beerDetails) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth PaperProps={{ style: { backgroundColor: 'transparent', boxShadow: 'none' } }}>
-      <Card
-        sx={{ maxWidth: '70%', margin: 'auto', padding: 2, display: open ? 'block' : 'none' }} // Ajusta el ancho del Card
-      >
-        <CardContent>
-          <Typography variant="h5">{event.name}</Typography>
-          <Typography variant="body1">{event.description}</Typography>
-          <Typography variant="body2">Date: {new Date(event.date).toLocaleDateString()}</Typography>
-          <Typography variant="body2">Start Date: {new Date(event.start_date).toLocaleDateString()}</Typography>
-          <Typography variant="body2">End Date: {new Date(event.end_date).toLocaleDateString()}</Typography>
+    <Dialog open={open} onClose={onClose} fullWidth>
+      <DialogTitle>
+        {beerDetails.name}
+        <IconButton
+          edge="end"
+          color="inherit"
+          onClick={onClose}
+          aria-label="close"
+          sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        <Typography variant="h6">Brewery: {beerDetails.brewery_name || 'Not Available'}</Typography>
+        <Typography variant="body1">Style: {beerDetails.style}</Typography>
+        <Typography variant="body1">Hop: {beerDetails.hop}</Typography>
+        <Typography variant="body1">Yeast: {beerDetails.yeast}</Typography>
+        <Typography variant="body1">Malts: {beerDetails.malts}</Typography>
+        <Typography variant="body1">IBU: {beerDetails.ibu}</Typography>
+        <Typography variant="body1">Alcohol: {beerDetails.alcohol}</Typography>
+        <Typography variant="body1">BLG: {beerDetails.blg}</Typography>
+        <Typography variant="body1">Average Rating: {beerDetails.avg_rating || 'Not Rated'}</Typography>
 
-          <Typography variant="h6" gutterBottom>Attendees</Typography>
-          {loadingAttendees ? (
-            <CircularProgress />
-          ) : (
-            attendees.length > 0 ? (
-              <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-                {attendees.map(attendee => (
-                  <ListItem key={attendee.id}>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <AccountCircle />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText primary={`${attendee.first_name} ${attendee.last_name}`} secondary={`@${attendee.handle}`} />
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <Typography>No attendees yet.</Typography>
-            )
-          )}
-        </CardContent>
-        <CardActions>
-          <Button onClick={onClose} color="primary">Close</Button>
-          {checkedIn ? (
-            <Typography variant="body1" color="textSecondary">You have confirmed your attendance</Typography>
-          ) : (
-            <Button onClick={handleCheckIn} color="primary">Check-in</Button>
-          )}
-        </CardActions>
-      </Card>
+        <Typography variant="h6" sx={{ mt: 2 }}>Bars Serving This Beer:</Typography>
+        {beerDetails.bar_names && beerDetails.bar_names.length > 0 ? (
+          <List>
+            {beerDetails.bar_names.map((bar, index) => (
+              <ListItem key={index}>
+                <ListItemText primary={bar} />
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="body1" sx={{ color: 'text.secondary' }}>No bars available</Typography>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleSeeDetailsClick} color="primary">See Details</Button>
+        <Button onClick={onClose} color="secondary">Close</Button>
+      </DialogActions>
     </Dialog>
   );
-}
+};
 
-export default EventPopup;
+export default BeerPopup;

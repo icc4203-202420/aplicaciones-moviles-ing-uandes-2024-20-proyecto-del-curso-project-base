@@ -8,8 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'; 
 
 const fieldsValidation = Yup.object({
-  email: Yup.string().email('Email no válido.').required('El email es requerido.'),
-  password: Yup.string().required('La contraseña es requerida'),
+  email: Yup.string().email('Invalid email.').required('Email is required.'),
+  password: Yup.string().required('Pasword is required'),
 });
 
 const initialValues = {
@@ -42,7 +42,7 @@ function Login() {
       })
       .catch(error => {
         console.error('Error logging in:', error);
-        setLoginError('Credenciales inválidas. Intenta de nuevo.');
+        setLoginError('Email or password invalid. Try again.');
       });
   };
 

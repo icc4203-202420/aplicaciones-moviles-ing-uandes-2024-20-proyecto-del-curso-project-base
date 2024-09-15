@@ -32,7 +32,7 @@ const BeerList = () => {
     setSelectedBeer(beer);
     setOpenDialog(true);
   };
-
+  
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedBeer(null);
@@ -73,7 +73,7 @@ const BeerList = () => {
       <div style={{
         position: 'relative',
         padding: '20px',
-        zIndex: 1,
+        zIndex: 2,
       }}>
         <Typography variant="h4" gutterBottom color="white">
           Search a Beer
@@ -91,7 +91,7 @@ const BeerList = () => {
           <List>
             {filteredBeers.length > 0 ? (
               filteredBeers.map(beer => (
-                <ListItem button key={beer.id} onClick={() => handleBeerClick(beer)}>
+                <ListItem button={true} key={beer.id} onClick={() => handleBeerClick(beer)}>
                   <ListItemText
                     primary={beer.name}
                     secondary={

@@ -23,8 +23,6 @@ class API::V1::EventsController < ApplicationController
       render json: { error: "Event not found." }, status: :not_found
     end
 
-
-
     def attendees
       attendees = @event.users.select(:id, :first_name, :last_name, :handle)
       render json: { attendees: attendees }, status: :ok
