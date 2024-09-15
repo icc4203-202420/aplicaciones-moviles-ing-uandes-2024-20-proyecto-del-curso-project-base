@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Typography, List, ListItem, ListItemText, TextField, Paper, CircularProgress } from '@mui/material';
+import { Typography, List, ListItem, ListItemText, TextField, Paper, IconButton, CircularProgress } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import BeerPopup from './BeerPopup'; // Asegúrate de que la ruta sea correcta
 
 const BeerList = () => {
@@ -43,81 +44,87 @@ const BeerList = () => {
 
   return (
     <div style={{
-      position: 'relative',
+      backgroundColor: '#D6A96D', // Fondo del contenedor principal
       height: '100vh',
-      margin: 0,
-      overflow: 'hidden',
+      overflowY: 'auto',
+      padding: '20px',
     }}>
-      <img
-        src="/images/IMG_2756.JPG"
-        alt="Background"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          zIndex: -2,
+      <TextField
+        label="Search beers"
+        variant="outlined"
+        fullWidth
+        margin="normal"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        sx={{
+          backgroundColor: '#F0DAAE', // Color de fondo del buscador
+          borderRadius: '10px',
+          '& .MuiInputBase-root': {
+            color: '#452216', // Color del texto del input
+          },
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: '#452216', // Color del borde
+            },
+            '&:hover fieldset': {
+              borderColor: '#452216',
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: '#452216',
+            },
+          },
+          '& .MuiInputLabel-root': {
+            color: '#452216', // Color de la etiqueta
+          },
         }}
       />
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)', // Fondo negro con opacidad 60%
-        zIndex: -1,
-      }} />
-      <div style={{
-        position: 'relative',
-        padding: '20px',
-        zIndex: 2,
-      }}>
-        <Typography variant="h4" gutterBottom color="white">
-          Search a Beer
-        </Typography>
-        <TextField
-          label="Search beers"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ color: 'white', '& .MuiInputLabel-root': { color: 'white' }, '& .MuiInputBase-root': { color: 'white' } }}
-        />
-        <Paper sx={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', padding: '10px', marginTop: '20px', color: 'white' }}>
-          <List>
-            {filteredBeers.length > 0 ? (
-              filteredBeers.map(beer => (
-                <ListItem button={true} key={beer.id} onClick={() => handleBeerClick(beer)}>
-                  <ListItemText
-                    primary={beer.name}
-                    secondary={
-                      <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                        {beer.style}
-                      </Typography>
-                    }
-                  />
-                </ListItem>
-              ))
-            ) : (
-              <ListItem>
-                <ListItemText primary="No hay cervezas disponibles" sx={{ color: 'white' }} />
+      <Paper sx={{ backgroundColor: '#D6A96D', padding: '10px' }}>
+        <List>
+          {filteredBeers.length > 0 ? (
+            filteredBeers.map(beer => (
+              <ListItem
+                key={beer.id}
+                button
+                onClick={() => handleBeerClick(beer)}
+                sx={{
+                  backgroundColor: '#F0DAAE', // Fondo de los ítems
+                  marginBottom: '10px',
+                  borderRadius: '10px', // Bordes redondeados como en el diseño
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // Sombra sutil
+                }}
+              >
+                <ListItemText
+                  primary={beer.name}
+                  primaryTypographyProps={{
+                    color: '#452216', // Color del nombre de la cerveza
+                    fontWeight: 'bold',
+                  }}
+                  secondary={
+                    <Typography sx={{ color: '#452216' }}>
+                      {beer.style}
+                    </Typography>
+                  }
+                />
+                <IconButton edge="end" aria-label="more">
+                  <MoreVertIcon sx={{ color: '#452216' }} />
+                </IconButton>
               </ListItem>
-            )}
-          </List>
-        </Paper>
+            ))
+          ) : (
+            <ListItem>
+              <ListItemText primary="No hay cervezas disponibles" sx={{ color: '#452216' }} />
+            </ListItem>
+          )}
+        </List>
+      </Paper>
 
-        {selectedBeer && (
-          <BeerPopup
-            open={openDialog}
-            onClose={handleCloseDialog}
-            beer={selectedBeer}
-          />
-        )}
-      </div>
+      {selectedBeer && (
+        <BeerPopup
+          open={openDialog}
+          onClose={handleCloseDialog}
+          beer={selectedBeer}
+        />
+      )}
     </div>
   );
 };

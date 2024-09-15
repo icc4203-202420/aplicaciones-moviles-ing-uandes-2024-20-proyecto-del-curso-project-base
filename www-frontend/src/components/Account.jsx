@@ -3,7 +3,7 @@ import { useAuth } from './contexts/AuthContext';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { TextField, Button, Container, Typography } from '@mui/material';
+import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
@@ -72,65 +72,121 @@ const Account = () => {
   });
 
   return (
-    <Container>
-      <Typography variant="h4">Edit Account</Typography>
-      <form onSubmit={formik.handleSubmit}>
-        <TextField
-          label="First Name"
-          name="firstName"
-          value={formik.values.firstName}
-          onChange={formik.handleChange}
-          error={formik.touched.firstName && Boolean(formik.errors.firstName)}
-          helperText={formik.touched.firstName && formik.errors.firstName}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Last Name"
-          name="lastName"
-          value={formik.values.lastName}
-          onChange={formik.handleChange}
-          error={formik.touched.lastName && Boolean(formik.errors.lastName)}
-          helperText={formik.touched.lastName && formik.errors.lastName}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Email"
-          name="email"
-          value={formik.values.email}
-          onChange={formik.handleChange}
-          error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Age"
-          name="age"
-          type="number"
-          value={formik.values.age}
-          onChange={formik.handleChange}
-          error={formik.touched.age && Boolean(formik.errors.age)}
-          helperText={formik.touched.age && formik.errors.age}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Password"
-          name="password"
-          type="password"
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          error={formik.touched.password && Boolean(formik.errors.password)}
-          helperText={formik.touched.password && formik.errors.password}
-          fullWidth
-          margin="normal"
-        />
-        <Button type="submit" variant="contained" color="primary" sx={{ marginTop: '16px' }}>
-          Save
-        </Button>
-      </form>
+    <Container maxWidth="xs" sx={{
+      backgroundImage: 'url(/images/IMG_2757.JPG)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      height: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <Box mt={5} sx={{ backgroundColor: '#CB9650', padding: 4, borderRadius: 2 }}>
+        <Typography variant="h4" align="center" gutterBottom sx={{ color: '#F0DAAE' }}>
+          Edit Account
+        </Typography>
+        
+        <form onSubmit={formik.handleSubmit}>
+          <TextField
+            label="First Name"
+            name="firstName"
+            value={formik.values.firstName}
+            onChange={formik.handleChange}
+            error={formik.touched.firstName && Boolean(formik.errors.firstName)}
+            helperText={formik.touched.firstName && formik.errors.firstName}
+            fullWidth
+            margin="normal"
+            InputProps={{
+              style: { borderColor: '#91480c', color: '#452216' },
+            }}
+            InputLabelProps={{
+              style: { color: '#452216' },
+            }}
+          />
+          <TextField
+            label="Last Name"
+            name="lastName"
+            value={formik.values.lastName}
+            onChange={formik.handleChange}
+            error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+            helperText={formik.touched.lastName && formik.errors.lastName}
+            fullWidth
+            margin="normal"
+            InputProps={{
+              style: { borderColor: '#91480c', color: '#452216' },
+            }}
+            InputLabelProps={{
+              style: { color: '#452216' },
+            }}
+          />
+          <TextField
+            label="Email"
+            name="email"
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            helperText={formik.touched.email && formik.errors.email}
+            fullWidth
+            margin="normal"
+            InputProps={{
+              style: { borderColor: '#91480c', color: '#452216' },
+            }}
+            InputLabelProps={{
+              style: { color: '#452216' },
+            }}
+          />
+          <TextField
+            label="Age"
+            name="age"
+            type="number"
+            value={formik.values.age}
+            onChange={formik.handleChange}
+            error={formik.touched.age && Boolean(formik.errors.age)}
+            helperText={formik.touched.age && formik.errors.age}
+            fullWidth
+            margin="normal"
+            InputProps={{
+              style: { borderColor: '#91480c', color: '#452216' },
+            }}
+            InputLabelProps={{
+              style: { color: '#452216' },
+            }}
+          />
+          <TextField
+            label="Password"
+            name="password"
+            type="password"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            error={formik.touched.password && Boolean(formik.errors.password)}
+            helperText={formik.touched.password && formik.errors.password}
+            fullWidth
+            margin="normal"
+            InputProps={{
+              style: { borderColor: '#91480c', color: '#452216' },
+            }}
+            InputLabelProps={{
+              style: { color: '#452216' },
+            }}
+          />
+          <Box mt={2}>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{
+                backgroundColor: '#91480c',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: '#702f07',
+                },
+              }}
+            >
+              Save
+            </Button>
+          </Box>
+        </form>
+      </Box>
     </Container>
   );
 };

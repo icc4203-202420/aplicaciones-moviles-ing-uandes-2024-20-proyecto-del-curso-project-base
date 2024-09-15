@@ -35,20 +35,20 @@ const BeerPopup = ({ open, onClose, beer }) => {
   if (!beerDetails) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
-      <DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth sx={{ '& .MuiDialog-paper': { bgcolor: '#D6A96D' }}}>
+      <DialogTitle sx={{ color: '#452216' }}>
         {beerDetails.name}
         <IconButton
           edge="end"
           color="inherit"
           onClick={onClose}
           aria-label="close"
-          sx={{ position: 'absolute', right: 8, top: 8, color: (theme) => theme.palette.grey[500] }}
+          sx={{ position: 'absolute', right: 8, top: 8, color: '#452216' }}
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ color: '#452216' }}>
         <Typography variant="h6">Brewery: {beerDetails.brewery_name || 'Not Available'}</Typography>
         <Typography variant="body1">Style: {beerDetails.style}</Typography>
         <Typography variant="body1">Hop: {beerDetails.hop}</Typography>
@@ -58,13 +58,12 @@ const BeerPopup = ({ open, onClose, beer }) => {
         <Typography variant="body1">Alcohol: {beerDetails.alcohol}</Typography>
         <Typography variant="body1">BLG: {beerDetails.blg}</Typography>
         <Typography variant="body1">Average Rating: {beerDetails.avg_rating || 'Not Rated'}</Typography>
-
         <Typography variant="h6" sx={{ mt: 2 }}>Bars Serving This Beer:</Typography>
         {beerDetails.bar_names && beerDetails.bar_names.length > 0 ? (
           <List>
             {beerDetails.bar_names.map((bar, index) => (
               <ListItem key={index}>
-                <ListItemText primary={bar} />
+                <ListItemText primary={bar} sx={{ color: '#452216' }} />
               </ListItem>
             ))}
           </List>
@@ -73,8 +72,8 @@ const BeerPopup = ({ open, onClose, beer }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleSeeDetailsClick} color="primary">See Details</Button>
-        <Button onClick={onClose} color="secondary">Close</Button>
+        <Button onClick={handleSeeDetailsClick} color="primary" sx={{ color: '#452216' }}>See Details</Button>
+        <Button onClick={onClose} color="secondary" sx={{ color: '#452216' }}>Close</Button>
       </DialogActions>
     </Dialog>
   );

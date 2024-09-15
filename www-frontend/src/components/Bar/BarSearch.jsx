@@ -4,14 +4,15 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import { useLoadGMapsLibraries } from '../useLoadGMapsLibraries'; // Hook para cargar las librerías
 import { MAPS_LIBRARY, MARKER_LIBRARY } from '../constants'; // Constantes utilizadas
-import { CircularProgress, Box, Autocomplete, TextField } from '@mui/material'; // Importar Autocomplete de Material-UI
-
+import { CircularProgress, Box, Autocomplete, TextField, Modal, Button } from '@mui/material'; // Importar Autocomplete de Material-UI
+import BarDetails from './BarDetails';
 const BarSearch = () => {
   const [bars, setBars] = useState([]); // Estado para almacenar los bares
   const [filteredBars, setFilteredBars] = useState([]); // Estado para almacenar los bares filtrados
   const [userLocation, setUserLocation] = useState(null); // Estado para almacenar la ubicación del usuario
   const [searchQuery, setSearchQuery] = useState(''); // Estado para almacenar la búsqueda
   const [nearestBar, setNearestBar] = useState(null); // Estado para el bar más cercano
+  const [detailsOpen, setDetailsOpen] = useState(false); 
   const libraries = useLoadGMapsLibraries();
   const markerCluster = useRef();
   const mapNodeRef = useRef();
@@ -150,13 +151,15 @@ const BarSearch = () => {
     }
   }, [filteredBars]);
 
-  // Función para manejar el clic y redirigir al review del bar más cercano
   const handleNearestBarClick = () => {
     if (nearestBar) {
-      navigate(`/bars/${nearestBar.id}/reviews`); // Redirigir a la página de reviews del bar más cercano
+      setDetailsOpen(true); // Abrir el modal con los detalles del bar más cercano
     }
   };
 
+  const handleCloseDetails = () => {
+    setDetailsOpen(false); // Cerrar el modal
+  };
   if (!libraries || !userLocation) {
     return (
       <Box
@@ -172,7 +175,6 @@ const BarSearch = () => {
 
   return (
     <div>
-      {/* Autocomplete de Material-UI para la barra de búsqueda */}
       <Autocomplete
         freeSolo
         options={bars.map((bar) => bar.name)} // Opciones basadas en los nombres de los bares
@@ -184,9 +186,9 @@ const BarSearch = () => {
             variant="outlined"
             sx={{ 
               position: 'absolute', 
-              top: '10px', // Ajusta la distancia desde la parte superior
+              top: '10px', 
               left: '50%', 
-              transform: 'translateX(-50%)', // Esto centra el elemento horizontalmente
+              transform: 'translateX(-50%)', 
               zIndex: 1000,
               backgroundColor: 'white',
               borderRadius: '20px', // Bordes más redondeados
@@ -203,6 +205,7 @@ const BarSearch = () => {
       <Box
         sx={{
           backgroundColor: '#fff',
+          color: 'black', // Texto negro
           padding: '20px',
           borderTopLeftRadius: '20px',
           borderTopRightRadius: '20px',
@@ -211,7 +214,7 @@ const BarSearch = () => {
           zIndex: 1000,
           cursor: nearestBar ? 'pointer' : 'default', // Mostrar que es clicable si hay un bar cercano
         }}
-        onClick={handleNearestBarClick} // Añadir evento click para redirigir
+        onClick={handleNearestBarClick} // Añadir evento click para abrir el modal
       >
         <h2>Nearest Bar</h2>
         {nearestBar ? (
@@ -220,6 +223,11 @@ const BarSearch = () => {
           <p>No nearby bars found</p>
         )}
       </Box>
+
+      {/* Modal para mostrar los detalles del bar más cercano */}
+      <Modal open={detailsOpen} onClose={handleCloseDetails}>
+        <BarDetails bar={nearestBar} onClose={handleCloseDetails} />
+      </Modal>
     </div>
   );
 };
