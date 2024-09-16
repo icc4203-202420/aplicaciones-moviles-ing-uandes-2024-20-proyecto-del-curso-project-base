@@ -153,9 +153,29 @@ const BarSearch = () => {
 
   const handleNearestBarClick = () => {
     if (nearestBar) {
-      setDetailsOpen(true); // Abrir el modal con los detalles del bar más cercano
+      setDetailsOpen(true); // Abre el modal
     }
   };
+  
+  useEffect(() => {
+    if (detailsOpen && nearestBar) {
+      // Verifica que nearestBar y el id estén definidos
+      // console.log('Nearest Bar ID:', nearestBar.id);
+  
+      // Realiza la solicitud GET solo si el ID está disponible
+      if (nearestBar.id) {
+        axios
+          .get(`/api/v1/bars/${nearestBar.id}`)
+          .then((response) => {
+            setNearestBar(response.data); // Actualiza el estado con los detalles completos del bar
+          })
+          .catch((error) => {
+            console.error('Error fetching bar details:', error);
+          });
+      }
+    }
+  }, [detailsOpen, nearestBar]); // Se ejecuta cuando `detailsOpen` o `nearestBar` cambian
+  
 
   const handleCloseDetails = () => {
     setDetailsOpen(false); // Cerrar el modal
@@ -224,10 +244,10 @@ const BarSearch = () => {
         )}
       </Box>
 
-      {/* Modal para mostrar los detalles del bar más cercano */}
-      <Modal open={detailsOpen} onClose={handleCloseDetails}>
-        <BarDetails bar={nearestBar} onClose={handleCloseDetails} />
-      </Modal>
+    <Modal open={detailsOpen} onClose={handleCloseDetails}>
+      {nearestBar && nearestBar.id && <BarDetails barId={nearestBar.id} onClose={handleCloseDetails} />}
+    </Modal>
+
     </div>
   );
 };

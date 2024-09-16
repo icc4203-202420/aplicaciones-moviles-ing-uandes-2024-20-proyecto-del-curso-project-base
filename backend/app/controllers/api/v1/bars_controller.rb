@@ -9,8 +9,7 @@ class API::V1::BarsController < ApplicationController
   def index
     if params[:query].present?
       bars = Bar.joins(:address)
-                .where('bars.name ILIKE ? OR addresses.city ILIKE ? OR addresses.country ILIKE ? OR addresses.street ILIKE ? OR addresses.number ILIKE ?',
-                       "%#{params[:query]}%",
+                .where('bars.name ILIKE ? OR addresses.city ILIKE ? OR addresses.country ILIKE ? OR addresses.line1 ILIKE ? OR addresses.line2 ILIKE ?',
                        "%#{params[:query]}%",
                        "%#{params[:query]}%",
                        "%#{params[:query]}%",
@@ -37,21 +36,29 @@ class API::V1::BarsController < ApplicationController
   #   end
   # end
   def show
-    if @bar.image.attached?
-      render json: @bar.as_json.merge({
-        image_url: url_for(@bar.image),
-        thumbnail_url: url_for(@bar.thumbnail),
-        event_count: @bar.event_count,
-        events: @bar.events.as_json, # Añadir eventos
-        beers: @bar.beers.as_json # Añadir cervezas
-      }), status: :ok
-    else
-      render json: @bar.as_json.merge({
-        event_count: @bar.event_count,
-        events: @bar.events.as_json, # Añadir eventos
-        beers: @bar.beers.as_json # Añadir cervezas
-      }), status: :ok
+    events = @bar.events.map do |event|
+      {
+        name: event.name,
+        description: event.description,
+        start_date: event.start_date,
+        end_date: event.end_date
+      }
     end
+
+    bar_details = @bar.as_json(include: { address: { only: [:line1, :line2, :city, :country] } })
+                      .merge({
+                        event_count: @bar.event_count,
+                        events: events,
+                        beers: @bar.beers.as_json
+                      })
+
+    render json: bar_details, status: :ok
+  end
+
+  def events
+    bar = Bar.find(params[:id])
+    events = bar.events.select(:id, :name, :start_date, :end_date)
+    render json: { events: events }
   end
 
   def create

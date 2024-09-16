@@ -6,7 +6,7 @@ export const useLoadGMapsLibraries = () => {
   const [libraries, setLibraries] = useState();
 
   useEffect(() => {
-    console.log('API Key:', import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
+    // console.log('API Key:', import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
 
     const loader = new Loader({
       apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,

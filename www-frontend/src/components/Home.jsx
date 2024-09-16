@@ -104,7 +104,7 @@ function Home() {
                   }
                 }}
                 component={Link}
-                to="/events"
+                to="/bars/:id/events"
                 fullWidth
               >
                 Events
