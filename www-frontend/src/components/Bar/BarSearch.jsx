@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import { useLoadGMapsLibraries } from '../useLoadGMapsLibraries'; // Hook para cargar las librerías
 import { MAPS_LIBRARY, MARKER_LIBRARY } from '../constants'; // Constantes utilizadas
-import { CircularProgress, Box, Autocomplete, TextField, Modal, Button } from '@mui/material'; // Importar Autocomplete de Material-UI
+import { CircularProgress, Box, Autocomplete, TextField, Modal } from '@mui/material'; // Importar Autocomplete de Material-UI
 import BarDetails from './BarDetails';
 const BarSearch = () => {
   const [bars, setBars] = useState([]); // Estado para almacenar los bares
@@ -13,13 +13,14 @@ const BarSearch = () => {
   const [searchQuery, setSearchQuery] = useState(''); // Estado para almacenar la búsqueda
   const [nearestBar, setNearestBar] = useState(null); // Estado para el bar más cercano
   const [detailsOpen, setDetailsOpen] = useState(false); 
+  const [selectedBar, setSelectedBar] = useState(null);
   const libraries = useLoadGMapsLibraries();
   const markerCluster = useRef();
   const mapNodeRef = useRef();
   const mapRef = useRef();
   const markersRef = useRef([]);
   const navigate = useNavigate(); // Hook for navigation
-
+  
   // ubicación actual del usuario
   useEffect(() => {
     if (navigator.geolocation) {
@@ -47,6 +48,7 @@ const BarSearch = () => {
     axios
       .get('/api/v1/bars')
       .then((response) => {
+        console.log('Bares cargados:', response.data); 
         const barsData = Array.isArray(response.data.bars) ? response.data.bars : [];
         setBars(barsData);
         setFilteredBars(barsData); // Iniciar con la lista completa
@@ -114,7 +116,7 @@ const BarSearch = () => {
 
     const { Map } = libraries[MAPS_LIBRARY];
     mapRef.current = new Map(mapNodeRef.current, {
-      mapId: 'BARS_MAP_ID', // Reemplaza esto con tu propio ID de mapa
+      mapId: 'BARS_MAP_ID',
       center: userLocation,
       zoom: 15,
     });
@@ -126,6 +128,11 @@ const BarSearch = () => {
       const marker = new Marker({
         position: { lat: bar.latitude, lng: bar.longitude },
         title: bar.name,
+        gmpClickable: true,
+      });
+      marker.addListener('click', () => {
+        setSelectedBar(bar); // Establece el bar seleccionado
+        setDetailsOpen(true); // Abre el modal
       });
       return marker;
     });
@@ -142,10 +149,21 @@ const BarSearch = () => {
       markerCluster.current.clearMarkers();
       markerCluster.current.addMarkers(
         filteredBars.map((bar) => {
-          return new google.maps.Marker({
+          const marker = new google.maps.marker.AdvancedMarkerElement({
             position: { lat: bar.latitude, lng: bar.longitude },
             title: bar.name,
+            gmpClickable: true,
           });
+
+          console.log('Creating filtered marker:', marker);
+
+          marker.addListener('click', () => {
+            console.log('Filtered marker clicked:', bar);
+            setSelectedBar(bar);
+            setDetailsOpen(true);
+          });
+
+          return marker;
         })
       );
     }
@@ -156,13 +174,22 @@ const BarSearch = () => {
       setDetailsOpen(true); // Abre el modal
     }
   };
+
+  useEffect(() => {
+    if (detailsOpen && selectedBar && selectedBar.id) {
+      axios.get(`/api/v1/bars/${selectedBar.id}`)
+        .then((response) => {
+          setSelectedBar(response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching bar details:', error);
+        });
+    }
+  }, [detailsOpen, selectedBar]);
   
+
   useEffect(() => {
     if (detailsOpen && nearestBar) {
-      // Verifica que nearestBar y el id estén definidos
-      // console.log('Nearest Bar ID:', nearestBar.id);
-  
-      // Realiza la solicitud GET solo si el ID está disponible
       if (nearestBar.id) {
         axios
           .get(`/api/v1/bars/${nearestBar.id}`)
@@ -243,10 +270,17 @@ const BarSearch = () => {
           <p>No nearby bars found</p>
         )}
       </Box>
+      <Modal open={detailsOpen} onClose={handleCloseDetails}>
+        {selectedBar && selectedBar.id ? (
+          <BarDetails barId={selectedBar.id} onClose={handleCloseDetails} />
+        ) : <p>Loading...</p>}
+      </Modal>
 
-    <Modal open={detailsOpen} onClose={handleCloseDetails}>
-      {nearestBar && nearestBar.id && <BarDetails barId={nearestBar.id} onClose={handleCloseDetails} />}
-    </Modal>
+      <Modal open={detailsOpen} onClose={handleCloseDetails}>
+        {nearestBar && nearestBar.id ? (
+          <BarDetails barId={nearestBar.id} onClose={handleCloseDetails} />
+        ) : <p>Loading...</p>}
+      </Modal>
 
     </div>
   );

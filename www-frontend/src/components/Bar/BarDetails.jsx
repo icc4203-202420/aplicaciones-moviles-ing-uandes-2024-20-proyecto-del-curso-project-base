@@ -10,6 +10,7 @@ const BarDetails = ({ barId, onClose }) => {
 
   // useEffect para obtener los datos del bar cuando `barId` cambia
   useEffect(() => {
+    if (!barId) return;
     const fetchBarDetails = async () => {
       try {
         setLoading(true);
