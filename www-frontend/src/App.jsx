@@ -49,7 +49,7 @@ function App() {
               <Route path="/account" element={<Account />} />
 
               {/* Nuevas rutas */}
-              <Route path="/event/:eventId/gallery" element={<EventGallery />} />
+              <Route path="/bars/:id/events/:id/gallery" element={<EventGallery />} />
               <Route path="/search/friends" element={<Authenticate element={FriendSearch} />} />
               <Route path="/event/:eventId/picture/:pictureId/tag" element={<Authenticate element={TagUserInPhoto} />} />
             </Routes>

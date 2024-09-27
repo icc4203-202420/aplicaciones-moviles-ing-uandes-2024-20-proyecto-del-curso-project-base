@@ -32,6 +32,13 @@ Rails.application.routes.draw do
         member do
           get :attendees
           post 'check_in'  # Esto creará una ruta para /api/v1/events/:id/check_in
+          get :pictures  # Esto creará una ruta para /api/v1/events/:id/pictures
+        end
+
+        resources :event_pictures, only: [:create] do
+          member do
+            post 'tag', to: 'event_pictures#tag'  # Esto crea una ruta para etiquetar usuarios en fotos
+          end
         end
       end
       resources :users do
