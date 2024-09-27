@@ -19,6 +19,11 @@ import AuthProvider from './components/contexts/AuthContext';
 import { CheckInProvider } from './components/contexts/CheckInContext'; // Importa el CheckInProvider
 import { Navigate } from 'react-router-dom';
 
+// Nuevas importaciones
+import EventGallery from './components/EventGallery';
+import FriendSearch from './components/FriendSearch';
+import TagUserInPhoto from './components/TagUserInPhoto';
+
 function Authenticate({ element: Component }) {
   const isAuthenticated = !!localStorage.getItem('JWT_TOKEN');
   return isAuthenticated ? <Component /> : <Navigate to="/login" />;
@@ -41,7 +46,12 @@ function App() {
               <Route path="/beers/:id/review" element={<Authenticate element={BeerReviewForm} />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
-              <Route path="/account" element={<Account />} /> 
+              <Route path="/account" element={<Account />} />
+
+              {/* Nuevas rutas */}
+              <Route path="/event/:eventId/gallery" element={<EventGallery />} />
+              <Route path="/search/friends" element={<Authenticate element={FriendSearch} />} />
+              <Route path="/event/:eventId/picture/:pictureId/tag" element={<Authenticate element={TagUserInPhoto} />} />
             </Routes>
             <Navbar />
             <ToastContainer />
