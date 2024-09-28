@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import axios from 'axios';
 import { Typography, List, ListItem, ListItemText, TextField, Paper, CircularProgress, Container, Accordion, AccordionSummary, AccordionDetails, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -44,7 +44,7 @@ const StyledAccordionDetails = styled(AccordionDetails)(({ theme }) => ({
 }));
 
 const BarEvents = () => {
-  const { currentUserId } = useAuth(); // Obtener currentUserId del contexto aquí
+  const { currentUserId } = useAuth();
   const [bars, setBars] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingBars, setLoadingBars] = useState(true);
@@ -55,6 +55,9 @@ const BarEvents = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const { updateCheckIn } = useCheckIn();
 
   useEffect(() => {
@@ -112,6 +115,44 @@ const BarEvents = () => {
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
+  };
+
+  const handleCameraDialogOpen = (event) => {
+    setSelectedEvent(event);
+    setCameraDialogOpen(true);
+    startCamera();
+  };
+
+  const handleCameraDialogClose = () => {
+    setCameraDialogOpen(false);
+    stopCamera();
+  };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoRef.current.srcObject = stream;
+      videoRef.current.play();
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      toast.error('No se pudo acceder a la cámara.');
+    }
+  };
+
+  const stopCamera = () => {
+    const stream = videoRef.current?.srcObject;
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+  };
+
+  const captureImage = () => {
+    const context = canvasRef.current.getContext('2d');
+    context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
+    canvasRef.current.toBlob(blob => {
+      setSelectedFile(new File([blob], 'captured-image.jpg', { type: 'image/jpeg' }));
+    });
+    handleCameraDialogClose();
   };
 
   const handleImageUpload = () => {
@@ -310,6 +351,7 @@ const BarEvents = () => {
         />
       )}
 
+      {/* Diálogo para subir la imagen */}
       <Dialog open={uploadDialogOpen} onClose={handleUploadDialogClose}>
         <DialogTitle>Subir Imagen para {selectedEvent?.name}</DialogTitle>
         <DialogContent>
@@ -318,6 +360,19 @@ const BarEvents = () => {
         <DialogActions>
           <Button onClick={handleUploadDialogClose}>Cancelar</Button>
           <Button onClick={handleImageUpload} variant="contained" color="primary">Subir</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo para capturar imagen con la cámara */}
+      <Dialog open={cameraDialogOpen} onClose={handleCameraDialogClose}>
+        <DialogTitle>Capturar Imagen con la Cámara para {selectedEvent?.name}</DialogTitle>
+        <DialogContent>
+          <video ref={videoRef} style={{ width: '100%' }}></video>
+          <canvas ref={canvasRef} width="640" height="480" style={{ display: 'none' }}></canvas>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCameraDialogClose}>Cancelar</Button>
+          <Button onClick={captureImage} variant="contained" color="primary">Capturar y Subir</Button>
         </DialogActions>
       </Dialog>
     </Container>
