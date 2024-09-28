@@ -43,6 +43,7 @@ const StyledAccordionDetails = styled(AccordionDetails)(({ theme }) => ({
   color: 'white',
 }));
 
+
 const BarEvents = () => {
   const { currentUserId } = useAuth();
   const [bars, setBars] = useState([]);
@@ -54,8 +55,8 @@ const BarEvents = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
   const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { updateCheckIn } = useCheckIn();
@@ -63,7 +64,7 @@ const BarEvents = () => {
   useEffect(() => {
     axios.get('/api/v1/bars')
       .then(response => {
-        setBars(response.data.bars || []); // Asegúrate de que sea un array
+        setBars(response.data.bars || []);
         setLoadingBars(false);
       })
       .catch(error => {
@@ -81,7 +82,7 @@ const BarEvents = () => {
     if (isExpanded) {
       axios.get(`/api/v1/bars/${barId}/events`)
         .then(response => {
-          setEvents(response.data.events || []); // Asegúrate de que sea un array
+          setEvents(response.data.events || []);
           setExpanded(barId);
         })
         .catch(error => {
@@ -111,10 +112,6 @@ const BarEvents = () => {
   const handleUploadDialogClose = () => {
     setUploadDialogOpen(false);
     setSelectedFile(null);
-  };
-
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
   };
 
   const handleCameraDialogOpen = (event) => {
@@ -153,6 +150,10 @@ const BarEvents = () => {
       setSelectedFile(new File([blob], 'captured-image.jpg', { type: 'image/jpeg' }));
     });
     handleCameraDialogClose();
+  };
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
   };
 
   const handleImageUpload = () => {
@@ -355,11 +356,12 @@ const BarEvents = () => {
       <Dialog open={uploadDialogOpen} onClose={handleUploadDialogClose}>
         <DialogTitle>Subir Imagen para {selectedEvent?.name}</DialogTitle>
         <DialogContent>
-          <input type="file" onChange={handleFileChange} />
+          <input type="file" accept="image/*" onChange={handleFileChange} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleUploadDialogClose}>Cancelar</Button>
           <Button onClick={handleImageUpload} variant="contained" color="primary">Subir</Button>
+          <Button onClick={() => handleCameraDialogOpen(selectedEvent)} variant="outlined" color="secondary">Tomar con Cámara</Button>
         </DialogActions>
       </Dialog>
 
