@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ImageList, ImageListItem, Typography } from '@mui/material';
-import { useLocation } from 'react-router-dom';
 
 const EventGallery = ({ eventId }) => {
   const [pictures, setPictures] = useState([]);
@@ -15,7 +14,12 @@ const EventGallery = ({ eventId }) => {
     const fetchPictures = async () => {
       try {
         const response = await axios.get(`/api/v1/events/${eventId}/pictures`);
-        setPictures(response.data);
+        if (response.data && response.data.length > 0) {
+          setPictures(response.data);
+        } else {
+          console.log("No pictures found for this event.");
+          setPictures([]); // Clear if no pictures found
+        }
       } catch (error) {
         console.error('Error fetching pictures:', error);
       }

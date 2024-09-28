@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Typography, List, ListItem, ListItemText, TextField, Paper, CircularProgress, Container, Accordion, AccordionSummary, AccordionDetails, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Typography, List, ListItem, ListItemText, TextField, Paper, CircularProgress, Container, Accordion, AccordionSummary, AccordionDetails, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { toast } from 'react-toastify';
 import EventPopup from './EventPopup'; // Asegúrate de que la ruta sea correcta
 import { styled } from '@mui/material/styles';
-import Button from '@mui/material/Button';
 import { useCheckIn } from '../../contexts/CheckInContext';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -24,7 +23,7 @@ const StyledAccordion = styled(Accordion)(({ theme }) => ({
 }));
 
 const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
-  backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+  backgroundColor: 'rgba(0, 0, 0, 0.4)',
   color: 'white',
   flexDirection: 'row-reverse', // Alinea el ícono a la derecha
   '& .MuiAccordionSummary-expandIconWrapper': {
@@ -56,7 +55,7 @@ const BarEvents = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const { updateCheckIn } = useCheckIn(); 
+  const { updateCheckIn } = useCheckIn();
 
   useEffect(() => {
     axios.get('/api/v1/bars')

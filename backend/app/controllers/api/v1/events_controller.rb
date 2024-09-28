@@ -80,15 +80,23 @@ class API::V1::EventsController < ApplicationController
 
     def pictures
       event = Event.find(params[:id])
-      pictures = event.event_pictures.with_attached_image
-      render json: pictures.map do |picture|
-        {
-          id: picture.id,
-          image_url: url_for(picture.image), # Aquí se genera la URL para la imagen
-          description: picture.description
-        }
+      if event.event_pictures.any?
+        pictures_data = event.event_pictures.map do |event_picture|
+          if event_picture.image.attached?
+            {
+              id: event_picture.id,
+              image_url: url_for(event_picture.image),
+              description: event_picture.description
+            }
+          end
+        end.compact
+  
+        render json: pictures_data
+      else
+        render json: { message: "No pictures found for this event." }, status: :not_found
       end
     end
+    
 
     private
 
