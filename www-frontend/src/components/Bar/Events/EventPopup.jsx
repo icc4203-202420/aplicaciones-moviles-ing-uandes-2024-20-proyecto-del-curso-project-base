@@ -6,6 +6,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useCheckIn } from '../../contexts/CheckInContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import EventGallery from './EventGallery';
 
 function EventPopup({ open, onClose, event, onCheckIn }) {
   const { isAuthenticated, token } = useAuth();
@@ -14,7 +15,7 @@ function EventPopup({ open, onClose, event, onCheckIn }) {
   const [loadingAttendees, setLoadingAttendees] = useState(false);
   const [checkedIn, setCheckedIn] = useState(checkIns[event?.id] || false);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (event) {
       setLoadingAttendees(true);
@@ -58,7 +59,7 @@ function EventPopup({ open, onClose, event, onCheckIn }) {
   };
 
   const handleViewGallery = () => {
-    navigate(`/bars/${event.bar_id}/events/${event.id}/gallery`);
+    navigate(`/bars/${event.bar_id}/events/${event.id}/gallery`, { state: { eventId: event.id } });
   };
 
   if (!event) return null;
