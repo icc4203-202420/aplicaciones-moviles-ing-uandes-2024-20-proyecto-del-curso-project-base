@@ -77,6 +77,12 @@ class API::V1::EventsController < ApplicationController
       head :no_content
     end
 
+    def pictures
+      event = Event.find(params[:id])
+      pictures = event.event_pictures.with_attached_image
+      render json: pictures.map { |picture| { id: picture.id, image_url: url_for(picture.image), description: picture.description } }
+    end
+
     private
 
     def set_event

@@ -37,7 +37,7 @@ Rails.application.routes.draw do
 
         resources :event_pictures, only: [:create] do
           member do
-            post 'tag', to: 'event_pictures#tag'  # Esto crea una ruta para etiquetar usuarios en fotos
+            post 'tag', to: 'event_pictures#tag'  # /api/v1/events/:event_id/event_pictures/:id/tag
           end
         end
       end

@@ -8,7 +8,7 @@ const EventGallery = ({ eventId }) => {
   useEffect(() => {
     const fetchPictures = async () => {
       try {
-        const response = await axios.get(`/api/events/${eventId}/pictures`);
+        const response = await axios.get(`/api/v1/events/${eventId}/pictures`);
         setPictures(response.data);
       } catch (error) {
         console.error('Error fetching pictures:', error);
@@ -19,11 +19,15 @@ const EventGallery = ({ eventId }) => {
 
   return (
     <ImageList cols={3}>
-      {pictures.map((picture) => (
-        <ImageListItem key={picture.id}>
-          <img src={picture.image_url} alt={picture.description} loading="lazy" />
-        </ImageListItem>
-      ))}
+      {pictures.length > 0 ? (
+        pictures.map((picture) => (
+          <ImageListItem key={picture.id}>
+            <img src={picture.image_url} alt={picture.description} loading="lazy" />
+          </ImageListItem>
+        ))
+      ) : (
+        <p>No hay imágenes disponibles para este evento.</p>
+      )}
     </ImageList>
   );
 };

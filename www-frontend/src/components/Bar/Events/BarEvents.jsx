@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Typography, List, ListItem, ListItemText, TextField, Paper, CircularProgress, Container, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import { Typography, List, ListItem, ListItemText, TextField, Paper, CircularProgress, Container, Accordion, AccordionSummary, AccordionDetails, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { toast } from 'react-toastify';
 import EventPopup from './EventPopup'; // Asegúrate de que la ruta sea correcta
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
-import { useCheckIn } from '../../contexts/CheckInContext'; 
+import { useCheckIn } from '../../contexts/CheckInContext';
+
 // Estilo personalizado para el Accordion
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
   backgroundColor: 'rgba(0, 0, 0, 0.4)', // Negro con opacidad 60%
@@ -51,7 +52,10 @@ const BarEvents = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const { checkIns, updateCheckIn } = useCheckIn(); 
+
   useEffect(() => {
     axios.get('/api/v1/bars')
       .then(response => {
@@ -94,6 +98,46 @@ const BarEvents = () => {
     setDialogOpen(false);
     setSelectedEvent(null);
   };
+
+  const handleUploadDialogOpen = (event) => {
+    setSelectedEvent(event);
+    setUploadDialogOpen(true);
+  };
+
+  const handleUploadDialogClose = () => {
+    setUploadDialogOpen(false);
+    setSelectedFile(null);
+  };
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const handleImageUpload = () => {
+    if (selectedFile && selectedEvent) {
+      const formData = new FormData();
+      formData.append('event_picture[image]', selectedFile);
+      formData.append('event_picture[event_id]', selectedEvent.id);
+      formData.append('event_picture[user_id]', localStorage.getItem('USER_ID')); // Asumiendo que el user_id está guardado en localStorage
+  
+      axios.post(`/api/v1/events/${selectedEvent.id}/event_pictures`, formData)
+        .then(response => {
+          toast.success('Imagen subida con éxito');
+          handleUploadDialogClose();
+        })
+        .catch(error => {
+          console.error('Error uploading image:', error);
+  
+          // Mostrar detalles del error en el toast para depuración
+          if (error.response && error.response.data && error.response.data.errors) {
+            toast.error(`Error al subir la imagen: ${error.response.data.errors.join(', ')}`);
+          } else {
+            toast.error('Error al subir la imagen. Verifica los campos e intenta de nuevo.');
+          }
+        });
+    }
+  };
+  
   const getEventLabel = (count) => {
     return `${count} ${count === 1 ? 'event' : 'events'}`;
   };
@@ -141,7 +185,7 @@ const BarEvents = () => {
         }} />
         <div style={{
           position: 'relative',
-          padding: '2vh 4vw', // Ajustar padding para que sea proporcional a la vista
+          padding: '2vh 4vw',
           zIndex: 1,
           display: 'flex',
           flexDirection: 'column',
@@ -169,7 +213,7 @@ const BarEvents = () => {
               marginTop: '2vh',
               maxHeight: '60vh',
               overflowY: 'auto',
-              overflowX: 'hidden', 
+              overflowX: 'hidden',
             }}
           >
             <List>
@@ -214,10 +258,13 @@ const BarEvents = () => {
                                     </Typography>
                                   </>
                                 }
-                                sx={{ color: 'white' }} // Para asegurar que el texto general sea blanco
+                                sx={{ color: 'white' }}
                               />
                               <Button variant="outlined" sx={{ color: 'white', borderColor: 'white', marginLeft: '16px' }} onClick={() => handleEventClick(event)}>
                                 See Details
+                              </Button>
+                              <Button variant="outlined" sx={{ color: 'white', borderColor: 'white', marginLeft: '16px' }} onClick={() => handleUploadDialogOpen(event)}>
+                                Subir Imagen
                               </Button>
                             </ListItem>
                           ))
@@ -257,8 +304,19 @@ const BarEvents = () => {
           }}
         />
       )}
+
+      <Dialog open={uploadDialogOpen} onClose={handleUploadDialogClose}>
+        <DialogTitle>Subir Imagen para {selectedEvent?.name}</DialogTitle>
+        <DialogContent>
+          <input type="file" onChange={handleFileChange} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleUploadDialogClose}>Cancelar</Button>
+          <Button onClick={handleImageUpload} variant="contained" color="primary">Subir</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
-}
+};
 
 export default BarEvents;
