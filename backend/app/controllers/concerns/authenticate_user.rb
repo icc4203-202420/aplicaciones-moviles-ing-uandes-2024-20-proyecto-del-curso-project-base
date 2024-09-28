@@ -1,14 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
 module Authenticable
   extend ActiveSupport::Concern
 

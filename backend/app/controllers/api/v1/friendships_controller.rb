@@ -13,12 +13,19 @@ class API::V1::FriendshipsController < ApplicationController
   # POST /api/v1/users/:user_id/friendships
   def create
     @friend = User.find_by(id: friendship_params[:friend_id])
+
     if @friend.nil?
       render json: { error: 'Friend not found' }, status: :not_found
+      return
     elsif @friend.id == @user.id
       render json: { error: 'You cannot be friends with yourself' }, status: :unprocessable_entity
+      return
+    elsif @user.frienship.exists?(friend: friend)
+      render json: { error: "You are already friends with this user" }, status: :unprocessable_entity
+      return
     else
-      @friendship = @user.friendships.build(friend: @friend, bar_id: friendship_params[:bar_id])
+      @friendship = @user.friendships.build(friendship_params)
+      @friendship.bar_id = friendship_params[:bar_id] if friendship_params[:bar_id].present?
 
       if @friendship.save
         render json: @friendship, status: :created
@@ -27,6 +34,7 @@ class API::V1::FriendshipsController < ApplicationController
       end
     end
   end
+
 
   private
 

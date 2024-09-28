@@ -1,156 +1,204 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, InputAdornment, List, ListItem, ListItemText, Container, Typography, Paper, ListItemAvatar, Avatar } from '@mui/material';
-import AccountCircle from '@mui/icons-material/AccountCircle'; 
+import {
+  TextField,
+  InputAdornment,
+  List,
+  ListItem,
+  ListItemText,
+  Container,
+  Typography,
+  Paper,
+  ListItemAvatar,
+  Avatar,
+  Tabs,
+  Tab,
+  Snackbar,
+  IconButton
+} from '@mui/material';
+import AccountCircle from '@mui/icons-material/AccountCircle';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
 
-function UserSearch() {
+function UserSearch({ barId = null }) { // Recibe barId como prop, con valor predeterminado null
   const [users, setUsers] = useState([]);
+  const [friendRequests, setFriendRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [tabIndex, setTabIndex] = useState(0); // Estado para las tabs
+  const [toastOpen, setToastOpen] = useState(false); // Estado para el toast
+  const [toastMessage, setToastMessage] = useState(''); // Mensaje del toast
+  
   useEffect(() => {
-    // Llama a la API para obtener la lista de usuarios
-    axios.get('/api/v1/users')
-      .then(response => {
-        console.log('Fetched users:', response.data);
-        // Ajusta según la estructura real de la respuesta
-        setUsers(Array.isArray(response.data.users) ? response.data.users : []);
-      })
+    // Fetch users that attended the same event as the current user
+    axios.get('/api/v1/users', {
+      params: { attended_event: true }
+    })
+      .then(response => setUsers(response.data.users || []))
       .catch(error => console.error('Error fetching users:', error));
+
+    // Fetch friend requests for the current user
+    axios.get('/api/v1/friend_requests')
+      .then(response => setFriendRequests(response.data.friend_requests || []))
+      .catch(error => console.error('Error fetching friend requests:', error));
   }, []);
 
+  const handleAddFriend = (friendId) => {
+    const token = localStorage.getItem('JWT_TOKEN');
+    const userId = localStorage.getItem('CURRENT_USER_ID');
+
+    console.log(`Adding friend with ID: ${friendId}`); // Verifica el ID aquí
+
+    const requestBody = {
+      friend_id: friendId,
+      bar_id: barId, // Asegúrate de que barId sea el correcto
+    };
+
+    axios.post(`/api/v1/users/${userId}/friendships`, requestBody, {
+      headers: {
+        Authorization: `${token}`,
+        'Content-Type': 'application/json'
+      },
+    })
+    .then(response => {
+        toast.success('Friend request sent successfully!');
+    })
+    .catch(error => {
+        console.error('Error adding friend:', error.response ? error.response.data : error);
+        toast.error('Failed to send friend request');
+    });
+};
+
   const filteredUsers = users.filter(user => {
-    const name = user.first_name || '';  // Usa una cadena vacía si user.name es undefined
-    const handle = user.handle || '';  // Usa una cadena vacía si user.handle es undefined
-  
-    return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           handle.toLowerCase().includes(searchTerm.toLowerCase());
+    const handle = user.handle || '';
+    const fullName = `${user.first_name} ${user.last_name}`.toLowerCase() || '';
+    const eventNames = user.events?.map(event => event.name).join(', ').toLowerCase() || '';
+
+    return handle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           fullName.includes(searchTerm.toLowerCase()) ||
+           eventNames.includes(searchTerm.toLowerCase());
   });
+
+  const handleToastClose = () => {
+    setToastOpen(false);
+  };
 
   return (
     <Container
       maxWidth={false}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '90vh',
-        width: '70vh',
-        padding: 0,
-      }}
+      sx={{ display: 'flex', flexDirection: 'column', height: '90vh', width: '70vh', padding: 0 }}
     >
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-      }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
         <img
           src="/images/IMG_2756.JPG"
           alt="Background"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            zIndex: -2,
-          }}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: -2 }}
         />
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: -1,
-        }} />
-        <div style={{
-          position: 'relative',
-          padding: '2vh 4vw', // Ajustar padding para que sea proporcional a la vista
-          zIndex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Typography variant="h4" gutterBottom>
-            Search Users
-          </Typography>
-          <TextField
-            label="Search user"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PersonAddIcon sx={{ color: '#fff' }} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  borderColor: '#fff', // Borde blanco
-                },
-                '&:hover fieldset': {
-                  borderColor: '#fff', // Borde blanco al pasar el ratón
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#fff', // Borde blanco al enfocar
-                },
-                '& .MuiInputBase-input': {
-                  color: '#fff', // Color del texto del campo
-                },
-                '& .MuiInputLabel-root': {
-                  color: '#fff', // Color del texto de la etiqueta
-                },
-              },
-            }}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: -1 }} />
+        <div style={{ position: 'relative', padding: '2vh 4vw', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography variant="h4" gutterBottom>User Management</Typography>
+
+          <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)}>
+            <Tab label="Search Users" />
+            <Tab label="Friend Requests" />
+          </Tabs>
+
+          {tabIndex === 0 && (
+            <>
+              <TextField
+                label="Search by handle, name or event"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonAddIcon sx={{ color: '#fff' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { borderColor: '#fff' },
+                    '&:hover fieldset': { borderColor: '#fff' },
+                    '&.Mui-focused fieldset': { borderColor: '#fff' },
+                    '& .MuiInputBase-input': { color: '#fff' },
+                    '& .MuiInputLabel-root': { color: '#fff' },
+                  },
+                }}
+              />
+
+              <Paper sx={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', width: '100%', maxHeight: '65vh', overflowY: 'auto', marginTop: 2 }}>
+                <List>
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map(user => (
+                      <ListItem key={user.id}>
+                        <ListItemAvatar>
+                          <Avatar><AccountCircle /></Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={`${user.first_name} ${user.last_name}`}
+                          secondary={`@${user.handle} - Attended: ${user.events?.map(event => event.name).join(', ') || 'No events'}`}
+                          sx={{
+                            '& .MuiListItemText-primary': { color: '#fff' },
+                            '& .MuiListItemText-secondary': { color: 'rgba(255, 255, 255, 0.6)' },
+                          }}
+                        />
+                        <PersonAddIcon
+                          sx={{ cursor: 'pointer', color: '#fff' }}
+                          onClick={() => handleAddFriend(user.id)} // Llama a handleAddFriend sin barId
+                        />
+                      </ListItem>
+                    ))
+                  ) : (
+                    <ListItem><ListItemText primary="No users available" /></ListItem>
+                  )}
+                </List>
+              </Paper>
+            </>
+          )}
+
+          {tabIndex === 1 && (
+            <Paper sx={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', width: '100%', maxHeight: '65vh', overflowY: 'auto', marginTop: 2 }}>
+              <List>
+                {friendRequests.length > 0 ? (
+                  friendRequests.map(request => (
+                    <ListItem key={request.id}>
+                      <ListItemAvatar>
+                        <Avatar><AccountCircle /></Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={`${request.first_name} ${request.last_name}`}
+                        secondary={`@${request.handle}`}
+                        sx={{
+                          '& .MuiListItemText-primary': { color: '#fff' },
+                          '& .MuiListItemText-secondary': { color: 'rgba(255, 255, 255, 0.6)' },
+                        }}
+                      />
+                      {/* Puedes añadir opciones para aceptar o rechazar la solicitud aquí */}
+                    </ListItem>
+                  ))
+                ) : (
+                  <ListItem><ListItemText primary="No friend requests" /></ListItem>
+                )}
+              </List>
+            </Paper>
+          )}
+
+          {/* Toast notification */}
+          <Snackbar
+            open={toastOpen}
+            autoHideDuration={6000}
+            onClose={handleToastClose}
+            message={toastMessage}
+            action={
+              <IconButton size="small" aria-label="close" onClick={handleToastClose}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            }
           />
-          <Paper
-            sx={{
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              width: '100%',
-              maxHeight: '65vh', // Altura máxima del contenedor de la lista
-              overflowY: 'auto', // Habilita el scroll vertical
-              marginTop: 2, // Espacio superior entre el campo de búsqueda y la lista
-            }}
-          >
-            <List>
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map(user => (
-                  <ListItem key={user.id}>
-                    <ListItemAvatar>
-                      <Avatar>
-                        <AccountCircle /> 
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={`${user.first_name} ${user.last_name}`} 
-                      secondary={`@${user.handle}`}
-                      sx={{
-                        '& .MuiListItemText-primary': {
-                          color: '#fff', // Color blanco para el texto primario
-                        },
-                        '& .MuiListItemText-secondary': {
-                          color: 'rgba(255, 255, 255, 0.6)', // Blanco con opacidad del 60% para el texto secundario
-                        },
-                      }}
-                    />
-                  </ListItem>
-                ))
-              ) : (
-                <ListItem>
-                  <ListItemText primary="No users available" />
-                </ListItem>
-              )}
-            </List>
-          </Paper>
         </div>
       </div>
     </Container>

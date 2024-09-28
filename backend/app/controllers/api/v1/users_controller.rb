@@ -2,10 +2,21 @@ class API::V1::UsersController < ApplicationController
   respond_to :json
   before_action :set_user, only: [:show, :update]
 
+  # def index
+  #   @users = User.includes(:reviews, :address).all
+  #   render json: { users: @users }, status: :ok
+  # end
   def index
-    @users = User.includes(:reviews, :address).all
-    render json: { users: @users }, status: :ok
+    if params[:attended_event] && current_user
+      # Filtrar usuarios que asistieron a los mismos eventos que el usuario actual
+      event_ids = current_user.events.pluck(:id)  # Obtener los eventos del usuario actual
+      @users = User.joins(:events).where(events: { id: event_ids }).distinct
+    else
+      @users = User.all
+    end
+    render json: { users: @users.as_json(include: :events) }, status: :ok
   end
+
 
   def show
     if @user.nil?

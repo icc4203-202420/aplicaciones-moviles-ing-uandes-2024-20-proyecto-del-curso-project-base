@@ -42,8 +42,12 @@ class API::V1::EventsController < ApplicationController
           render json: { events: @events }, status: :ok
         end
       else
-        render json: { error: "Bar not found" }, status: :not_found
-        return
+        @events = Event.all
+        if @events.empty?
+          render json: { message: "No events available" }, status: :ok
+        else
+          render json: { events: @events }, status: :ok
+        end
       end
 
     end
@@ -90,13 +94,13 @@ class API::V1::EventsController < ApplicationController
             }
           end
         end.compact
-  
+
         render json: pictures_data
       else
         render json: { message: "No pictures found for this event." }, status: :not_found
       end
     end
-    
+
 
     private
 
