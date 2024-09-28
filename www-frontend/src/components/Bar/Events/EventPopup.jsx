@@ -2,21 +2,23 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Typography, List, ListItem, ListItemText, Dialog, DialogContent, DialogActions, ListItemAvatar, Avatar, CircularProgress, Card, CardActions, CardContent, Button } from '@mui/material';
 import { toast } from 'react-toastify';
-import AccountCircle from '@mui/icons-material/AccountCircle'; // Importa el ícono de MUI
+import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useCheckIn } from '../../contexts/CheckInContext';
-import { useAuth } from '../../contexts/AuthContext'; // Asegúrate de importar el hook
+import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function EventPopup({ open, onClose, event, onCheckIn }) {
-  const { isAuthenticated, token } = useAuth(); // Usa el hook de autenticación
-  const { checkIns, updateCheckIn } = useCheckIn(); // Usa el contexto de check-ins
+  const { isAuthenticated, token } = useAuth();
+  const { checkIns, updateCheckIn } = useCheckIn();
   const [attendees, setAttendees] = useState([]);
   const [loadingAttendees, setLoadingAttendees] = useState(false);
   const [checkedIn, setCheckedIn] = useState(checkIns[event?.id] || false);
-    
+  const navigate = useNavigate();
+  
   useEffect(() => {
     if (event) {
       setLoadingAttendees(true);
-      axios.get(`/api/v1/events/${event.id}/attendees`) // Usa backticks aquí
+      axios.get(`/api/v1/events/${event.id}/attendees`)
         .then(response => {
           setAttendees(response.data.attendees);
           setLoadingAttendees(false);
@@ -29,25 +31,24 @@ function EventPopup({ open, onClose, event, onCheckIn }) {
   }, [event]);
 
   useEffect(() => {
-    setCheckedIn(checkIns[event?.id] || false); // Actualiza el estado local del check-in
+    setCheckedIn(checkIns[event?.id] || false);
   }, [checkIns, event]);
 
   const handleCheckIn = async () => {
-    console.log('Authenticated:', isAuthenticated); // Debugging
     if (!isAuthenticated || !token) {
-      toast.error('You must be logged in to check in.'); // Muestra un toast si no está autenticado
+      toast.error('You must be logged in to check in.');
       return;
     }
-  
+
     try {
-      const response = await axios.post(`/api/v1/events/${event.id}/check_in`, {}, { // Usa backticks aquí
+      await axios.post(`/api/v1/events/${event.id}/check_in`, {}, {
         headers: {
-          'Authorization': `Bearer ${token}`, // También usa backticks aquí
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-      updateCheckIn(event.id, true); // Actualiza el estado global de check-in
-      setCheckedIn(true); // Actualiza el estado local de check-in
+      updateCheckIn(event.id, true);
+      setCheckedIn(true);
       toast.success('Check-in successful!');
       if (onCheckIn) onCheckIn();
     } catch (error) {
@@ -56,14 +57,16 @@ function EventPopup({ open, onClose, event, onCheckIn }) {
     }
   };
 
+  const handleViewGallery = () => {
+    navigate(`/bars/${event.bar_id}/events/${event.id}/gallery`);
+  };
+
   if (!event) return null;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ style: { backgroundColor: 'transparent', boxShadow: 'none', borderRadius: 4 } }}>
       <DialogContent>
-        <Card
-          sx={{ width: '100%', maxWidth: 700, margin: 'auto' }} // Ajusta el ancho máximo del Card
-        >
+        <Card sx={{ width: '100%', maxWidth: 700, margin: 'auto' }}>
           <CardContent sx={{ margin: '12px' }}>
             <Typography variant="h5">{event.name}</Typography>
             <Typography variant="body1">{event.description}</Typography>
@@ -95,11 +98,12 @@ function EventPopup({ open, onClose, event, onCheckIn }) {
           </CardContent>
           <CardActions>
             <Button onClick={onClose} color="primary">Close</Button>
-            {checkedIn ? (
-              <Typography variant="body1" color="textSecondary">You have confirmed your attendance</Typography>
-            ) : (
+            {!checkedIn && (
               <Button onClick={handleCheckIn} color="primary">Check-in</Button>
             )}
+            <Button onClick={handleViewGallery} color="secondary" variant="outlined">
+              Ver todas las imágenes
+            </Button>
           </CardActions>
         </Card>
       </DialogContent>
@@ -107,4 +111,4 @@ function EventPopup({ open, onClose, event, onCheckIn }) {
   );
 }
 
-export default EventPopup;
+export default EventPopup;

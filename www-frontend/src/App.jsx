@@ -20,7 +20,7 @@ import { CheckInProvider } from './components/contexts/CheckInContext'; // Impor
 import { Navigate } from 'react-router-dom';
 
 // Nuevas importaciones
-import EventGallery from './components/EventGallery';
+import EventGallery from './components/Bar/Events/EventGallery';
 import FriendSearch from './components/FriendSearch';
 import TagUserInPhoto from './components/TagUserInPhoto';
 
@@ -49,7 +49,7 @@ function App() {
               <Route path="/account" element={<Account />} />
 
               {/* Nuevas rutas */}
-              <Route path="/bars/:id/events/:id/gallery" element={<EventGallery />} />
+              <Route path="/bars/:barId/events/:eventId/gallery" element={<EventGallery />} />
               <Route path="/search/friends" element={<Authenticate element={FriendSearch} />} />
               <Route path="/event/:eventId/picture/:pictureId/tag" element={<Authenticate element={TagUserInPhoto} />} />
             </Routes>

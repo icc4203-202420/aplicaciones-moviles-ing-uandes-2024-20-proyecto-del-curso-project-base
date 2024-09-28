@@ -7,6 +7,7 @@ import EventPopup from './EventPopup'; // Asegúrate de que la ruta sea correcta
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import { useCheckIn } from '../../contexts/CheckInContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Estilo personalizado para el Accordion
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
@@ -44,6 +45,7 @@ const StyledAccordionDetails = styled(AccordionDetails)(({ theme }) => ({
 }));
 
 const BarEvents = () => {
+  const { currentUserId } = useAuth(); // Obtener currentUserId del contexto aquí
   const [bars, setBars] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingBars, setLoadingBars] = useState(true);
@@ -54,7 +56,7 @@ const BarEvents = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const { checkIns, updateCheckIn } = useCheckIn(); 
+  const { updateCheckIn } = useCheckIn(); 
 
   useEffect(() => {
     axios.get('/api/v1/bars')
@@ -115,20 +117,23 @@ const BarEvents = () => {
 
   const handleImageUpload = () => {
     if (selectedFile && selectedEvent) {
+      if (!currentUserId) {
+        toast.error('Error: Usuario no autenticado.');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('event_picture[image]', selectedFile);
       formData.append('event_picture[event_id]', selectedEvent.id);
-      formData.append('event_picture[user_id]', localStorage.getItem('USER_ID')); // Asumiendo que el user_id está guardado en localStorage
-  
+      formData.append('event_picture[user_id]', currentUserId);
+
       axios.post(`/api/v1/events/${selectedEvent.id}/event_pictures`, formData)
         .then(response => {
           toast.success('Imagen subida con éxito');
           handleUploadDialogClose();
         })
         .catch(error => {
-          console.error('Error uploading image:', error);
-  
-          // Mostrar detalles del error en el toast para depuración
+          console.error('Error al subir la imagen:', error);
           if (error.response && error.response.data && error.response.data.errors) {
             toast.error(`Error al subir la imagen: ${error.response.data.errors.join(', ')}`);
           } else {
@@ -137,7 +142,7 @@ const BarEvents = () => {
         });
     }
   };
-  
+
   const getEventLabel = (count) => {
     return `${count} ${count === 1 ? 'event' : 'events'}`;
   };
@@ -161,6 +166,7 @@ const BarEvents = () => {
         flexDirection: 'column',
         position: 'relative',
       }}>
+        {/* Imagen de fondo */}
         <img
           src="/images/IMG_2756.JPG"
           alt="Background"

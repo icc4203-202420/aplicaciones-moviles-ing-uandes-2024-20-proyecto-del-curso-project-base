@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ImageList, ImageListItem } from '@mui/material';
+import { useParams } from 'react-router-dom';
 
-const EventGallery = ({ eventId }) => {
+const EventGallery = () => {
+  const { eventId } = useParams(); // Obtiene eventId de los parámetros de la URL
   const [pictures, setPictures] = useState([]);
 
   useEffect(() => {
     const fetchPictures = async () => {
+      if (!eventId) {
+        console.error('Error: eventId is undefined');
+        return;
+      }
+
       try {
         const response = await axios.get(`/api/v1/events/${eventId}/pictures`);
         setPictures(response.data);

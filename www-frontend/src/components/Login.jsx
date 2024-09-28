@@ -6,10 +6,11 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'; 
+import { useAuth } from './contexts/AuthContext'; // Importar el contexto de autenticación
 
 const fieldsValidation = Yup.object({
   email: Yup.string().email('Invalid email.').required('Email is required.'),
-  password: Yup.string().required('Pasword is required'),
+  password: Yup.string().required('Password is required'),
 });
 
 const initialValues = {
@@ -21,6 +22,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false); 
   const [loginError, setLoginError] = useState(''); 
   const navigate = useNavigate();
+  const { login } = useAuth(); // Obtener la función login del contexto
 
   const handleSubmit = (values) => {
     axios.post('http://localhost:3001/api/v1/login', { user: values })
@@ -28,13 +30,11 @@ function Login() {
         const JWT_TOKEN = response.headers['authorization'];
         const CURRENT_USER_ID = response.data.status.data.user.id;
 
-        if (CURRENT_USER_ID) {
-          localStorage.setItem('CURRENT_USER_ID', CURRENT_USER_ID);
-        }
-        if (JWT_TOKEN) {
-          localStorage.setItem('JWT_TOKEN', JWT_TOKEN);
-          toast.success('Succesfully Logged In'); 
-          
+        if (JWT_TOKEN && CURRENT_USER_ID) {
+          // Usar la función login del contexto para actualizar el estado de autenticación
+          login(JWT_TOKEN, CURRENT_USER_ID);
+          toast.success('Successfully Logged In'); 
+
           setTimeout(() => {
             navigate('/');
           }, 1000);

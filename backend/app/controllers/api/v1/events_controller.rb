@@ -1,6 +1,7 @@
 class API::V1::EventsController < ApplicationController
     include ImageProcessing
     include Authenticable
+    include Rails.application.routes.url_helpers
     respond_to :json
     before_action :set_bar, only: [:index, :create]
     before_action :set_event, only: [:show, :update, :destroy, :attendees]
@@ -80,7 +81,13 @@ class API::V1::EventsController < ApplicationController
     def pictures
       event = Event.find(params[:id])
       pictures = event.event_pictures.with_attached_image
-      render json: pictures.map { |picture| { id: picture.id, image_url: url_for(picture.image), description: picture.description } }
+      render json: pictures.map do |picture|
+        {
+          id: picture.id,
+          image_url: url_for(picture.image), # Aquí se genera la URL para la imagen
+          description: picture.description
+        }
+      end
     end
 
     private
