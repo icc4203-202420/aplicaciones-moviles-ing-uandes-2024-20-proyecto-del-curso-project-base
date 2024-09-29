@@ -30,18 +30,25 @@ function UserSearch({ barId = null }) { // Recibe barId como prop, con valor pre
   const [toastMessage, setToastMessage] = useState(''); // Mensaje del toast
   
   useEffect(() => {
+    const userId = localStorage.getItem('CURRENT_USER_ID'); // Obtener userId del localStorage
+  
     // Fetch users that attended the same event as the current user
     axios.get('/api/v1/users', {
       params: { attended_event: true }
     })
       .then(response => setUsers(response.data.users || []))
       .catch(error => console.error('Error fetching users:', error));
-
+  
     // Fetch friend requests for the current user
-    axios.get('/api/v1/friend_requests')
-      .then(response => setFriendRequests(response.data.friend_requests || []))
-      .catch(error => console.error('Error fetching friend requests:', error));
+    if (userId) {  // Asegúrate de que userId no sea null
+      axios.get(`/api/v1/users/${userId}/friend_requests`)
+        .then(response => setFriendRequests(response.data.friend_requests || []))
+        .catch(error => console.error('Error fetching friend requests:', error));
+    } else {
+      console.error('No user ID found');
+    }
   }, []);
+  
 
   const handleAddFriend = (friendId) => {
     const token = localStorage.getItem('JWT_TOKEN');
@@ -50,8 +57,10 @@ function UserSearch({ barId = null }) { // Recibe barId como prop, con valor pre
     console.log(`Adding friend with ID: ${friendId}`); // Verifica el ID aquí
 
     const requestBody = {
-      friend_id: friendId,
-      bar_id: barId, // Asegúrate de que barId sea el correcto
+      friendship: {
+        friend_id: friendId,
+        bar_id: barId,
+      },
     };
 
     axios.post(`/api/v1/users/${userId}/friendships`, requestBody, {
@@ -64,10 +73,19 @@ function UserSearch({ barId = null }) { // Recibe barId como prop, con valor pre
         toast.success('Friend request sent successfully!');
     })
     .catch(error => {
-        console.error('Error adding friend:', error.response ? error.response.data : error);
+      if (error.response) {
+        if (error.response.status === 401) {
+          toast.error('Unauthorized. Please log in again.');
+          // Opcionalmente, redirigir al usuario a la página de inicio de sesión
+        } else {
+          toast.error('Failed to send friend request: ' + (error.response.data.error || 'An unknown error occurred'));
+        }
+      } else {
+        console.error('Error adding friend:', error);
         toast.error('Failed to send friend request');
+      }
     });
-};
+  };
 
   const filteredUsers = users.filter(user => {
     const handle = user.handle || '';
@@ -96,7 +114,7 @@ function UserSearch({ barId = null }) { // Recibe barId como prop, con valor pre
         />
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: -1 }} />
         <div style={{ position: 'relative', padding: '2vh 4vw', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <Typography variant="h4" gutterBottom>User Management</Typography>
+          <Typography variant="h4" gutterBottom>Users</Typography>
 
           <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)}>
             <Tab label="Search Users" />

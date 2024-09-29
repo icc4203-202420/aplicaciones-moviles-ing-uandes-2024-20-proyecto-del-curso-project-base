@@ -20,7 +20,7 @@ class API::V1::FriendshipsController < ApplicationController
     elsif @friend.id == @user.id
       render json: { error: 'You cannot be friends with yourself' }, status: :unprocessable_entity
       return
-    elsif @user.frienship.exists?(friend: friend)
+    elsif @user.friendships.exists?(friend: @friend)  # Cambio aquí
       render json: { error: "You are already friends with this user" }, status: :unprocessable_entity
       return
     else
@@ -34,7 +34,6 @@ class API::V1::FriendshipsController < ApplicationController
       end
     end
   end
-
 
   private
 

@@ -2,8 +2,8 @@ class User < ApplicationRecord
   include Devise::JWT::RevocationStrategies::JTIMatcher
 
   devise :database_authenticatable, :registerable,
-    :recoverable, :validatable, 
-    :jwt_authenticatable, 
+    :recoverable, :validatable,
+    :jwt_authenticatable,
     jwt_revocation_strategy: self
 
   validates :first_name, :last_name, presence: true, length: { minimum: 2 }
@@ -27,8 +27,8 @@ class User < ApplicationRecord
 
   # Amistades donde el usuario es el amigo añadido
   has_many :inverse_friendships, class_name: 'Friendship', foreign_key: 'friend_id'
-  has_many :inverse_friends, through: :inverse_friendships, source: :user  
-
+  has_many :inverse_friends, through: :inverse_friendships, source: :user
+  
   def generate_jwt
     Warden::JWTAuth::UserEncoder.new.call(self, :user, nil)[0]
   end
