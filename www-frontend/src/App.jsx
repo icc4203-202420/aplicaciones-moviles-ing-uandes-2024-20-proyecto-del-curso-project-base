@@ -22,7 +22,7 @@ import { Navigate } from 'react-router-dom';
 // Nuevas importaciones
 import EventGallery from './components/Bar/Events/EventGallery';
 import FriendSearch from './components/FriendSearch';
-import TagUserInPhoto from './components/TagUserInPhoto';
+import TagUserInPicture from './components/Bar/Events/TagUserInPicture';
 
 function Authenticate({ element: Component }) {
   const isAuthenticated = !!localStorage.getItem('JWT_TOKEN');
@@ -51,7 +51,7 @@ function App() {
               {/* Nuevas rutas */}
               <Route path="/bars/:barId/events/:eventId/gallery" element={<EventGallery />} />
               <Route path="/search/friends" element={<Authenticate element={FriendSearch} />} />
-              <Route path="/event/:eventId/picture/:pictureId/tag" element={<Authenticate element={TagUserInPhoto} />} />
+              <Route path="/event/:eventId/picture/:pictureId/tag" element={<Authenticate element={TagUserInPicture} />} />
             </Routes>
             <Navbar />
             <ToastContainer />
