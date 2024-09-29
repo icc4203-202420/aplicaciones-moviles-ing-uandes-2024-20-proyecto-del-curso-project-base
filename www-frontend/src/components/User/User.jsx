@@ -2,45 +2,40 @@ import React, { useState, useEffect } from 'react';
 import {
   TextField,
   InputAdornment,
-  List,
-  ListItem,
-  ListItemText,
   Container,
   Typography,
-  Paper,
-  ListItemAvatar,
-  Avatar,
   Tabs,
   Tab,
   Snackbar,
   IconButton
 } from '@mui/material';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
+import UserSearch from './UserSearch'; // Importa UserSearch
+import FriendRequests from './FriendRequests'; // Importa FriendRequests
 
-function User({ barId = null }) { // Recibe barId como prop, con valor predeterminado null
+function User({ barId = null }) {
   const [users, setUsers] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [tabIndex, setTabIndex] = useState(0); // Estado para las tabs
-  const [toastOpen, setToastOpen] = useState(false); // Estado para el toast
-  const [toastMessage, setToastMessage] = useState(''); // Mensaje del toast
-  
+  const [tabIndex, setTabIndex] = useState(0);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
   useEffect(() => {
-    const userId = localStorage.getItem('CURRENT_USER_ID'); // Obtener userId del localStorage
-  
+    const userId = localStorage.getItem('CURRENT_USER_ID');
+
     // Fetch users that attended the same event as the current user
     axios.get('/api/v1/users', {
       params: { attended_event: true }
     })
       .then(response => setUsers(response.data.users || []))
       .catch(error => console.error('Error fetching users:', error));
-  
+
     // Fetch friend requests for the current user
-    if (userId) {  // Asegúrate de que userId no sea null
+    if (userId) {
       axios.get(`/api/v1/users/${userId}/friend_requests`)
         .then(response => setFriendRequests(response.data.friend_requests || []))
         .catch(error => console.error('Error fetching friend requests:', error));
@@ -48,13 +43,10 @@ function User({ barId = null }) { // Recibe barId como prop, con valor predeterm
       console.error('No user ID found');
     }
   }, []);
-  
 
   const handleAddFriend = (friendId) => {
     const token = localStorage.getItem('JWT_TOKEN');
     const userId = localStorage.getItem('CURRENT_USER_ID');
-
-    console.log(`Adding friend with ID: ${friendId}`); // Verifica el ID aquí
 
     const requestBody = {
       friendship: {
@@ -70,13 +62,12 @@ function User({ barId = null }) { // Recibe barId como prop, con valor predeterm
       },
     })
     .then(response => {
-        toast.success('Friend request sent successfully!');
+      toast.success('Friend request sent successfully!');
     })
     .catch(error => {
       if (error.response) {
         if (error.response.status === 401) {
           toast.error('Unauthorized. Please log in again.');
-          // Opcionalmente, redirigir al usuario a la página de inicio de sesión
         } else {
           toast.error('Failed to send friend request: ' + (error.response.data.error || 'An unknown error occurred'));
         }
@@ -122,7 +113,7 @@ function User({ barId = null }) { // Recibe barId como prop, con valor predeterm
           </Tabs>
 
           {tabIndex === 0 && (
-            <>
+            <div style={{ width: '100%' }}>
               <TextField
                 label="Search by handle, name or event"
                 variant="outlined"
@@ -147,62 +138,12 @@ function User({ barId = null }) { // Recibe barId como prop, con valor predeterm
                   },
                 }}
               />
-
-              <Paper sx={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', width: '100%', maxHeight: '65vh', overflowY: 'auto', marginTop: 2 }}>
-                <List>
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map(user => (
-                      <ListItem key={user.id}>
-                        <ListItemAvatar>
-                          <Avatar><AccountCircle /></Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={`${user.first_name} ${user.last_name}`}
-                          secondary={`@${user.handle} - Attended: ${user.events?.map(event => event.name).join(', ') || 'No events'}`}
-                          sx={{
-                            '& .MuiListItemText-primary': { color: '#fff' },
-                            '& .MuiListItemText-secondary': { color: 'rgba(255, 255, 255, 0.6)' },
-                          }}
-                        />
-                        <PersonAddIcon
-                          sx={{ cursor: 'pointer', color: '#fff' }}
-                          onClick={() => handleAddFriend(user.id)} // Llama a handleAddFriend sin barId
-                        />
-                      </ListItem>
-                    ))
-                  ) : (
-                    <ListItem><ListItemText primary="No users available" /></ListItem>
-                  )}
-                </List>
-              </Paper>
-            </>
+              <UserSearch users={users} filteredUsers={filteredUsers} handleAddFriend={handleAddFriend} />
+            </div>
           )}
 
           {tabIndex === 1 && (
-            <Paper sx={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', width: '100%', maxHeight: '65vh', overflowY: 'auto', marginTop: 2 }}>
-              <List>
-                {friendRequests.length > 0 ? (
-                  friendRequests.map(request => (
-                    <ListItem key={request.id}>
-                      <ListItemAvatar>
-                        <Avatar><AccountCircle /></Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={`${request.first_name} ${request.last_name}`}
-                        secondary={`@${request.handle}`}
-                        sx={{
-                          '& .MuiListItemText-primary': { color: '#fff' },
-                          '& .MuiListItemText-secondary': { color: 'rgba(255, 255, 255, 0.6)' },
-                        }}
-                      />
-                      {/* Puedes añadir opciones para aceptar o rechazar la solicitud aquí */}
-                    </ListItem>
-                  ))
-                ) : (
-                  <ListItem><ListItemText primary="No friend requests" /></ListItem>
-                )}
-              </List>
-            </Paper>
+            <FriendRequests friendRequests={friendRequests} />
           )}
 
           {/* Toast notification */}
