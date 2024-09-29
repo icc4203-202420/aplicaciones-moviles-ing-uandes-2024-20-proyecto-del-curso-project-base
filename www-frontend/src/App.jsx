@@ -6,7 +6,7 @@ import React from 'react';
 import Home from './components/Home';
 import BarSearch from './components/Bar/BarSearch';
 import BarEvents from './components/Bar/Events/BarEvents';
-import UserSearch from './components/UserSearch';
+import User from './components/User/User';
 import BeerList from './components/Beer/BeerList';
 import BeerDetail from './components/Beer/BeerDetail';
 import BeerReviewList from './components/Beer/BeerReviewList';
@@ -39,7 +39,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/bars" element={<BarSearch />} />
               <Route path="/bars/:id/events" element={<BarEvents />} />
-              <Route path="/users" element={<Authenticate element={UserSearch} />} />
+              <Route path="/users" element={<Authenticate element={User} />} />
               <Route path="/beers" element={<BeerList />} />
               <Route path="/beers/:id" element={<BeerDetail />} />
               <Route path="/beers/:id/reviews" element={<BeerReviewList />} />

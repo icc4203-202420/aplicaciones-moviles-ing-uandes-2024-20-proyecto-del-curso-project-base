@@ -21,7 +21,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 
-function UserSearch({ barId = null }) { // Recibe barId como prop, con valor predeterminado null
+function User({ barId = null }) { // Recibe barId como prop, con valor predeterminado null
   const [users, setUsers] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -223,4 +223,4 @@ function UserSearch({ barId = null }) { // Recibe barId como prop, con valor pre
   );
 }
 
-export default UserSearch;
+export default User;
