@@ -21,10 +21,10 @@ import { toast } from 'react-toastify';
 const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUsers, setSelectedUsers] = useState([]); // Lista de usuarios etiquetados
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Buscar usuarios desde el backend
+  // Buscar amigos del usuario desde el backend
   const fetchUsers = async (query = '') => {
     const token = localStorage.getItem('JWT_TOKEN');
     if (!token) {
@@ -33,75 +33,78 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
     }
 
     try {
-      console.log('Fetching users with query:', query);
+      const currentUserId = localStorage.getItem('CURRENT_USER_ID'); // Obtener el ID del usuario actual
       const response = await axios.get(`/api/v1/users?search=${query}`, {
         headers: {
-          Authorization: `${token}`, // Añadir el token en los headers para la autorización
+          Authorization: `${token}`,
         },
       });
-      console.log('Users fetched:', response.data.users);
       setUsers(response.data.users || []);
-      setFilteredUsers(response.data.users || []); // Actualizamos filteredUsers también
+      setFilteredUsers(response.data.users || []);
     } catch (error) {
       console.error('Error fetching users:', error.response ? error.response.data : error);
-      toast.error('Error al buscar usuarios. Verifica la conexión.');
+      toast.error('Error al buscar amigos. Verifica la conexión.');
     }
   };
 
-  // Cargar todos los usuarios al inicio
+  // Cargar amigos al inicio
   useEffect(() => {
     fetchUsers();
   }, []);
 
   // Manejar la etiqueta de usuario
-  const handleTagUser = async () => {
-    if (!selectedUser) {
-      toast.error('Por favor, selecciona un usuario para etiquetar.');
+  const handleTagUsers = async () => {
+    if (selectedUsers.length === 0) {
+      toast.error('Por favor, selecciona al menos un usuario para etiquetar.');
       return;
     }
-  
+
     const token = localStorage.getItem('JWT_TOKEN');
     if (!token) {
       toast.error('Usuario no autenticado. Por favor, inicia sesión.');
       return;
     }
-  
-    console.log('Tagging user:', selectedUser, 'in picture:', pictureId);
+
     try {
-      // Enviar el user_id en la solicitud POST
-      await axios.post(
-        `/api/v1/events/${eventId}/event_pictures/${pictureId}/tag_user`,
-        {
-          user_id: selectedUser.id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      // Enviar todos los user_ids en la solicitud POST
+      await Promise.all(
+        selectedUsers.map(user =>
+          axios.post(
+            `/api/v1/events/${eventId}/event_pictures/${pictureId}/tag_user`,
+            { user_id: user.id },
+            {
+              headers: {
+                Authorization: `${token}`,
+              },
+            }
+          )
+        )
       );
-      toast.success('Usuario etiquetado con éxito.');
+      toast.success('Usuarios etiquetados con éxito.');
       onClose();
     } catch (error) {
-      console.error('Error al etiquetar al usuario:', error);
-      toast.error('No se pudo etiquetar al usuario. Inténtalo de nuevo.');
+      console.error('Error al etiquetar usuarios:', error);
+      toast.error('No se pudieron etiquetar los usuarios. Inténtalo de nuevo.');
     }
   };
-  
 
   // Manejar la selección de un usuario
   const handleSelectUser = (user) => {
-    console.log('User selected for tagging:', user);
-    setSelectedUser(user);
+    if (selectedUsers.some(selected => selected.id === user.id)) {
+      // Si el usuario ya está etiquetado, lo quitamos de la lista
+      setSelectedUsers(selectedUsers.filter(selected => selected.id !== user.id));
+    } else {
+      // Si no está etiquetado, lo añadimos a la lista
+      setSelectedUsers([...selectedUsers, user]);
+    }
   };
 
   return (
     <Dialog open onClose={onClose}>
-      <DialogTitle>Etiquetar usuario en la imagen</DialogTitle>
+      <DialogTitle>Etiquetar usuarios en la imagen</DialogTitle>
       <DialogContent>
-        {/* Campo de búsqueda */}
         <TextField
-          label="Buscar usuario"
+          label="Buscar amigo"
           variant="outlined"
           fullWidth
           margin="normal"
@@ -124,7 +127,14 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
           <List>
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
-                <ListItem key={user.id} onClick={() => handleSelectUser(user)} sx={{ cursor: 'pointer' }}>
+                <ListItem
+                  key={user.id}
+                  onClick={() => handleSelectUser(user)}
+                  sx={{
+                    cursor: 'pointer',
+                    backgroundColor: selectedUsers.some(selected => selected.id === user.id) ? '#ddd' : 'transparent', // Resaltar si está seleccionado
+                  }}
+                >
                   <ListItemAvatar>
                     <Avatar>
                       <AccountCircle />
@@ -132,18 +142,18 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={`${user.first_name} ${user.last_name}`}
-                    secondary={`@${user.handle} - Eventos: ${user.events?.map((event) => event.name).join(', ') || 'No events'}`}
+                    secondary={`@${user.handle} - Eventos: ${user.events?.map((event) => event.name).join(', ') || 'No hay eventos'}`}
                     sx={{
                       '& .MuiListItemText-primary': { color: '#fff' },
                       '& .MuiListItemText-secondary': { color: 'rgba(255, 255, 255, 0.6)' },
                     }}
                   />
-                  <PersonAddIcon sx={{ color: '#fff' }} />
+                  <PersonAddIcon sx={{ color: selectedUsers.some(selected => selected.id === user.id) ? 'green' : '#fff' }} />
                 </ListItem>
               ))
             ) : (
               <ListItem>
-                <ListItemText primary="No users available" />
+                <ListItemText primary="No hay amigos disponibles" />
               </ListItem>
             )}
           </List>
@@ -151,7 +161,7 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleTagUser} variant="contained" color="primary">
+        <Button onClick={handleTagUsers} variant="contained" color="primary">
           Etiquetar
         </Button>
       </DialogActions>
