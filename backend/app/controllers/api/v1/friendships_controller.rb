@@ -22,8 +22,6 @@ class API::V1::FriendshipsController < ApplicationController
     render json: friend_data, status: :ok
   end
 
-
-
   # POST /api/v1/users/:user_id/friendships
   def create
     @friend = User.find_by(id: friendship_params[:friend_id])
