@@ -24,8 +24,8 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
   const [selectedUsers, setSelectedUsers] = useState([]); // Lista de usuarios etiquetados
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Buscar amigos del usuario desde el backend
-  const fetchUsers = async (query = '') => {
+  // Obtener todos los amigos del usuario desde el backend al cargar el componente
+  const fetchUsers = async () => {
     const token = localStorage.getItem('JWT_TOKEN');
     if (!token) {
       toast.error('Usuario no autenticado. Por favor, inicia sesión.');
@@ -33,14 +33,14 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
     }
 
     try {
-      const currentUserId = localStorage.getItem('CURRENT_USER_ID'); // Obtener el ID del usuario actual
-      const response = await axios.get(`/api/v1/users?search=${query}`, {
+      const currentUserId = localStorage.getItem('CURRENT_USER_ID');
+      const response = await axios.get(`/api/v1/users`, {
         headers: {
           Authorization: `${token}`,
         },
       });
-      setUsers(response.data.users || []);
-      setFilteredUsers(response.data.users || []);
+      setUsers(response.data.users || []); // Guardamos los usuarios en el estado
+      setFilteredUsers(response.data.users || []); // Inicialmente mostramos todos los usuarios
     } catch (error) {
       console.error('Error fetching users:', error.response ? error.response.data : error);
       toast.error('Error al buscar amigos. Verifica la conexión.');
@@ -51,6 +51,21 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  // Filtrar usuarios localmente basado en el término de búsqueda
+  useEffect(() => {
+    if (searchTerm === '') {
+      setFilteredUsers(users); // Mostrar todos los usuarios si no hay término de búsqueda
+    } else {
+      const lowercasedTerm = searchTerm.toLowerCase();
+      const filtered = users.filter(user =>
+        user.first_name.toLowerCase().includes(lowercasedTerm) ||
+        user.last_name.toLowerCase().includes(lowercasedTerm) ||
+        user.handle.toLowerCase().includes(lowercasedTerm)
+      );
+      setFilteredUsers(filtered);
+    }
+  }, [searchTerm, users]);
 
   // Manejar la etiqueta de usuario
   const handleTagUsers = async () => {
@@ -66,7 +81,6 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
     }
 
     try {
-      // Enviar todos los user_ids en la solicitud POST
       await Promise.all(
         selectedUsers.map(user =>
           axios.post(
@@ -91,10 +105,8 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
   // Manejar la selección de un usuario
   const handleSelectUser = (user) => {
     if (selectedUsers.some(selected => selected.id === user.id)) {
-      // Si el usuario ya está etiquetado, lo quitamos de la lista
       setSelectedUsers(selectedUsers.filter(selected => selected.id !== user.id));
     } else {
-      // Si no está etiquetado, lo añadimos a la lista
       setSelectedUsers([...selectedUsers, user]);
     }
   };
@@ -109,11 +121,7 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
           fullWidth
           margin="normal"
           value={searchTerm}
-          onChange={(e) => {
-            const value = e.target.value;
-            setSearchTerm(value);
-            fetchUsers(value);
-          }}
+          onChange={(e) => setSearchTerm(e.target.value)} // Actualizar el término de búsqueda
         />
         <Paper
           sx={{
@@ -132,7 +140,7 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
                   onClick={() => handleSelectUser(user)}
                   sx={{
                     cursor: 'pointer',
-                    backgroundColor: selectedUsers.some(selected => selected.id === user.id) ? '#ddd' : 'transparent', // Resaltar si está seleccionado
+                    backgroundColor: selectedUsers.some(selected => selected.id === user.id) ? '#ddd' : 'transparent',
                   }}
                 >
                   <ListItemAvatar>
@@ -142,7 +150,7 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={`${user.first_name} ${user.last_name}`}
-                    secondary={`@${user.handle} - Eventos: ${user.events?.map((event) => event.name).join(', ') || 'No hay eventos'}`}
+                    secondary={`@${user.handle} - Eventos: ${user.events?.map(event => event.name).join(', ') || 'No hay eventos'}`}
                     sx={{
                       '& .MuiListItemText-primary': { color: '#fff' },
                       '& .MuiListItemText-secondary': { color: 'rgba(255, 255, 255, 0.6)' },
