@@ -1,6 +1,6 @@
 class API::V1::EventPicturesController < ApplicationController
   include Authenticable
-  before_action :set_event_picture, only: [:tag_user]
+  before_action :set_event_picture, only: [:tag_user, :tagged_users]
 
   def create
     @event_picture = EventPicture.new(event_picture_params)
@@ -30,6 +30,11 @@ class API::V1::EventPicturesController < ApplicationController
     end
   end
 
+  def tagged_users
+    tagged_users = @event_picture.taggings.includes(:user).map(&:user)
+
+    render json: tagged_users, status: :ok
+  end
 
   private
 
