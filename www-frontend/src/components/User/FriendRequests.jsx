@@ -5,23 +5,25 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function FriendRequests({ friendRequests, userId, fetchFriendRequests }) {
+function FriendRequests({ friendRequests, fetchFriendRequests }) {
   const [loading, setLoading] = useState(false);
+  const userId = localStorage.getItem('CURRENT_USER_ID');
 
   const handleAccept = async (requestId) => {
     try {
       setLoading(true);
-      await axios.post(`/api/v1/users/${userId}/friend_requests/${requestId}/accept`);
-      toast.success('Friend request accepted!');
-      fetchFriendRequests(); // Actualiza la lista de solicitudes de amistad
+      const response = await axios.post(`/api/v1/users/${userId}/friend_requests/${requestId}/accept`);
+      toast.success(response.data.message);
+      fetchFriendRequests();
     } catch (error) {
-      toast.error('Error accepting friend request');
-      console.error('Error accepting friend request', error);
+      // Muestra el error completo en consola para diagnosticar
+      console.error('Error accepting friend request', error.response?.data || error.message);
+      toast.error(error.response?.data?.error || 'Error accepting friend request');
     } finally {
       setLoading(false);
     }
   };
-
+    
   const handleReject = async (requestId) => {
     try {
       setLoading(true);

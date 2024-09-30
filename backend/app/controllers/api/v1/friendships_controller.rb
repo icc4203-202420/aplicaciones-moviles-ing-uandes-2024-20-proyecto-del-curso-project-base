@@ -6,9 +6,23 @@ class API::V1::FriendshipsController < ApplicationController
 
   # GET /api/v1/users/:user_id/friendships
   def index
-    friendships = @user.friendships.includes(:friend).map { |f| f.friend.select(:id, :first_name, :last_name, :handle) }
-    render json: friendships, status: :ok
+    # Obtener todas las amistades del usuario
+    friendships = @user.friendships.includes(:friend)
+
+    # Filtrar solo las amistades mutuas (donde el amigo también ha agregado al usuario)
+    mutual_friendships = friendships.select do |friendship|
+      friendship.friend.friendships.exists?(friend: @user)
+    end
+
+    # Mapa los datos de los amigos mutuos
+    friend_data = mutual_friendships.map do |friendship|
+      friendship.friend.slice(:id, :first_name, :last_name, :handle)
+    end
+
+    render json: friend_data, status: :ok
   end
+
+
 
   # POST /api/v1/users/:user_id/friendships
   def create

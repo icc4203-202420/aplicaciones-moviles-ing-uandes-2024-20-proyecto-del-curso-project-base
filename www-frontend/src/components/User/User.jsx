@@ -13,8 +13,9 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
-import UserSearch from './UserSearch'; // Importa UserSearch
-import FriendRequests from './FriendRequests'; // Importa FriendRequests
+import UserSearch from './UserSearch';
+import FriendRequests from './FriendRequests';
+import Friends from './Friends'; // Importa el componente Friends
 
 function User({ barId = null }) {
   const [users, setUsers] = useState([]);
@@ -24,17 +25,27 @@ function User({ barId = null }) {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
+  const fetchFriendRequests = () => {
+    const userId = localStorage.getItem('CURRENT_USER_ID');
+
+    if (userId) {
+      axios.get(`/api/v1/users/${userId}/friend_requests`)
+        .then(response => setFriendRequests(response.data.friend_requests || []))
+        .catch(error => console.error('Error fetching friend requests:', error));
+    } else {
+      console.error('No user ID found');
+    }
+  };
+
   useEffect(() => {
     const userId = localStorage.getItem('CURRENT_USER_ID');
 
-    // Fetch users that attended the same event as the current user
     axios.get('/api/v1/users', {
       params: { attended_event: true }
     })
       .then(response => setUsers(response.data.users || []))
       .catch(error => console.error('Error fetching users:', error));
 
-    // Fetch friend requests for the current user
     if (userId) {
       axios.get(`/api/v1/users/${userId}/friend_requests`)
         .then(response => setFriendRequests(response.data.friend_requests || []))
@@ -110,6 +121,7 @@ function User({ barId = null }) {
           <Tabs value={tabIndex} onChange={(e, newValue) => setTabIndex(newValue)}>
             <Tab label="Search Users" />
             <Tab label="Friend Requests" />
+            <Tab label="Friends" /> {/* Nuevo tab de Friends */}
           </Tabs>
 
           {tabIndex === 0 && (
@@ -143,10 +155,13 @@ function User({ barId = null }) {
           )}
 
           {tabIndex === 1 && (
-            <FriendRequests friendRequests={friendRequests} />
+            <FriendRequests friendRequests={friendRequests} fetchFriendRequests={fetchFriendRequests} />
           )}
 
-          {/* Toast notification */}
+          {tabIndex === 2 && (  // Muestra el nuevo componente Friends
+            <Friends />
+          )}
+
           <Snackbar
             open={toastOpen}
             autoHideDuration={6000}
