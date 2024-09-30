@@ -36,7 +36,7 @@ const TagUserInPicture = ({ eventId, pictureId, onClose }) => {
       console.log('Fetching users with query:', query);
       const response = await axios.get(`/api/v1/users?search=${query}`, {
         headers: {
-          Authorization: `Bearer ${token}`, // Añadir el token en los headers para la autorización
+          Authorization: `${token}`, // Añadir el token en los headers para la autorización
         },
       });
       console.log('Users fetched:', response.data.users);

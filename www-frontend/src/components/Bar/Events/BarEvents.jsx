@@ -162,27 +162,36 @@ const BarEvents = () => {
         toast.error('Error: Usuario no autenticado.');
         return;
       }
-
+  
       const formData = new FormData();
       formData.append('event_picture[image]', selectedFile);
       formData.append('event_picture[event_id]', selectedEvent.id);
       formData.append('event_picture[user_id]', currentUserId);
-
-      axios.post(`/api/v1/events/${selectedEvent.id}/event_pictures`, formData)
-        .then(response => {
-          toast.success('Imagen subida con éxito');
-          handleUploadDialogClose();
-        })
-        .catch(error => {
-          console.error('Error al subir la imagen:', error);
-          if (error.response && error.response.data && error.response.data.errors) {
-            toast.error(`Error al subir la imagen: ${error.response.data.errors.join(', ')}`);
-          } else {
-            toast.error('Error al subir la imagen. Verifica los campos e intenta de nuevo.');
-          }
-        });
+  
+      // Aquí es donde agregas el token al encabezado
+      const token = localStorage.getItem('JWT_TOKEN'); // Cambia 'YOUR_TOKEN_KEY' por la clave de tu token
+  
+      axios.post(`/api/v1/events/${selectedEvent.id}/event_pictures`, formData, {
+        headers: {
+          'Authorization': `${token}`,
+          'Content-Type': 'multipart/form-data' // Asegúrate de que el Content-Type sea multipart
+        }
+      })
+      .then(response => {
+        toast.success('Imagen subida con éxito');
+        handleUploadDialogClose();
+      })
+      .catch(error => {
+        console.error('Error al subir la imagen:', error);
+        if (error.response && error.response.data && error.response.data.errors) {
+          toast.error(`Error al subir la imagen: ${error.response.data.errors.join(', ')}`);
+        } else {
+          toast.error('Error al subir la imagen. Verifica los campos e intenta de nuevo.');
+        }
+      });
     }
   };
+  
 
   const getEventLabel = (count) => {
     return `${count} ${count === 1 ? 'event' : 'events'}`;

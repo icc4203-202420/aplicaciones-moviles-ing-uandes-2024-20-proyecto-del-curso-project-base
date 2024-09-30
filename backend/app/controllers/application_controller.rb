@@ -1,17 +1,17 @@
 class ApplicationController < ActionController::API
   before_action :configure_permitted_parameters, if: :devise_controller?
-  
+
   # Método para obtener el usuario actual a partir del token de autenticación
   protected
-  def current_user
-    token = request.headers['Authorization']&.split(' ')&.last
-    @current_user ||= User.find_by(authentication_token: token) if token
-  end
+  # def current_user
+  #   token = request.headers['Authorization']&.split(' ')&.last
+  #   @current_user ||= User.find_by(authentication_token: token) if token
+  # end
 
   # Método para autenticar al usuario antes de ciertas acciones
-  def authenticate_user!
-    render json: { error: 'Unauthorized' }, status: :unauthorized unless current_user
-  end
+  # def authenticate_user!
+  #   render json: { error: 'Unauthorized' }, status: :unauthorized unless current_user
+  # end
 
   # Configurar parámetros permitidos para Devise
   def configure_permitted_parameters
