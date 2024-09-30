@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   include Devise::JWT::RevocationStrategies::JTIMatcher
 
+
   devise :database_authenticatable, :registerable,
     :recoverable, :validatable,
     :jwt_authenticatable,
@@ -17,6 +18,8 @@ class User < ApplicationRecord
   has_many :attendances
   has_many :events, through: :attendances
   has_many :friendships
+  has_many :taggings
+  has_many :tagged_pictures, through: :taggings, source: :event_picture
 
   accepts_nested_attributes_for :reviews, allow_destroy: true
   accepts_nested_attributes_for :address, allow_destroy: true
