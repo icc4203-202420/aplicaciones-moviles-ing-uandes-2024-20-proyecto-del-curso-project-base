@@ -1,0 +1,2 @@
+// beer detail
+// beers/ id

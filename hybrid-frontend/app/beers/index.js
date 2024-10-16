@@ -1,3 +1,4 @@
+// beer list
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, Text } from 'react-native';
 import { Input, Button, ListItem } from '@rneui/themed';
