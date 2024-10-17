@@ -1,72 +1,116 @@
-import React, { useState } from 'react';
-import { View, Text } from 'react-native';
-import { Input, Button } from '@rneui/themed';
-import { useRouter } from 'expo-router'; // Usamos useRouter para la navegación
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { Input, Button, Text } from "@rneui/themed"; // Usamos @rneui/themed para los componentes
+import { useRouter } from "expo-router";
+import axios from "axios";
 
-const LoginScreen = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const router = useRouter(); // Usamos useRouter para navegar
+const Login = () => {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [token, setToken] = useState(null); // Usamos estado local para el token
 
   const handleLogin = async () => {
+    setErrorMessage(""); // Reseteamos el mensaje de error al intentar iniciar sesión
     try {
-      const response = await fetch('http://192.168.4.176:3000/api/v1/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      console.log("Iniciando solicitud de login..."); // Log para indicar el inicio de la solicitud
+      console.log("Email:", email); // Log para verificar el email ingresado
+      console.log("Password:", password); // Log para verificar el password ingresado (evitar hacerlo en producción)
+
+      const response = await axios.post("http://192.168.4.176:3001/login", {
+        user: {
+          email: email.toLowerCase(),
+          password,
         },
-        body: JSON.stringify({
-          user: { 
-            email,
-            password 
-          }
-        }),
       });
-  
-      const data = await response.json();
-  
-      console.log('Response status:', response.status); // Agregar un log para el estado de la respuesta
-      console.log('Response data:', data); // Agregar un log para los datos de la respuesta
-  
-      if (response.ok) {
-        // Capturamos el token JWT de la respuesta
-        const token = data.status.data.token;
-        // Almacenamos el token en AsyncStorage
-        await AsyncStorage.setItem('token', token);
-        // Navegamos a la pantalla de inicio
-        router.push('/home');
+
+      console.log("Response status:", response.status); // Log para el estado de la respuesta
+      console.log("Response data:", response.data); // Log para los datos de la respuesta
+
+      if (response.status === 200) {
+        const tokenFromResponse = response.data.status.data.token;
+        setToken(tokenFromResponse); // Almacenamos el token en el estado local
+        console.log("Login exitoso. Token recibido:", tokenFromResponse); // Log para confirmar el éxito
+
+        router.push("/home");
       } else {
-        setErrorMessage(data.message || 'Invalid credentials, please try again.');
+        setErrorMessage(response.data.message || "Invalid credentials, please try again.");
       }
     } catch (error) {
-      console.error('Error during login:', error); // Log del error de red
-      setErrorMessage('Something went wrong, please try again later.');
+      console.error("Error durante el login:", error); // Log del error de red
+      if (error.response) {
+        setErrorMessage("Credenciales incorrectas");
+      } else {
+        setErrorMessage("Error de conexión");
+      }
     }
-  };   
-  
+  };
+
+  useEffect(() => {
+    // Aquí podrías agregar lógica para verificar si el usuario ya ha iniciado sesión
+    console.log("Verificación inicial de sesión...");
+  }, []);
+
   return (
-    <View>
+    <View style={styles.container}>
+      <Text style={styles.title}>Iniciar Sesión</Text>
       <Input
-        placeholder="Email"
+        placeholder="Correo electrónico"
         value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
+        onChangeText={(text) => {
+          setEmail(text);
+          setErrorMessage("");
+        }}
+        leftIcon={{ type: "font-awesome", name: "envelope" }}
       />
       <Input
-        placeholder="Password"
+        placeholder="Contraseña"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          setErrorMessage("");
+        }}
         secureTextEntry
+        leftIcon={{ type: "font-awesome", name: "lock" }}
       />
-      {errorMessage ? <Text style={{ color: 'red' }}>{errorMessage}</Text> : null}
-      <Button title="Login" onPress={handleLogin} />
-      
-      {/* Botón para redirigir a la pantalla de registro */}
-      <Button title="Register" onPress={() => router.push('/register')} />
+      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+
+      <Button
+        title="Iniciar Sesión"
+        onPress={handleLogin}
+        buttonStyle={styles.button}
+      />
+      <Button
+        type="outline"
+        title="Crear cuenta"
+        onPress={() => router.push("/register")}
+        buttonStyle={styles.button}
+      />
     </View>
   );
 };
 
-export default LoginScreen;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    justifyContent: "center",
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  error: {
+    color: "red",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  button: {
+    marginTop: 20,
+  },
+});
+
+export default Login;
