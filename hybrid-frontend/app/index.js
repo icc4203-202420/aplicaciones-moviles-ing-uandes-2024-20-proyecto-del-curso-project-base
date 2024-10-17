@@ -17,22 +17,22 @@ const Login = () => {
       console.log("Iniciando solicitud de login..."); // Log para indicar el inicio de la solicitud
       console.log("Email:", email); // Log para verificar el email ingresado
       console.log("Password:", password); // Log para verificar el password ingresado (evitar hacerlo en producción)
-
-      const response = await axios.post("http://192.168.4.176:3001/login", {
+  
+      const response = await axios.post("http://192.168.4.179:3000/api/v1/login", {
         user: {
           email: email.toLowerCase(),
           password,
         },
       });
-
+  
       console.log("Response status:", response.status); // Log para el estado de la respuesta
       console.log("Response data:", response.data); // Log para los datos de la respuesta
-
+  
       if (response.status === 200) {
         const tokenFromResponse = response.data.status.data.token;
         setToken(tokenFromResponse); // Almacenamos el token en el estado local
         console.log("Login exitoso. Token recibido:", tokenFromResponse); // Log para confirmar el éxito
-
+  
         router.push("/home");
       } else {
         setErrorMessage(response.data.message || "Invalid credentials, please try again.");
@@ -46,6 +46,7 @@ const Login = () => {
       }
     }
   };
+  
 
   useEffect(() => {
     // Aquí podrías agregar lógica para verificar si el usuario ya ha iniciado sesión

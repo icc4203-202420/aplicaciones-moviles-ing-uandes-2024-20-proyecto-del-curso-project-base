@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, Button } from '@rneui/themed';
+import { View, Text } from 'react-native'; // Cambia '@rneui/themed' a 'react-native' para el componente Text
+import { Button } from '@rneui/themed';
 import { Link } from 'expo-router';
+
 
 const HomeScreen = () => {
   return (
