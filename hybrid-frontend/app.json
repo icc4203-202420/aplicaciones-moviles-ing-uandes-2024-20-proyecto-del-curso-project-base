@@ -2,7 +2,6 @@
   "expo": {
     "name": "hybrid-frontend",
     "slug": "hybrid-frontend",
-    "scheme": "miapp",
     "version": "1.0.0",
     "scheme": "miapp",
     "orientation": "portrait",
