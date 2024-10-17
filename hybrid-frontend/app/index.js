@@ -11,13 +11,13 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.4.176:3001/api/v1/login', {
+      const response = await fetch('http://192.168.4.176:3000/api/v1/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          session: { 
+          user: { 
             email,
             password 
           }
@@ -25,6 +25,9 @@ const LoginScreen = () => {
       });
   
       const data = await response.json();
+  
+      console.log('Response status:', response.status); // Agregar un log para el estado de la respuesta
+      console.log('Response data:', data); // Agregar un log para los datos de la respuesta
   
       if (response.ok) {
         // Capturamos el token JWT de la respuesta
@@ -37,9 +40,10 @@ const LoginScreen = () => {
         setErrorMessage(data.message || 'Invalid credentials, please try again.');
       }
     } catch (error) {
+      console.error('Error during login:', error); // Log del error de red
       setErrorMessage('Something went wrong, please try again later.');
     }
-  };
+  };   
   
   return (
     <View>
