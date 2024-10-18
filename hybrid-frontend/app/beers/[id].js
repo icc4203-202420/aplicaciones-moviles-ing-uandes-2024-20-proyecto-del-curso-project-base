@@ -13,6 +13,7 @@ const BeerDetailsScreen = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  console.log("app/beers/:id");
   useEffect(() => {
     if (id) {
       fetchBeerDetails();

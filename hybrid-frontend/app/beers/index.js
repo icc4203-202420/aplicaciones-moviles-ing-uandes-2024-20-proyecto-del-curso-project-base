@@ -8,7 +8,7 @@ const BeerSearchScreen = () => {
   const [beers, setBeers] = useState([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
+  console.log("app/beers/");
   useEffect(() => {
     fetchBeers();
   }, []);

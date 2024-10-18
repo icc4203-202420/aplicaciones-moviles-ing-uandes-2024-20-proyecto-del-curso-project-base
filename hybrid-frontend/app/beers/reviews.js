@@ -32,7 +32,7 @@ const reducer = (state, action) => {
 
 const Reviews = ({ beerId }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-
+  console.log("REVIEWS rendered");
   useEffect(() => {
     const fetchReviews = async () => {
       dispatch({ type: 'LOADING' });

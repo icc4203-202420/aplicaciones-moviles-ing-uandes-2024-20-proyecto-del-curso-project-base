@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = () => {
   const router = useRouter();
-
+  console.log("app/home");
   console.log("HomeScreen component loaded"); // Log para verificar la carga del componente
 
   const handleLogout = async () => {
