@@ -10,15 +10,13 @@ const BeerSearchScreen = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Fetch beers initially when the component mounts
     fetchBeers();
   }, []);
 
   useEffect(() => {
-    if (searchQuery) {
-      fetchBeers();
-    } else if (searchQuery === '') {
-      // Fetch all beers if search query is cleared
+    if (searchQuery === '') {
+      fetchBeers(); // Fetch all beers if search query is cleared
+    } else {
       fetchBeers();
     }
   }, [searchQuery]);
@@ -26,9 +24,7 @@ const BeerSearchScreen = () => {
   const fetchBeers = async () => {
     setLoading(true);
     try {
-      console.log('Fetching beers with query:', searchQuery);
       const response = await fetch(`http://192.168.4.179:3000/api/v1/beers?query=${searchQuery}`);
-
       if (!response.ok) {
         throw new Error('Error fetching beers. Status: ' + response.status);
       }
@@ -36,15 +32,12 @@ const BeerSearchScreen = () => {
       const data = await response.json();
 
       if (!data.beers || !Array.isArray(data.beers)) {
-        console.error('Unexpected data format:', data);
         setBeers([]);
         return;
       }
 
       setBeers(data.beers);
-      console.log('Beers fetched:', data.beers);
     } catch (error) {
-      console.error('Error fetching beers:', error);
       setBeers([]);
     }
     setLoading(false);
@@ -52,7 +45,7 @@ const BeerSearchScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Button title="Back" onPress={() => router.back()} style={styles.backButton} />
+      <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
       <Input
         placeholder="Search for a beer"
         value={searchQuery}
