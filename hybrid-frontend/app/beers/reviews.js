@@ -36,7 +36,7 @@ const Reviews = ({ beerId }) => {
       dispatch({ type: 'LOADING' });
       try {
         const token = await AsyncStorage.getItem('authToken'); // Obtiene el token de autenticación
-        const response = await fetch(`http://${IP}:3000/api/v1/beers/${beerId}/reviews`, {
+        const response = await fetch(`http://192.168.4.179:3000/api/v1/beers/${beerId}/reviews`, {
           headers: {
             'Authorization': `Bearer ${token}`, // Incluye el token en los encabezados de la solicitud
           },

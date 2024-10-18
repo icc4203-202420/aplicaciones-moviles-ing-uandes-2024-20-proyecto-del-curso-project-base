@@ -26,7 +26,7 @@ const RegisterScreen = () => {
     try {
       console.log('Registrando usuario...');
       
-      const response = await axios.post(`http://${IP}:3000/api/v1/signup`, {
+      const response = await axios.post(`http://192.168.4.179:3000/api/v1/signup`, {
         user: {
           first_name: firstName,
           last_name: lastName,

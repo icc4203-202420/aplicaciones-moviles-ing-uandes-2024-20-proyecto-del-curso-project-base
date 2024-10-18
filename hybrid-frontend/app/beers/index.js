@@ -24,7 +24,7 @@ const BeerSearchScreen = () => {
   const fetchBeers = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://${IP}:3000/api/v1/beers?query=${searchQuery}`);
+      const response = await fetch(`http:/192.168.4.179:3000/api/v1/beers?query=${searchQuery}`);
       if (!response.ok) {
         throw new Error('Error fetching beers. Status: ' + response.status);
       }

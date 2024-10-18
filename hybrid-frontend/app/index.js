@@ -3,18 +3,19 @@ import { View, StyleSheet } from "react-native";
 import { Input, Button, Text } from "@rneui/themed";
 import { useRouter } from "expo-router";
 import axios from "axios";
-import { IP } from '@env';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [token, setToken] = useState(null);
 
   const handleLogin = async () => {
-    setErrorMessage("");
+    setErrorMessage(""); // Limpiar el mensaje de error al intentar iniciar sesión
     try {
-      const response = await axios.post(`http://${IP}:3000/api/v1/login`, {
+      // Realizar la solicitud de inicio de sesión
+      const response = await axios.post(`http://192.168.4.179:3000/api/v1/login`, {
         user: {
           email: email.toLowerCase(),
           password,
@@ -23,12 +24,17 @@ const Login = () => {
 
       if (response.status === 200) {
         const tokenFromResponse = response.data.status.data.token;
-        setToken(tokenFromResponse);
+        // Guardar el token en AsyncStorage
+        await AsyncStorage.setItem("authToken", tokenFromResponse);
+        console.log("Token guardado:", tokenFromResponse);
+        // Redirigir al usuario a la página principal
         router.push("/home");
       } else {
-        setErrorMessage(response.data.message || "Invalid credentials, please try again.");
+        // Manejar el error en caso de credenciales inválidas
+        setErrorMessage(response.data.message || "Credenciales inválidas, por favor intente nuevamente.");
       }
     } catch (error) {
+      // Manejo de errores de red y errores específicos de la respuesta
       if (error.response) {
         setErrorMessage("Credenciales incorrectas");
       } else {
@@ -38,7 +44,15 @@ const Login = () => {
   };
 
   useEffect(() => {
-    console.log("Verificación inicial de sesión...");
+    // Verificar si hay un token existente y redirigir si el usuario ya está autenticado
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem("authToken");
+      if (token) {
+        console.log("Usuario ya autenticado, redirigiendo...");
+        router.push("/home");
+      }
+    };
+    checkLoginStatus();
   }, []);
 
   return (
@@ -80,7 +94,7 @@ const Login = () => {
         title="Crear cuenta"
         onPress={() => router.push("/register")}
         buttonStyle={styles.buttonSecondary}
-        titleStyle={styles.buttonTitleSecondary} // Aquí aplicamos el color del texto
+        titleStyle={styles.buttonTitleSecondary}
       />
     </View>
   );
@@ -89,7 +103,7 @@ const Login = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "rgb(250, 247, 240)", // Fondo de pantalla
+    backgroundColor: "rgb(250, 247, 240)",
     padding: 20,
     justifyContent: "center",
   },
@@ -98,13 +112,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 24,
     fontWeight: "bold",
-    color: "rgb(74, 73, 71)", // Título de color oscuro
+    color: "rgb(74, 73, 71)",
   },
   inputText: {
-    color: "rgb(74, 73, 71)", // Color del texto en los inputs
+    color: "rgb(74, 73, 71)",
   },
   inputContainer: {
-    borderBottomColor: "rgb(177, 116, 87)", // Color del borde en los inputs
+    borderBottomColor: "rgb(177, 116, 87)",
   },
   error: {
     color: "red",
@@ -112,18 +126,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   buttonPrimary: {
-    backgroundColor: "rgb(177, 116, 87)", // Color principal del botón
+    backgroundColor: "rgb(177, 116, 87)",
     marginTop: 20,
   },
   buttonSecondary: {
-    borderColor: "rgb(177, 116, 87)", // Borde para el botón secundario
+    borderColor: "rgb(177, 116, 87)",
     marginTop: 10,
   },
   buttonTitlePrimary: {
-    color: "rgb(250, 247, 240)", // Color del texto del botón primario
+    color: "rgb(250, 247, 240)",
   },
   buttonTitleSecondary: {
-    color: "#B17457", // Color personalizado del texto para el segundo botón
+    color: "#B17457",
   },
 });
 

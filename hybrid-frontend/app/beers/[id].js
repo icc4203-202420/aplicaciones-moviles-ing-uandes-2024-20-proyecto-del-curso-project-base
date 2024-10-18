@@ -20,7 +20,7 @@ const BeerDetailsScreen = () => {
 
   const fetchBeerDetails = async () => {
     try {
-      const response = await fetch(`http://${IP}:3000/api/v1/beers/${id}`);
+      const response = await fetch(`http://192.168.4.179:3000/api/v1/beers/${id}`);
       if (!response.ok) {
         throw new Error('Error fetching beer details. Status: ' + response.status);
       }
