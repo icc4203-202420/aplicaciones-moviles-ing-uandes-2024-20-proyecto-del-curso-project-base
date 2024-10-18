@@ -1,6 +1,10 @@
+// app/beers/[id].js
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { Button } from '@rneui/themed';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import ReviewForm from './reviewForm';
+import Reviews from './reviews';
 
 const BeerDetailsScreen = () => {
   const { id } = useLocalSearchParams();
@@ -16,21 +20,23 @@ const BeerDetailsScreen = () => {
 
   const fetchBeerDetails = async () => {
     try {
-      console.log('Fetching beer details for ID:', id); // Depuración
       const response = await fetch(`http://192.168.4.179:3000/api/v1/beers/${id}`);
       if (!response.ok) {
         throw new Error('Error fetching beer details. Status: ' + response.status);
       }
       const data = await response.json();
-      console.log('Beer details fetched:', data); // Depuración
-      setBeer(data.beer); // Accede al objeto 'beer' en la respuesta
+      setBeer(data.beer);
     } catch (error) {
       console.error('Error fetching beer details:', error);
     } finally {
       setLoading(false);
     }
   };
-  
+
+  const handleReviewSubmit = async (review) => {
+    // Aquí puedes implementar la lógica para enviar la evaluación al servidor
+    console.log('Enviando evaluación:', review);
+  };
 
   if (loading) {
     return (
@@ -59,9 +65,9 @@ const BeerDetailsScreen = () => {
       <Text style={styles.detail}>Yeast: {beer.yeast || 'N/A'}</Text>
       <Text style={styles.detail}>Hop: {beer.hop || 'N/A'}</Text>
       <Text style={styles.detail}>Malts: {beer.malts || 'N/A'}</Text>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.buttonText}>Back</Text>
-      </TouchableOpacity>
+      <ReviewForm beerId={id} onSubmit={handleReviewSubmit} />
+      <Reviews beerId={id} />
+      <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
     </View>
   );
 };
@@ -96,13 +102,6 @@ const styles = StyleSheet.create({
   backButton: {
     marginTop: 20,
     backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
   },
 });
 
