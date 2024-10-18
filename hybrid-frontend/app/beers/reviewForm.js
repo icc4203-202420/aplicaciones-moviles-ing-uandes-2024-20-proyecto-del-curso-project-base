@@ -23,16 +23,20 @@ const ReviewForm = ({ beerId, onSubmit }) => {
       }
       
       const response = await axios.post(`${NGROK_URL}/api/v1/beers/${beerId}/reviews`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Agregar el token en los encabezados
-        },
-        body: JSON.stringify({
           review: {
-            rating,
+            rating, 
             text,
           },
-        }),
+        // headers: {
+        //   'Content-Type': 'application/json',
+        //   'Authorization': `Bearer ${token}`, // Agregar el token en los encabezados
+        // },
+        // body: JSON.stringify({
+        //   review: {
+        //     rating,
+        //     text,
+        //   },
+        // }),
       });
   
       if (!response.ok) {
