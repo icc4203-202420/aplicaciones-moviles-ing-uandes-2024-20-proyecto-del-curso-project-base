@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, FlatList, ActivityIndicator } from "react-native";
-import BarCard from "./BarCard"; // Asegúrate de que la ruta es correcta
+import BarCard from "./BarCard"; 
 
 interface Bar {
   id: number;
@@ -22,7 +22,7 @@ const Bars: React.FC<BarsProps> = ({ searchQuery }) => {
   useEffect(() => {
     const fetchBars = async () => {
       try {
-        const response = await fetch("YOUR_API_URL_HERE"); // Cambia esto por tu URL real
+        const response = await fetch("http://localhost:3001/api/v1/bars");
         if (!response.ok) {
           throw new Error("Failed to fetch bars");
         }
@@ -54,7 +54,7 @@ const Bars: React.FC<BarsProps> = ({ searchQuery }) => {
         <FlatList
           data={filteredBars}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <BarCard item={item} />} // Usando BarCard aquí
+          renderItem={({ item }) => <BarCard item={item} />} 
         />
       )}
     </View>

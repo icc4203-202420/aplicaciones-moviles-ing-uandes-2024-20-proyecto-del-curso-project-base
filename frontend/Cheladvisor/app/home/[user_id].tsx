@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Text, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Text, ActivityIndicator, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Button } from "react-native-elements";
 import axios from "axios";
 import { getItem, deleteItem } from "../../util/Storage";
-
 import userService from "../../services/user";
+
+const palette = {
+  background: "#210F04",
+  components: "#452103",
+  amber: "#690500",
+  sinfiltrar: "#934B00",
+  lager: "#BB6B00",
+  clear: "#FFC107",
+};
 
 const Home = () => {
   const { user_id } = useLocalSearchParams();
@@ -58,46 +66,63 @@ const Home = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.logoutContainer}>
-        <Text>Hola</Text>
-        <Button title="Salir" onPress={handleLogOut} />
+        <Button title="Log Out" onPress={handleLogOut} buttonStyle={styles.logoutButton} />
       </View>
-    </View>
+
+      <Text style={styles.welcomeText}>Welcome {userData?.name}!</Text>
+
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>News from Friends</Text>
+      </View>
+
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Upcoming Events</Text>
+        
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    justifyContent: "center",
+    backgroundColor: palette.background,
+    paddingHorizontal: 20,
   },
-  title: {
+  welcomeText: {
+    fontSize: 36,
+    fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 20,
+    marginTop: 90,
+    marginBottom: 30,
+    color: "#fff",
+    
+  },
+  sectionContainer: {
+    marginBottom: 40,
+  },
+  sectionTitle: {
     fontSize: 24,
     fontWeight: "bold",
+    marginBottom: 10,
+    color: "#fff",
   },
   error: {
     color: "red",
     textAlign: "center",
     marginBottom: 10,
   },
-  button: {
-    marginTop: 20,
-  },
-  image: {
-    width: 200,
-    height: 200,
-    marginTop: 20,
-    alignSelf: "center",
-    resizeMode: "contain",
-  },
   logoutContainer: {
     position: "absolute",
     top: 20,
-    right: 20,
+    right: 20, 
+  },
+  logoutButton: {
+    backgroundColor: palette.lager,
+    paddingHorizontal: 10, 
+    paddingVertical: 5, 
   },
 });
 
