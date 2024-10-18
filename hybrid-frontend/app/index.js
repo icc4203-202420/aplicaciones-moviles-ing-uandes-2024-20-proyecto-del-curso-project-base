@@ -4,7 +4,7 @@ import { Input, Button, Text } from "@rneui/themed";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { NGROK_URL } from '@env';
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -15,7 +15,7 @@ const Login = () => {
     setErrorMessage(""); // Limpiar el mensaje de error al intentar iniciar sesión
     try {
       // Realizar la solicitud de inicio de sesión
-      const response = await axios.post(`http://192.168.4.179:3000/api/v1/login`, {
+      const response = await axios.post(`${NGROK_URL}/api/v1/login`, {
         user: {
           email: email.toLowerCase(),
           password,

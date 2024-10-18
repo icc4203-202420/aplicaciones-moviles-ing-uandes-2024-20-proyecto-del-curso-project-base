@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { Input, ListItem, Button } from '@rneui/themed';
 import { useRouter } from 'expo-router';
-import { IP } from '@env';
+import { NGROK_URL } from '@env';
 const BeerSearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [beers, setBeers] = useState([]);
@@ -24,7 +24,7 @@ const BeerSearchScreen = () => {
   const fetchBeers = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http:/192.168.4.179:3000/api/v1/beers?query=${searchQuery}`);
+      const response = await fetch(`${NGROK_URL}/api/v1/beers?query=${searchQuery}`);
       if (!response.ok) {
         throw new Error('Error fetching beers. Status: ' + response.status);
       }

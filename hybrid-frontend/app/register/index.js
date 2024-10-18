@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
-import { Input, Button, Text } from '@rneui/themed'; // Usamos @rneui/themed para los componentes
-import { useRouter } from 'expo-router'; // Usamos useRouter para la navegación
+import { Input, Button, Text } from '@rneui/themed';
+import { useRouter } from 'expo-router';
 import axios from 'axios';
+import { NGROK_URL } from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Asegúrate de importar AsyncStorage
 
 const RegisterScreen = () => {
   const router = useRouter();
@@ -16,7 +18,7 @@ const RegisterScreen = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleRegister = async () => {
-    setErrorMessage(''); // Reseteamos el mensaje de error al intentar registrarse
+    setErrorMessage('');
     if (password !== confirmPassword) {
       setErrorMessage('Las contraseñas no coinciden.');
       return;
@@ -25,38 +27,53 @@ const RegisterScreen = () => {
     setLoading(true);
     try {
       console.log('Registrando usuario...');
-      
-      const response = await axios.post(`http://192.168.4.179:3000/api/v1/signup`, {
-        user: {
-          first_name: firstName,
-          last_name: lastName,
-          handle,
-          email: email.toLowerCase(),
-          password,
-          password_confirmation: confirmPassword,
+
+      const response = await axios.post(
+        `${NGROK_URL}/api/v1/signup`,
+        {
+          user: {
+            first_name: firstName,
+            last_name: lastName,
+            handle,
+            email: email.toLowerCase(),
+            password,
+            password_confirmation: confirmPassword,
+          },
         },
-      });
+        {
+          headers: { 'Content-Type': 'application/json' }, // Headers correctamente fuera del cuerpo de la solicitud
+        }
+      );
 
       console.log('Estado de la respuesta:', response.status);
       console.log('Datos de la respuesta:', response.data);
 
-      if (response.status === 200) {
-        console.log('Registro exitoso:', response.data);
-        // Navegar a la pantalla de inicio después de un registro exitoso
-        router.push('/home');
+      if (response.headers && response.headers.authorization) {
+        const token = response.headers.authorization.split(' ')[1];
+        console.log("token",token);
+        if (token) {
+          await AsyncStorage.setItem('authToken', token); // Almacenar el token en AsyncStorage
+          Alert.alert('Registro exitoso');
+          router.push('/home');
+        } else {
+          Alert.alert('Error', 'No se recibió token. Por favor, intente de nuevo.');
+        }
       } else {
-        setErrorMessage(response.data.message || 'No se pudo completar el registro.');
+        Alert.alert('Error', 'Respuesta inesperada del servidor. Por favor, intente nuevamente.');
       }
     } catch (error) {
       console.error('Error de red:', error);
 
-      if (error.response && error.response.status === 422) {
-        // Muestra los errores específicos del servidor si el estado es 422
+      if (error.response) {
+        if (error.response.status === 409) {
+          Alert.alert('Error', 'Correo electrónico ya registrado.');
+        } else {
+          Alert.alert('Error', `Error en el servidor: ${error.response.status}. Intenta nuevamente más tarde.`);
+        }
         const serverErrors = error.response.data.errors || { message: 'Error desconocido al registrarse' };
         const errorMessages = Object.values(serverErrors).flat().join('\n');
         Alert.alert('Error al registrarse', errorMessages);
       } else {
-        // Otros errores, por ejemplo, problemas de conexión
         Alert.alert('Error de conexión', 'No se pudo conectar con el servidor. Por favor, intente nuevamente.');
       }
     } finally {

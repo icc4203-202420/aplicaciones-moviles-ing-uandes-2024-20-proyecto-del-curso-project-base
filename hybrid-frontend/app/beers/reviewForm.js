@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Button, ActivityIndicator } from 'react-native';
 import { Slider } from '@rneui/themed'; // Importa el Slider desde @rneui/themed
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { NGROK_URL } from '@env';
 const ReviewForm = ({ beerId, onSubmit }) => {
   const [rating, setRating] = useState(3.0);
   const [text, setText] = useState('');
@@ -21,7 +21,7 @@ const ReviewForm = ({ beerId, onSubmit }) => {
         throw new Error('No hay un token disponible para la autenticación');
       }
       
-      const response = await fetch(`http://192.168.4.179:3000/api/v1/beers/${beerId}/reviews`, {
+      const response = await fetch(`${NGROK_URL}/api/v1/beers/${beerId}/reviews`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
