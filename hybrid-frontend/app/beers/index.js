@@ -1,54 +1,94 @@
-// beer list
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text } from 'react-native';
-import { Input, Button, ListItem } from '@rneui/themed';
+import { View, FlatList, Text, StyleSheet } from 'react-native';
+import { Input, ListItem } from '@rneui/themed';
+import { useRouter } from 'expo-router';
 
-const BeerSearchScreen = ({ navigation }) => {
+const BeerSearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [beers, setBeers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (searchQuery) {
       fetchBeers();
+    } else {
+      setBeers([]);
     }
   }, [searchQuery]);
 
   const fetchBeers = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`YOUR_BACKEND_URL/beers?query=${searchQuery}`);
+      console.log('Fetching beers with query:', searchQuery);
+      const response = await fetch(`http://192.168.4.179:3000/api/v1/beers?query=${searchQuery}`);
+
+      if (!response.ok) {
+        throw new Error('Error fetching beers. Status: ' + response.status);
+      }
+
       const data = await response.json();
-      setBeers(data);
+
+      if (!data.beers || !Array.isArray(data.beers)) {
+        console.error('Unexpected data format:', data);
+        setBeers([]);
+        return;
+      }
+
+      setBeers(data.beers);
+      console.log('Beers fetched:', data.beers);
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching beers:', error);
+      setBeers([]);
     }
     setLoading(false);
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <Input
         placeholder="Search for a beer"
         value={searchQuery}
         onChangeText={setSearchQuery}
+        containerStyle={styles.input}
       />
-      {loading && <Text>Loading...</Text>}
+      {loading && <Text style={styles.loadingText}>Loading...</Text>}
       <FlatList
         data={beers}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <ListItem onPress={() => navigation.navigate('/beer/detail', { beerId: item.id })}>
+          <ListItem onPress={() => router.push(`/beer/?beerId=${item.id}`)}>
             <ListItem.Content>
               <ListItem.Title>{item.name}</ListItem.Title>
-              <ListItem.Subtitle>{item.brewery}</ListItem.Subtitle>
+              <ListItem.Subtitle>{item.style}</ListItem.Subtitle>
             </ListItem.Content>
             <ListItem.Chevron />
           </ListItem>
         )}
+        ListEmptyComponent={!loading && <Text style={styles.emptyText}>No beers found.</Text>}
       />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: '#fff',
+  },
+  input: {
+    marginBottom: 10,
+  },
+  loadingText: {
+    textAlign: 'center',
+    marginVertical: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: 'gray',
+  },
+});
 
 export default BeerSearchScreen;
