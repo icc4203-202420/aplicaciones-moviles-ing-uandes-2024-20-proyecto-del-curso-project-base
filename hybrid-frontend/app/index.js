@@ -23,10 +23,12 @@ const Login = () => {
       });
 
       if (response.status === 200) {
-        const tokenFromResponse = response.data.status.data.token;
+        const token = response.headers['authorization'];
+        const USER_ID = response.data.status.data.user.id;
         // Guardar el token en AsyncStorage
-        await AsyncStorage.setItem("authToken", tokenFromResponse);
-        console.log("Token guardado:", tokenFromResponse);
+        await AsyncStorage.setItem("authToken", token);
+        await AsyncStorage.setItem("USER_ID", USER_ID.toString());
+        console.log("Token guardado:", token);
         // Redirigir al usuario a la página principal
         router.push("/home");
       } else {

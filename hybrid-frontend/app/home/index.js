@@ -12,7 +12,7 @@ const HomeScreen = () => {
   const handleLogout = async () => {
     try {
       // Elimina el token del almacenamiento
-      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('authToken');
       console.log('Token eliminado, cerrando sesión');
 
       // Redirige al usuario a la pantalla de inicio de sesión

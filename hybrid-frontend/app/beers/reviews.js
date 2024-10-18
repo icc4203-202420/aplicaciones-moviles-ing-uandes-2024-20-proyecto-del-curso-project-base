@@ -2,7 +2,9 @@
 import React, { useEffect, useReducer } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage para obtener el token
+import axios from 'axios'; // Importa axios
 import { NGROK_URL } from '@env';
+
 const initialState = {
   loading: true,
   error: '',
@@ -36,19 +38,17 @@ const Reviews = ({ beerId }) => {
       dispatch({ type: 'LOADING' });
       try {
         const token = await AsyncStorage.getItem('authToken'); // Obtiene el token de autenticación
-        console.log(token);
-        const response = await fetch(`${NGROK_URL}/api/v1/beers/${beerId}/reviews`, {
+        console.log("REVIEWS TOKEN:", token);
+        const response = await axios.get(`${NGROK_URL}/api/v1/beers/${beerId}`, {
           headers: {
             'Authorization': `Bearer ${token}`, // Incluye el token en los encabezados de la solicitud
           },
         });
-        if (!response.ok) {
-          throw new Error('Error fetching reviews. Status: ' + response.status);
-        }
-        const data = await response.json();
-        dispatch({ type: 'SUCCESS', payload: { reviews: data.reviews, averageRating: data.averageRating } });
+        console.log('Beer details response:', response.data);
+        dispatch({ type: 'SUCCESS', payload: { reviews: response.data.reviews || [], averageRating: response.data.averageRating } });
       } catch (error) {
         dispatch({ type: 'ERROR', payload: error.message });
+        console.log(error.message);
       }
     };
     fetchReviews();
@@ -65,17 +65,21 @@ const Reviews = ({ beerId }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.averageRating}>Promedio de Calificación: {state.averageRating || 'N/A'}</Text>
-      <FlatList
-        data={state.reviews}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.reviewContainer}>
-            <Text style={styles.reviewText}>{item.text}</Text>
-            <Text style={styles.reviewRating}>Calificación: {item.rating}</Text>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={styles.noReviews}>No hay evaluaciones.</Text>}
-      />
+      {state.reviews.length === 0 ? (
+        <Text style={styles.noReviews}>No hay reseñas para esta cerveza todavía.</Text>
+      ) : (
+        <FlatList
+          data={state.reviews}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.reviewContainer}>
+              <Text style={styles.reviewText}>{item.text}</Text>
+              <Text style={styles.reviewRating}>Calificación: {item.rating}</Text>
+            </View>
+          )}
+          ListEmptyComponent={<Text style={styles.noReviews}>No hay evaluaciones.</Text>}
+        />
+      )}
     </View>
   );
 };
@@ -104,6 +108,8 @@ const styles = StyleSheet.create({
   noReviews: {
     textAlign: 'center',
     color: 'gray',
+    marginTop: 20,
+    fontSize: 16,
   },
   error: {
     color: 'red',
