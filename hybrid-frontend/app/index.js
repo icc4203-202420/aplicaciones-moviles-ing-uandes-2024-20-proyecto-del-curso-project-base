@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { Input, Button, Text } from "@rneui/themed";
 import { useRouter } from "expo-router";
 import axios from "axios";
-
+import { IP } from '@env';
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -14,7 +14,7 @@ const Login = () => {
   const handleLogin = async () => {
     setErrorMessage("");
     try {
-      const response = await axios.post("http://192.168.4.179:3000/api/v1/login", {
+      const response = await axios.post(`http://${IP}:3000/api/v1/login`, {
         user: {
           email: email.toLowerCase(),
           password,
