@@ -2,19 +2,23 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { Input, Button, Text } from '@rneui/themed'; // Usamos @rneui/themed para los componentes
 import { useRouter } from 'expo-router'; // Usamos useRouter para la navegación
+import axios from 'axios';
 
 const RegisterScreen = () => {
-  const [name, setName] = useState('');
+  const router = useRouter();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const router = useRouter(); // Usamos useRouter para navegar entre pantallas
 
   const handleRegister = async () => {
+    setErrorMessage(''); // Reseteamos el mensaje de error al intentar registrarse
     if (password !== confirmPassword) {
-      setErrorMessage("Las contraseñas no coinciden.");
+      setErrorMessage('Las contraseñas no coinciden.');
       return;
     }
 
@@ -22,33 +26,39 @@ const RegisterScreen = () => {
     try {
       console.log('Registrando usuario...');
       
-      const response = await fetch('http://192.168.4.176:3000/api/v1/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await axios.post('http://192.168.4.179:3000/api/v1/signup', {
+        user: {
+          first_name: firstName,
+          last_name: lastName,
+          handle,
+          email: email.toLowerCase(),
+          password,
+          password_confirmation: confirmPassword,
         },
-        body: JSON.stringify({
-          user: {
-            name,
-            email: email.toLowerCase(),
-            password,
-          },
-        }),
       });
 
       console.log('Estado de la respuesta:', response.status);
+      console.log('Datos de la respuesta:', response.data);
 
-      const data = await response.json();
-      if (response.ok) {
-        console.log('Registro exitoso:', data);
+      if (response.status === 200) {
+        console.log('Registro exitoso:', response.data);
+        // Navegar a la pantalla de inicio después de un registro exitoso
         router.push('/home');
       } else {
-        console.log('Datos de error:', data);
-        Alert.alert('Error al registrarse', data.message || 'No se pudo completar el registro.');
+        setErrorMessage(response.data.message || 'No se pudo completar el registro.');
       }
     } catch (error) {
       console.error('Error de red:', error);
-      Alert.alert('Error de conexión', 'No se pudo conectar con el servidor. Por favor, intente nuevamente.');
+
+      if (error.response && error.response.status === 422) {
+        // Muestra los errores específicos del servidor si el estado es 422
+        const serverErrors = error.response.data.errors || { message: 'Error desconocido al registrarse' };
+        const errorMessages = Object.values(serverErrors).flat().join('\n');
+        Alert.alert('Error al registrarse', errorMessages);
+      } else {
+        // Otros errores, por ejemplo, problemas de conexión
+        Alert.alert('Error de conexión', 'No se pudo conectar con el servidor. Por favor, intente nuevamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -59,27 +69,57 @@ const RegisterScreen = () => {
       <Text style={styles.title}>Crear cuenta</Text>
       <Input
         placeholder="Nombre"
-        value={name}
-        onChangeText={setName}
+        value={firstName}
+        onChangeText={(text) => {
+          setFirstName(text);
+          setErrorMessage('');
+        }}
         autoCapitalize="words"
+      />
+      <Input
+        placeholder="Apellido"
+        value={lastName}
+        onChangeText={(text) => {
+          setLastName(text);
+          setErrorMessage('');
+        }}
+        autoCapitalize="words"
+      />
+      <Input
+        placeholder="Handle"
+        value={handle}
+        onChangeText={(text) => {
+          setHandle(text);
+          setErrorMessage('');
+        }}
+        autoCapitalize="none"
       />
       <Input
         placeholder="Correo electrónico"
         value={email}
-        onChangeText={setEmail}
+        onChangeText={(text) => {
+          setEmail(text);
+          setErrorMessage('');
+        }}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <Input
         placeholder="Contraseña"
         value={password}
-        onChangeText={setPassword}
+        onChangeText={(text) => {
+          setPassword(text);
+          setErrorMessage('');
+        }}
         secureTextEntry
       />
       <Input
         placeholder="Confirmar contraseña"
         value={confirmPassword}
-        onChangeText={setConfirmPassword}
+        onChangeText={(text) => {
+          setConfirmPassword(text);
+          setErrorMessage('');
+        }}
         secureTextEntry
       />
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
