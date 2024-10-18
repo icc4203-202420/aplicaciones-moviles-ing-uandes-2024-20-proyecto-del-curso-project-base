@@ -1,127 +1,141 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, ActivityIndicator, Alert } from 'react-native';
-import { Slider } from '@rneui/themed'; // Importa el Slider desde @rneui/themed
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NGROK_URL } from '@env';
-import axios from 'axios'; 
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
+import { Slider } from '@rneui/themed'; 
+import { useNavigation, useRoute } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import axios from 'axios';
 
-const ReviewForm = ({ beerId, onSubmit }) => {
-  const [rating, setRating] = useState(3.0);
-  const [text, setText] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [loading, setLoading] = useState(false); // Crear el estado de loading
+// Validation schema for the form
+const validationSchema = Yup.object().shape({
+  text: Yup.string()
+    .required('Requiere de justificación para poder dejar un review')
+    .test(
+      'minWords',
+      'El review debe tener al menos 15 palabras',
+      (value) => value && value.split(' ').filter(word => word !== '').length >= 15
+    ),
+  rating: Yup.number().required('Debe seleccionar una calificación')
+});
 
-  const countWords = (str) => {
-    return str.trim().split(/\s+/).length; // Divide el texto en palabras utilizando espacios en blanco como delimitador
-  };
+const BeerReviews = () => {
+  const route = useRoute();
+  const { beerId } = route.params;
+  const [serverError, setServerError] = useState('');
+  const [rating, setRating] = useState(0);
+  const navigation = useNavigation();
 
-  const handleSubmit = async () => {
-    setErrorMessage('');
-    
-    // Validar que el número de palabras sea mayor a 15
-    const wordCount = countWords(text);
-    if (rating < 1 || rating > 5) {
-      setErrorMessage('La calificación debe estar entre 1 y 5.');
-      return;
-    }
-    if (wordCount < 15) {
-      setErrorMessage('El comentario debe tener al menos 15 palabras.');
-      return;
-    }
+  const handleSubmit = async (values, { setSubmitting }) => {
+    const userId = await AsyncStorage.getItem('USER_ID');
+    values.user_id = userId;
+    values.rating = rating;
 
-    setLoading(true);
-    
     try {
-      // Recuperar el token de AsyncStorage
-      const token = await AsyncStorage.getItem('authToken');
-      const userId = await AsyncStorage.getItem('USER_ID'); // Obtener el user_id del almacenamiento
-
+      const token = await AsyncStorage.getItem('authToken'); // Obtener el token de autenticación
       if (!token || !userId) {
+        console.log("TOKEN: ",token);
+        console.log("USER ID: ",userId);
         throw new Error('No hay un token disponible para la autenticación o el usuario no está autenticado');
+  
       }
       
-      // Enviar la solicitud con axios, incluyendo los encabezados
       const response = await axios.post(
         `${NGROK_URL}/api/v1/beers/${beerId}/reviews`,
-        {
-          review: {
-            rating, 
-            text
+        { 
+          review: { 
+            rating: values.rating, 
+            text: values.text,
           },
-          user_id: userId
+          user_id: userId, // Pasar el user_id como parte de la solicitud
         },
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`, // Agregar el token en los encabezados
-          },
+            'Authorization': `Bearer ${token}` // Token para autenticación
+          }
         }
       );
-  
-      if (response.status !== 201) { // Verificar si la respuesta tiene un código de éxito
-        throw new Error(`Error al enviar la evaluación. Status: ${response.status}`);
+      
+      setServerError('');
+      navigation.navigate('Home'); // Redirigir al inicio después de éxito
+    } catch (err) {
+      console.log('Error:', err);
+      if (err.response && err.response.status === 401) {
+        setServerError('Correo electrónico o contraseña incorrectos.');
+      } else {
+        setServerError('Error en el servidor. Intenta nuevamente más tarde.');
       }
-  
-      console.log('Evaluación enviada con éxito');
-      // Lógica adicional para actualizar la interfaz después de enviar la evaluación
-      if (onSubmit) {
-        onSubmit();
-      }
-
-      // Limpiar el formulario
-      setRating(3.0);
-      setText('');
-      Alert.alert('Éxito', 'Reseña enviada con éxito.');
-    } catch (error) {
-      console.error('Error al enviar la evaluación:', error);
-      setErrorMessage('Error al enviar la evaluación. Por favor, inténtelo de nuevo.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Calificación (1-5): {rating.toFixed(1)}</Text>
-      <Slider
-        value={rating}
-        onValueChange={(value) => setRating(parseFloat(value.toFixed(1)))} // Configura el slider para que solo muestre un decimal
-        minimumValue={1}
-        maximumValue={5}
-        step={0.1} // Incrementos de 0.1 para mayor precisión
-        thumbTintColor="#007bff"
-        minimumTrackTintColor="#007bff"
-        maximumTrackTintColor="#ccc"
-      />
-      {errorMessage.includes('calificación') && <Text style={styles.error}>{errorMessage}</Text>}
-
-      <Text style={styles.label}>Comentario:</Text>
-      <TextInput
-        style={styles.textArea}
-        multiline
-        numberOfLines={4}
-        value={text}
-        onChangeText={setText}
-      />
-      {errorMessage.includes('comentario') && <Text style={styles.error}>{errorMessage}</Text>}
-
-      {errorMessage && !loading && <Text style={styles.error}>{errorMessage}</Text>}
-      {loading ? (
-        <ActivityIndicator size="large" color="#007bff" />
-      ) : (
-        <Button title="Enviar evaluación" onPress={handleSubmit} />
+    <Formik
+      initialValues={{ text: '', rating: 0 }}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
+      {({ handleChange, handleSubmit, values, errors, touched, isSubmitting }) => (
+        <View contentContainerStyle={styles.container}>
+          <Text style={styles.label}>Calificación (1-5): {rating.toFixed(1)}</Text>
+          <Slider
+            value={rating}
+            onValueChange={(value) => setRating(parseFloat(value.toFixed(1)))} // Ajuste para que el slider solo muestre un decimal
+            minimumValue={1}
+            maximumValue={5}
+            step={0.1} // Incrementos de 0.1 para mayor precisión
+            thumbTintColor="#007bff"
+            minimumTrackTintColor="#007bff"
+            maximumTrackTintColor="#ccc"
+            trackStyle={styles.sliderTrack}
+            thumbStyle={styles.sliderThumb}
+          />
+          {serverError.includes('calificación') && <Text style={styles.error}>{serverError}</Text>}
+          <Text style={styles.label}>Comentario:</Text>
+          <TextInput
+            style={[styles.textArea, serverError.includes('comentario') ? styles.inputError : null]}
+            multiline
+            numberOfLines={4}
+            value={values.text}
+            onChangeText={handleChange('text')}
+            placeholder="Escribe tu reseña aquí..."
+            placeholderTextColor="#aaa"
+          />
+          {touched.text && errors.text && <Text style={styles.error}>{errors.text}</Text>}
+          {isSubmitting ? (
+            <ActivityIndicator size="large" color="#007bff" />
+          ) : (
+            <Button title="Enviar evaluación" onPress={handleSubmit} />
+          )}
+          {serverError ? (
+            <Text style={styles.error}>{serverError}</Text>
+          ) : null}
+        </View>
       )}
-    </View>
+    </Formik>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    flexGrow: 1,
+    padding: 10
   },
   label: {
     fontSize: 16,
-    marginBottom: 5,
+    color: 'black',
+    marginBottom: 8,
+  },
+  sliderTrack: {
+    height: 15
+  },
+  sliderThumb: {
+    height: 20,
+    width: 20,
+    backgroundColor: '#007bff',
   },
   textArea: {
     borderColor: '#ccc',
@@ -130,6 +144,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 5,
     textAlignVertical: 'top',
+    width: '100%',
   },
   error: {
     color: 'red',
@@ -137,4 +152,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReviewForm;
+export default BeerReviews;

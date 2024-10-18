@@ -17,15 +17,6 @@ class API::V1::ReviewsController < ApplicationController
     end
   end
 
-  # def create
-  #   @review = @user.reviews.build(review_params)
-  #   if @review.save
-  #     render json: @review, status: :created, location: api_v1_review_url(@review)
-  #   else
-  #     render json: @review.errors, status: :unprocessable_entity
-  #   end
-  # end
-
   def create
     # @review = @beer.reviews.new(review_params)
     @review = @beer.reviews.new(review_params.merge(user: current_user))

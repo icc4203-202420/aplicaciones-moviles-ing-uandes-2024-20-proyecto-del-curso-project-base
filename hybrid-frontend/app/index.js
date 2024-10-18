@@ -49,8 +49,11 @@ const Login = () => {
     // Verificar si hay un token existente y redirigir si el usuario ya está autenticado
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem("authToken");
+      const user = await AsyncStorage.getItem("USER_ID");
       if (token) {
         console.log("Usuario ya autenticado, redirigiendo...");
+        console.log(token);
+        console.log(user);
         router.push("/home");
       }
     };
