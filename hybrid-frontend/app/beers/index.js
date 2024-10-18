@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { Input, ListItem } from '@rneui/themed';
+import { Input, ListItem, Button } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 
 const BeerSearchScreen = () => {
@@ -10,10 +10,16 @@ const BeerSearchScreen = () => {
   const router = useRouter();
 
   useEffect(() => {
+    // Fetch beers initially when the component mounts
+    fetchBeers();
+  }, []);
+
+  useEffect(() => {
     if (searchQuery) {
       fetchBeers();
-    } else {
-      setBeers([]);
+    } else if (searchQuery === '') {
+      // Fetch all beers if search query is cleared
+      fetchBeers();
     }
   }, [searchQuery]);
 
@@ -46,6 +52,7 @@ const BeerSearchScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Button title="Back" onPress={() => router.back()} style={styles.backButton} />
       <Input
         placeholder="Search for a beer"
         value={searchQuery}
@@ -57,7 +64,7 @@ const BeerSearchScreen = () => {
         data={beers}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <ListItem onPress={() => router.push(`/beer/?beerId=${item.id}`)}>
+          <ListItem onPress={() => router.push(`/beers/${item.id}`)}>
             <ListItem.Content>
               <ListItem.Title>{item.name}</ListItem.Title>
               <ListItem.Subtitle>{item.style}</ListItem.Subtitle>
@@ -76,6 +83,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     backgroundColor: '#fff',
+  },
+  backButton: {
+    marginBottom: 10,
   },
   input: {
     marginBottom: 10,
