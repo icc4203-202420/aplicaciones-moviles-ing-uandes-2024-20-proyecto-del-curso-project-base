@@ -52,6 +52,11 @@ const Reviews = ({ beerId, beer }) => {
     fetchReviews();
   }, [beerId]);
 
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       <Text style={styles.averageRating}>Average Rating: {parseFloat(beer.avg_rating).toFixed(2) || 'N/A'}</Text>
@@ -132,6 +137,7 @@ const styles = StyleSheet.create({
   },
   reviewText: {
     fontSize: 16,
+    color: 'gray',
   },
   noReviews: {
     textAlign: 'center',

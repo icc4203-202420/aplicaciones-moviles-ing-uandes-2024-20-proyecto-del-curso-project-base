@@ -58,7 +58,7 @@ const BeerDetailsScreen = () => {
   return (
     <View style={styles.container}>
       <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
-      
+
       <Text style={styles.title}>{beer.name || 'No name available'}</Text>
       <Text style={styles.detail}>Style: {beer.style || 'N/A'}</Text>
       <Text style={styles.detail}>Alcohol: {beer.alcohol || 'N/A'}</Text>
