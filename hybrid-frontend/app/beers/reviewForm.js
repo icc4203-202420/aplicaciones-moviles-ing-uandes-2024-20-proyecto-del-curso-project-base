@@ -22,10 +22,10 @@ const validationSchema = Yup.object().shape({
 
 const BeerReviews = ({ beerId }) => { 
   const [serverError, setServerError] = useState('');
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(1); // Cambiado a 1
   const router = useRouter();
+  
   const handleSubmit = async (values, { setSubmitting }) => {
-    // const userId = await AsyncStorage.getItem('USER_ID');
     const userId = await AsyncStorage.getItem('USER_ID');
     const token = await AsyncStorage.getItem('authToken');
 
@@ -39,8 +39,7 @@ const BeerReviews = ({ beerId }) => {
       return;
     }
 
-    // values.user_id = userId;
-    values.rating = rating;
+    values.rating = rating; // Asegúrate de que el valor de rating sea 1 o más
 
     try {
       const response = await axios.post(
@@ -63,11 +62,9 @@ const BeerReviews = ({ beerId }) => {
       
       setServerError('');
       router.push("/beers");
-      // router.back();
     } catch (err) {
       console.log('Error:', err);
       if (err.response) {
-        // Mostrar el mensaje de error recibido del servidor
         console.log('Server Response:', err.response.data);
         if (err.response.status === 401) {
           setServerError('No autorizado. Verifique su token de autenticación.');
@@ -86,7 +83,7 @@ const BeerReviews = ({ beerId }) => {
 
   return (
     <Formik
-      initialValues={{ text: '', rating: 0 }}
+      initialValues={{ text: '', rating: 1 }}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
     >
