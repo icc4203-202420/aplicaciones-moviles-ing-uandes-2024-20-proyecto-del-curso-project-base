@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa
 import axios from 'axios'; // Importa axios
 import { NGROK_URL } from '@env';
 import { FontAwesome } from '@expo/vector-icons'; // Importa FontAwesome para los íconos
+import { Rating } from 'react-native-ratings'; // Importa el componente Rating
 
 const initialState = {
   loading: true,
@@ -79,7 +80,15 @@ const Reviews = ({ beerId, beer }) => {
               <View style={styles.userInfo}>
                 <FontAwesome name="user" size={24} color="black" />
                 <Text style={styles.userHandle}>{item.user.handle}</Text>
-                <Text style={styles.reviewRating}>Calificación: {item.rating}</Text>
+                <View style={styles.ratingContainer}>
+                  <Rating
+                    startingValue={item.rating}
+                    readonly
+                    imageSize={20}
+                    style={styles.rating}
+                  />
+                  <Text style={styles.reviewRating}>{item.rating}</Text>
+                </View>
               </View>
               <Text style={styles.reviewText}>{item.text}</Text>
             </View>
@@ -115,10 +124,15 @@ const styles = StyleSheet.create({
     color: 'black',
     marginLeft: 5,
   },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
   reviewRating: {
     fontSize: 14,
     color: 'gray',
-    marginLeft: 10,
+    marginLeft: 5,
   },
   reviewText: {
     fontSize: 16,

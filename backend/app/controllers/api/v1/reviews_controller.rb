@@ -1,7 +1,7 @@
 class API::V1::ReviewsController < ApplicationController
   respond_to :json
-  before_action :set_beer, only: [:create]
   before_action :set_user, only: [:index, :create]
+  before_action :set_beer, only: [:create]
   before_action :set_review, only: [:show, :update, :destroy]
 
   # def index
