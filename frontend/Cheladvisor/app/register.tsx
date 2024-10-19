@@ -6,9 +6,12 @@ import axios from "axios";
 import { palette } from "../assets/palette";
 
 const Register = () => {
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [handle, setHandle] = useState("");
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
@@ -17,12 +20,15 @@ const Register = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "{process.env.EXPO_PUBLIC_API_URL/signup",
+        `${process.env.EXPO_PUBLIC_API_URL}/signup`,
         {
           user: {
-            username,
             email,
             password,
+            password_confirmation: passwordConfirmation,
+            first_name: firstName,
+            last_name: lastName,
+            handle,
           },
         }
       );
@@ -39,29 +45,9 @@ const Register = () => {
     }
   };
 
-  const handleUsernameChange = (text: string) => {
-    const maxLength = 20;
-    const filteredText = text.replace(/[^a-zA-Z0-9_.]/g, "");
-
-    if (filteredText !== text) {
-      Alert.alert(
-        "Entrada no válida",
-        `Solo se permiten letras, números, guiones bajos y puntos en el nombre de usuario.\n\nMax cantidad caracteres: ${maxLength}`,
-        [{ text: "Aceptar" }]
-      );
-    }
-
-    setUsername(filteredText.slice(0, maxLength));
-  };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Crear cuenta</Text>
-      <Input
-        placeholder="Nombre de usuario"
-        value={username}
-        onChangeText={handleUsernameChange}
-      />
       <Input
         placeholder="Correo electrónico"
         value={email}
@@ -74,6 +60,27 @@ const Register = () => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+      />
+      <Input
+        placeholder="Confirmar contraseña"
+        value={passwordConfirmation}
+        onChangeText={setPasswordConfirmation}
+        secureTextEntry
+      />
+      <Input
+        placeholder="Nombre"
+        value={firstName}
+        onChangeText={setFirstName}
+      />
+      <Input
+        placeholder="Apellido"
+        value={lastName}
+        onChangeText={setLastName}
+      />
+      <Input
+        placeholder="Handle"
+        value={handle}
+        onChangeText={setHandle}
       />
       <Button
         title="Registrarse"
@@ -104,14 +111,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: palette.lager,
-  },
-  input: {
-    color: palette.lager,
-  },
-  error: {
-    color: "red",
-    textAlign: "center",
-    marginBottom: 10,
   },
   button: {
     marginTop: 20,
