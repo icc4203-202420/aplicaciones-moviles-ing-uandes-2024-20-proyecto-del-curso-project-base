@@ -45,6 +45,7 @@ const Reviews = ({ beerId }) => {
           },
         });
         console.log('Beer details response:', response.data);
+        console.log('Reviews:', response.data.reviews);
         dispatch({ type: 'SUCCESS', payload: { reviews: response.data.reviews || [], averageRating: response.data.averageRating } });
       } catch (error) {
         dispatch({ type: 'ERROR', payload: error.message });
@@ -70,7 +71,8 @@ const Reviews = ({ beerId }) => {
       ) : (
         <FlatList
           data={state.reviews}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
+
           renderItem={({ item }) => (
             <View style={styles.reviewContainer}>
               <Text style={styles.reviewText}>{item.text}</Text>
