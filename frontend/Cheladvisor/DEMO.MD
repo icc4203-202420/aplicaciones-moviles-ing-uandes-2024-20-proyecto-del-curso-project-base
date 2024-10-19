@@ -7,3 +7,5 @@
 - Correr la app con el simulador de ios
 
 ![imagen del simulador de ios](docs/image.png)
+
+- tambien se puede correr con el simulador web
