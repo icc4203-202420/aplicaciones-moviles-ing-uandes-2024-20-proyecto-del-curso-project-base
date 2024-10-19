@@ -23,7 +23,7 @@ const validationSchema = Yup.object().shape({
 const BeerReviews = ({ beerId }) => { 
   const [serverError, setServerError] = useState('');
   const [rating, setRating] = useState(0);
-  const navigation = useNavigation();
+  const router = useRouter();
 
   const handleSubmit = async (values, { setSubmitting }) => {
     const userId = await AsyncStorage.getItem('USER_ID');
