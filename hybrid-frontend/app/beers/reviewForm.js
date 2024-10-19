@@ -2,7 +2,7 @@ import { NGROK_URL } from '@env';
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import { Slider } from '@rneui/themed'; 
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRouter } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -20,52 +20,62 @@ const validationSchema = Yup.object().shape({
   rating: Yup.number().required('Debe seleccionar una calificación')
 });
 
-const BeerReviews = () => {
-  const route = useRoute();
-  const { beerId } = route.params;
+const BeerReviews = ({ beerId }) => { 
   const [serverError, setServerError] = useState('');
   const [rating, setRating] = useState(0);
   const navigation = useNavigation();
 
   const handleSubmit = async (values, { setSubmitting }) => {
     const userId = await AsyncStorage.getItem('USER_ID');
-    values.user_id = userId;
+    const token = await AsyncStorage.getItem('authToken');
+
+    console.log("TOKEN: ", token);
+    console.log("USER ID: ", userId);
+    console.log("BEER ID: ", beerId);
+
+    if (!token || !userId || !beerId) {
+      setServerError('No hay un token o usuario disponible para la autenticación o el beerId es inválido.');
+      setSubmitting(false);
+      return;
+    }
+
+    // values.user_id = userId;
     values.rating = rating;
 
     try {
-      const token = await AsyncStorage.getItem('authToken'); // Obtener el token de autenticación
-      if (!token || !userId) {
-        console.log("TOKEN: ",token);
-        console.log("USER ID: ",userId);
-        throw new Error('No hay un token disponible para la autenticación o el usuario no está autenticado');
-  
-      }
-      
       const response = await axios.post(
         `${NGROK_URL}/api/v1/beers/${beerId}/reviews`,
         { 
           review: { 
             rating: values.rating, 
             text: values.text,
-          },
-          user_id: userId, // Pasar el user_id como parte de la solicitud
+          }
         },
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` // Token para autenticación
+            'Authorization': `Bearer ${token}`,
+            'USER_ID': userId
           }
         }
       );
       
       setServerError('');
-      navigation.navigate('Home'); // Redirigir al inicio después de éxito
+      router.push("/home");
     } catch (err) {
       console.log('Error:', err);
-      if (err.response && err.response.status === 401) {
-        setServerError('Correo electrónico o contraseña incorrectos.');
+      if (err.response) {
+        // Mostrar el mensaje de error recibido del servidor
+        console.log('Server Response:', err.response.data);
+        if (err.response.status === 401) {
+          setServerError('No autorizado. Verifique su token de autenticación.');
+        } else if (err.response.status === 403) {
+          setServerError('Acceso prohibido. Verifique sus permisos.');
+        } else {
+          setServerError('Error en el servidor. Intenta nuevamente más tarde.');
+        }
       } else {
-        setServerError('Error en el servidor. Intenta nuevamente más tarde.');
+        setServerError('Error en la conexión. Verifica tu internet.');
       }
     } finally {
       setSubmitting(false);
@@ -83,10 +93,10 @@ const BeerReviews = () => {
           <Text style={styles.label}>Calificación (1-5): {rating.toFixed(1)}</Text>
           <Slider
             value={rating}
-            onValueChange={(value) => setRating(parseFloat(value.toFixed(1)))} // Ajuste para que el slider solo muestre un decimal
+            onValueChange={(value) => setRating(parseFloat(value.toFixed(1)))}
             minimumValue={1}
             maximumValue={5}
-            step={0.1} // Incrementos de 0.1 para mayor precisión
+            step={0.1}
             thumbTintColor="#007bff"
             minimumTrackTintColor="#007bff"
             maximumTrackTintColor="#ccc"

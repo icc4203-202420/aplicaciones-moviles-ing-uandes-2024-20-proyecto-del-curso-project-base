@@ -64,7 +64,7 @@ const Reviews = ({ beerId }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.averageRating}>Promedio de Calificación: {state.averageRating || 'N/A'}</Text>
+      <Text style={styles.averageRating}>Average Rating: {state.averageRating || 'N/A'}</Text>
       {state.reviews.length === 0 ? (
         <Text style={styles.noReviews}>No hay reseñas para esta cerveza todavía.</Text>
       ) : (

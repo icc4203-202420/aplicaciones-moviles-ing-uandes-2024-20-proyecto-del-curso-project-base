@@ -1,6 +1,5 @@
-// app/beers/[id].js
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import ReviewForm from './reviewForm';
@@ -13,7 +12,6 @@ const BeerDetailsScreen = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  console.log("app/beers/:id");
   useEffect(() => {
     if (id) {
       fetchBeerDetails();
@@ -37,7 +35,6 @@ const BeerDetailsScreen = () => {
   };
 
   const handleReviewSubmit = async (review) => {
-    // Aquí puedes implementar la lógica para enviar la evaluación al servidor
     console.log('Enviando evaluación:', review);
   };
 
@@ -59,7 +56,7 @@ const BeerDetailsScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>{beer.name || 'No name available'}</Text>
       <Text style={styles.detail}>Style: {beer.style || 'N/A'}</Text>
       <Text style={styles.detail}>Alcohol: {beer.alcohol || 'N/A'}</Text>
@@ -68,10 +65,23 @@ const BeerDetailsScreen = () => {
       <Text style={styles.detail}>Yeast: {beer.yeast || 'N/A'}</Text>
       <Text style={styles.detail}>Hop: {beer.hop || 'N/A'}</Text>
       <Text style={styles.detail}>Malts: {beer.malts || 'N/A'}</Text>
+
+      <View style={styles.barsContainer}>
+        <Text style={styles.barsTitle}>Bares que sirven esta cerveza</Text>
+        {beer.bar_names && beer.bar_names.length > 0 ? (
+          beer.bar_names.map((bar, index) => (
+            <Text key={index} style={styles.barName}>{bar}</Text>
+          ))
+        ) : (
+          <Text>No hay bares disponibles para esta cerveza.</Text>
+        )}
+      </View>
+      
+      <Text style={styles.title}>Rating</Text>
       <ReviewForm beerId={id} onSubmit={handleReviewSubmit} />
       <Reviews beerId={id} />
       <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
-    </View>
+    </ScrollView>
   );
 };
 
@@ -100,6 +110,19 @@ const styles = StyleSheet.create({
   },
   detail: {
     fontSize: 18,
+    marginBottom: 5,
+  },
+  barsContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  barsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  barName: {
+    fontSize: 16,
     marginBottom: 5,
   },
   backButton: {

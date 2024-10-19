@@ -4,9 +4,24 @@ class API::V1::ReviewsController < ApplicationController
   before_action :set_user, only: [:index, :create]
   before_action :set_review, only: [:show, :update, :destroy]
 
+  # def index
+  #   @reviews = Review.where(user: @user)
+  #   render json: { reviews: @reviews }, status: :ok
+  # end
   def index
-    @reviews = Review.where(user: @user)
-    render json: { reviews: @reviews }, status: :ok
+    if @user
+      @reviews = Review.where(user: @user)
+    elsif @beer
+      @reviews = Review.where(beer: @beer)
+    else
+      @reviews = Review.all
+    end
+
+    render json: {
+      reviews: @reviews.as_json(include: {
+        user: { only: [:handle, :email] }
+      })
+    }, status: :ok
   end
 
   def show
@@ -19,10 +34,11 @@ class API::V1::ReviewsController < ApplicationController
 
   def create
     # @review = @beer.reviews.new(review_params)
-    @review = @beer.reviews.new(review_params.merge(user: current_user))
+    @review = @beer.reviews.new(review_params.merge(user: @user))
     if @review.save
       render json: @review, status: :created
     else
+      Rails.logger.error("Review not saved: #{@review.errors.full_messages.join(', ')}")
       render json: @review.errors, status: :unprocessable_entity
     end
   end
@@ -52,9 +68,12 @@ class API::V1::ReviewsController < ApplicationController
   end
 
   def set_user
-    # @user = User.find(params[:user_id])
-    @user = current_user
-    render json: { error: "User not authenticated" }, status: :unauthorized unless @user
+    user_id = params[:user_id] || request.headers['USER_ID']
+    @user = User.find_by(id: user_id)
+    # @user = current_user
+    Rails.logger.info("Current User: #{@user.inspect}")
+    Rails.logger.info("Current User ID: #{user_id}")
+    # render json: { error: "User not authenticated" }, status: :unauthorized unless @user
   end
 
   def review_params
