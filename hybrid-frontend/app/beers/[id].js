@@ -60,6 +60,7 @@ const BeerDetailsScreen = () => {
       <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
 
       <Text style={styles.title}>{beer.name || 'No name available'}</Text>
+      <Text style={styles.subtitle}>Brewery: {beer.brewery_name || 'N/A'}</Text>
       <Text style={styles.detail}>Style: {beer.style || 'N/A'}</Text>
       <Text style={styles.detail}>Alcohol: {beer.alcohol || 'N/A'}</Text>
       <Text style={styles.detail}>IBU: {beer.ibu || 'N/A'}</Text>
@@ -107,6 +108,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 19,
     fontWeight: 'bold',
     marginBottom: 10,
   },
