@@ -11,6 +11,7 @@ import { Card } from "react-native-elements";
 import fetchBeers from "../../services/beers/fetchAllBeers";
 import makeReview from "../../services/reviews/makeReview";
 import { getItem } from "../../util/Storage";
+import { useRouter } from "expo-router";
 
 interface Beer {
   id: number;
@@ -39,19 +40,26 @@ const Beers: React.FC<BeersProps> = ({ searchQuery }) => {
 
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [reviewedbeerId, setReviewedbeerId] = useState<number | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
+    const getUserId = async () => {
+      const userId = await getItem("userId");
+      setUserId(userId);
+    };
     const getBeers = async () => {
       try {
         const response = await fetchBeers();
         setBeers(response);
       } catch (error) {
         console.error("Error fetching beers:", error);
-      } finally {
-        setLoading(false);
       }
     };
-    getBeers();
+    getUserId()
+      .then(getBeers)
+      .finally(() => setLoading(false));
   }, []);
 
   const filteredBeers = beers.filter((beer) =>
@@ -73,7 +81,6 @@ const Beers: React.FC<BeersProps> = ({ searchQuery }) => {
   };
 
   const handleSubmitReview = async (beerId: number) => {
-    const userId = await getItem("userId");
     if (reviewText.length < 15) {
       setErrorMessage("La reseña debe tener al menos 15 caracteres.");
       return;
@@ -91,12 +98,14 @@ const Beers: React.FC<BeersProps> = ({ searchQuery }) => {
 
     try {
       const response = await makeReview(reviewData, userId);
-
       setReviewSubmitted(true);
       setReviewText("");
       setRating(0);
       setErrorMessage("");
       setReviewedbeerId(beerId);
+      setTimeout(() => {
+        setReviewSubmitted(false);
+      }, 3000);
     } catch (error) {
       console.error("Error submitting review:", error);
     }
@@ -113,7 +122,13 @@ const Beers: React.FC<BeersProps> = ({ searchQuery }) => {
             <View>
               <TouchableOpacity onPress={() => handleBeerClick(item.id)}>
                 <Card containerStyle={{ padding: 10 }}>
-                  <Card.Title>{item.name}</Card.Title>
+                  <Card.Title
+                    onPress={() => {
+                      router.replace(`/beers/${item.id}`);
+                    }}
+                  >
+                    {item.name}
+                  </Card.Title>
                   <Card.Divider />
                   <Text style={{ marginBottom: 10 }}>Style: {item.style}</Text>
                   <Text>

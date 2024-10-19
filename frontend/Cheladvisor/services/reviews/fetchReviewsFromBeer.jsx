@@ -5,7 +5,7 @@ export default async function fetchReviewsFromBeer(BeerId) {
 
   try {
     const response = await axios.get(`${baseURL}/beers/${BeerId}/reviews`);
-    return response.data;
+    return response.data.reviews;
   } catch (error) {
     throw new Error(error);
   }

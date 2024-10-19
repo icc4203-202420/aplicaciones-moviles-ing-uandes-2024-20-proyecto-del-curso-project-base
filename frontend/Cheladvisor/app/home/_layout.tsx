@@ -1,4 +1,4 @@
-import { Slot } from "expo-router";
+import { Slot, Stack } from "expo-router";
 import React from "react";
 import { SearchBar } from "@rneui/themed";
 import { useState } from "react";

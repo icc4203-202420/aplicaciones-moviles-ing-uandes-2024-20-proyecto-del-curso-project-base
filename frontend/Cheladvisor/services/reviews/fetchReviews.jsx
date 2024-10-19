@@ -5,7 +5,7 @@ export default async function fetchReviewsFromUser(userId) {
 
   try {
     const response = await axios.get(`${baseURL}/users/${userId}/reviews`);
-    return response.data;
+    return response.data.reviews;
   } catch (error) {
     throw new Error(error);
   }
