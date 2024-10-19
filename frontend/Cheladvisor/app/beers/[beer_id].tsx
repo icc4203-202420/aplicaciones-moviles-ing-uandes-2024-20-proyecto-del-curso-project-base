@@ -183,7 +183,7 @@ function BeerPage() {
             ))}
             {beerInfo?.bars_beer.length === 0 && <Text>No bars found</Text>}
             <Text style={styles.tilte2}>Produced by</Text>
-            <Text>{beerInfo?.brewery.name || "No info"}</Text>
+            <Text>{beerInfo?.brewery.name}</Text>
             <ReviewList user_id={userId} beer_id={beer_id} />
           </>
         )}
