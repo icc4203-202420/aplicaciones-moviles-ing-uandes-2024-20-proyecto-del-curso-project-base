@@ -79,7 +79,7 @@ const BeerDetailsScreen = () => {
       
       <Text style={styles.title}>Rating</Text>
       <ReviewForm beerId={id} onSubmit={handleReviewSubmit} />
-      <Reviews beerId={id} />
+      <Reviews beerId={id} beer={beer}/>
       <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
     </ScrollView>
   );

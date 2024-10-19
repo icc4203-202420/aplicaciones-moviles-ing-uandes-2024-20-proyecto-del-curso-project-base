@@ -26,12 +26,13 @@ const BeerReviews = ({ beerId }) => {
   const router = useRouter();
 
   const handleSubmit = async (values, { setSubmitting }) => {
-    const userId = await AsyncStorage.getItem('USER_ID');
+    // const userId = await AsyncStorage.getItem('USER_ID');
+    const userId = parseInt(await AsyncStorage.getItem('USER_ID'), 10);
     const token = await AsyncStorage.getItem('authToken');
 
-    console.log("TOKEN: ", token);
-    console.log("USER ID: ", userId);
-    console.log("BEER ID: ", beerId);
+    console.log("TOKEN:", token);
+    console.log("USER ID:", userId);
+    console.log("BEER ID:", beerId);
 
     if (!token || !userId || !beerId) {
       setServerError('No hay un token o usuario disponible para la autenticación o el beerId es inválido.');
@@ -94,7 +95,7 @@ const BeerReviews = ({ beerId }) => {
           <Slider
             value={rating}
             onValueChange={(value) => setRating(parseFloat(value.toFixed(1)))}
-            minimumValue={1}
+            minimumValue={0}
             maximumValue={5}
             step={0.1}
             thumbTintColor="#007bff"

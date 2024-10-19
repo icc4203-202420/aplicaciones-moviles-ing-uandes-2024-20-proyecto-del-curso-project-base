@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-nativ
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage para obtener el token
 import axios from 'axios'; // Importa axios
 import { NGROK_URL } from '@env';
+import { FontAwesome } from '@expo/vector-icons'; // Importa FontAwesome para los íconos
 
 const initialState = {
   loading: true,
@@ -30,9 +31,10 @@ const reducer = (state, action) => {
   }
 };
 
-const Reviews = ({ beerId }) => {
+const Reviews = ({ beerId, beer }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   console.log("REVIEWS rendered");
+  
   useEffect(() => {
     const fetchReviews = async () => {
       dispatch({ type: 'LOADING' });
@@ -65,18 +67,21 @@ const Reviews = ({ beerId }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.averageRating}>Average Rating: {state.averageRating || 'N/A'}</Text>
+      <Text style={styles.averageRating}>Average Rating: {parseFloat(beer.avg_rating).toFixed(2) || 'N/A'}</Text>
       {state.reviews.length === 0 ? (
         <Text style={styles.noReviews}>No hay reseñas para esta cerveza todavía.</Text>
       ) : (
         <FlatList
           data={state.reviews}
           keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
-
           renderItem={({ item }) => (
             <View style={styles.reviewContainer}>
+              <View style={styles.userInfo}>
+                <FontAwesome name="user" size={24} color="black" />
+                <Text style={styles.userHandle}>{item.user.handle}</Text>
+                <Text style={styles.reviewRating}>Calificación: {item.rating}</Text>
+              </View>
               <Text style={styles.reviewText}>{item.text}</Text>
-              <Text style={styles.reviewRating}>Calificación: {item.rating}</Text>
             </View>
           )}
           ListEmptyComponent={<Text style={styles.noReviews}>No hay evaluaciones.</Text>}
@@ -100,12 +105,23 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     borderBottomWidth: 1,
   },
-  reviewText: {
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  userHandle: {
     fontSize: 16,
+    color: 'black',
+    marginLeft: 5,
   },
   reviewRating: {
     fontSize: 14,
     color: 'gray',
+    marginLeft: 10,
+  },
+  reviewText: {
+    fontSize: 16,
   },
   noReviews: {
     textAlign: 'center',

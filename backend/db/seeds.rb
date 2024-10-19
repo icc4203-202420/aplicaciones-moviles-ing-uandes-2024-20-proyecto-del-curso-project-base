@@ -51,9 +51,9 @@ if Rails.env.development?
     end
   end
 
-  beers.each do |beer|
-    rand(3..5).times do
-      FactoryBot.create(:review, user: users.sample, beer: beer, text: Faker::Lorem.sentence(word_count: rand(15..30)), rating: rand(1..5))
-    end
-  end
+  # beers.each do |beer|
+  #   rand(3..5).times do
+  #     FactoryBot.create(:review, user: users.sample, beer: beer, text: Faker::Lorem.sentence(word_count: rand(15..30)), rating: rand(1..5))
+  #   end
+  # end
 end
