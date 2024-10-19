@@ -24,10 +24,9 @@ const BeerReviews = ({ beerId }) => {
   const [serverError, setServerError] = useState('');
   const [rating, setRating] = useState(0);
   const router = useRouter();
-
   const handleSubmit = async (values, { setSubmitting }) => {
     // const userId = await AsyncStorage.getItem('USER_ID');
-    const userId = parseInt(await AsyncStorage.getItem('USER_ID'), 10);
+    const userId = await AsyncStorage.getItem('USER_ID');
     const token = await AsyncStorage.getItem('authToken');
 
     console.log("TOKEN:", token);
@@ -50,7 +49,8 @@ const BeerReviews = ({ beerId }) => {
           review: { 
             rating: values.rating, 
             text: values.text,
-          }
+          },
+          user_id: userId
         },
         {
           headers: {
@@ -62,7 +62,8 @@ const BeerReviews = ({ beerId }) => {
       );
       
       setServerError('');
-      router.push("/home");
+      router.push("/beers");
+      // router.back();
     } catch (err) {
       console.log('Error:', err);
       if (err.response) {
@@ -95,7 +96,7 @@ const BeerReviews = ({ beerId }) => {
           <Slider
             value={rating}
             onValueChange={(value) => setRating(parseFloat(value.toFixed(1)))}
-            minimumValue={0}
+            minimumValue={1}
             maximumValue={5}
             step={0.1}
             thumbTintColor="#007bff"

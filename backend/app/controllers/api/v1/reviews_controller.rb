@@ -69,10 +69,10 @@ class API::V1::ReviewsController < ApplicationController
 
   def set_user
     user_id = params[:user_id] || request.headers['USER_ID']
+    Rails.logger.info("Current User ID: #{user_id}")
     @user = User.find_by(id: user_id.to_i)
     # @user = current_user
     Rails.logger.info("Current User: #{@user.inspect}")
-    Rails.logger.info("Current User ID: #{user_id}")
     render json: { error: "User not authenticated" }, status: :unauthorized unless @user
   end
 

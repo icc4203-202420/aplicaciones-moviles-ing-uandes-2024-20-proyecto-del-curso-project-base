@@ -49,7 +49,7 @@ const RegisterScreen = () => {
       console.log('Datos de la respuesta:', response.data);
 
       if (response.headers && response.headers.authorization) {
-        const token = response.headers.authorization.split(' ')[1];
+        const token = response.headers['authorization'];
         console.log("token",token);
         if (token) {
           await AsyncStorage.setItem('authToken', token); // Almacenar el token en AsyncStorage
