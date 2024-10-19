@@ -168,7 +168,7 @@ function BeerPage() {
         {errorMessage && <Text>{errorMessage}</Text>}
         {!loading && !errorMessage && beer && userId && beer_id && (
           <>
-            <Text>{beer.name}</Text>
+            <Text style={styles.tilte1}>{beer.name}</Text>
             <Text>{beer.style}</Text>
             <Text>{beer.avg_rating}</Text>
             <Text>{beer.hop}</Text>
@@ -177,6 +177,13 @@ function BeerPage() {
             <Text>{beer.ibu}</Text>
             <Text>{beer.alcohol}</Text>
             <Text>{beer.blg}</Text>
+            <Text style={styles.tilte2}>Find it in</Text>
+            {beerInfo?.bars_beer.map((bar) => (
+              <Text key={bar.id}>{bar.name}</Text>
+            ))}
+            {beerInfo?.bars_beer.length === 0 && <Text>No bars found</Text>}
+            <Text style={styles.tilte2}>Produced by</Text>
+            <Text>{beerInfo?.brewery.name || "No info"}</Text>
             <ReviewList user_id={userId} beer_id={beer_id} />
           </>
         )}
@@ -194,6 +201,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "#f0f0f0",
     padding: 10,
+  },
+  tilte1: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  tilte2: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    marginTop: 10,
   },
 });
 
