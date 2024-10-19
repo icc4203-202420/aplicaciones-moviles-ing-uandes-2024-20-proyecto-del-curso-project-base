@@ -1,11 +1,10 @@
-// app/beers/reviews.js
 import React, { useEffect, useReducer } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage para obtener el token
-import axios from 'axios'; // Importa axios
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { NGROK_URL } from '@env';
-import { FontAwesome } from '@expo/vector-icons'; // Importa FontAwesome para los íconos
-import { Rating } from 'react-native-ratings'; // Importa el componente Rating
+import { FontAwesome } from '@expo/vector-icons';
+import { Rating } from 'react-native-ratings';
 
 const initialState = {
   loading: true,
@@ -34,80 +33,77 @@ const reducer = (state, action) => {
 
 const Reviews = ({ beerId, beer }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  console.log("REVIEWS rendered");
-  
+
   useEffect(() => {
     const fetchReviews = async () => {
       dispatch({ type: 'LOADING' });
       try {
-        const token = await AsyncStorage.getItem('authToken'); // Obtiene el token de autenticación
-        console.log("REVIEWS TOKEN:", token);
+        const token = await AsyncStorage.getItem('authToken');
         const response = await axios.get(`${NGROK_URL}/api/v1/beers/${beerId}`, {
           headers: {
-            'Authorization': `Bearer ${token}`, // Incluye el token en los encabezados de la solicitud
+            'Authorization': `Bearer ${token}`,
           },
         });
-        console.log('Beer details response:', response.data);
-        console.log('Reviews:', response.data.reviews);
         dispatch({ type: 'SUCCESS', payload: { reviews: response.data.reviews || [], averageRating: response.data.averageRating } });
       } catch (error) {
         dispatch({ type: 'ERROR', payload: error.message });
-        console.log(error.message);
       }
     };
     fetchReviews();
   }, [beerId]);
 
+  const renderHeader = () => (
+    <View style={styles.headerContainer}>
+      <Text style={styles.averageRating}>Average Rating: {parseFloat(beer.avg_rating).toFixed(2) || 'N/A'}</Text>
+      {state.error && <Text style={styles.error}>{state.error}</Text>}
+    </View>
+  );
+
+  const renderReviewItem = ({ item }) => (
+    <View style={styles.reviewContainer}>
+      <View style={styles.userInfo}>
+        <FontAwesome name="user" size={24} color="black" />
+        <Text style={styles.userHandle}>{item.user.handle}</Text>
+        <View style={styles.ratingContainer}>
+          <Rating
+            startingValue={item.rating}
+            readonly
+            imageSize={20}
+            style={styles.rating}
+          />
+          <Text style={styles.reviewRating}>{item.rating}</Text>
+        </View>
+      </View>
+      <Text style={styles.reviewText}>{item.text}</Text>
+    </View>
+  );
+
   if (state.loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  if (state.error) {
-    return <Text style={styles.error}>{state.error}</Text>;
-  }
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.averageRating}>Average Rating: {parseFloat(beer.avg_rating).toFixed(2) || 'N/A'}</Text>
-      {state.reviews.length === 0 ? (
-        <Text style={styles.noReviews}>No hay reseñas para esta cerveza todavía.</Text>
-      ) : (
-        <FlatList
-          data={state.reviews}
-          keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
-          renderItem={({ item }) => (
-            <View style={styles.reviewContainer}>
-              <View style={styles.userInfo}>
-                <FontAwesome name="user" size={24} color="black" />
-                <Text style={styles.userHandle}>{item.user.handle}</Text>
-                <View style={styles.ratingContainer}>
-                  <Rating
-                    startingValue={item.rating}
-                    readonly
-                    imageSize={20}
-                    style={styles.rating}
-                  />
-                  <Text style={styles.reviewRating}>{item.rating}</Text>
-                </View>
-              </View>
-              <Text style={styles.reviewText}>{item.text}</Text>
-            </View>
-          )}
-          ListEmptyComponent={<Text style={styles.noReviews}>No hay evaluaciones.</Text>}
-        />
-      )}
-    </View>
+    <FlatList
+      data={state.reviews}
+      keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
+      renderItem={renderReviewItem}
+      ListHeaderComponent={renderHeader}
+      ListEmptyComponent={<Text style={styles.noReviews}>No hay evaluaciones.</Text>}
+      contentContainerStyle={styles.container}
+    />
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
+    padding: 10,
+  },
+  headerContainer: {
+    marginBottom: 10,
   },
   averageRating: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
   },
   reviewContainer: {
     padding: 10,

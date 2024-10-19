@@ -56,7 +56,9 @@ const BeerDetailsScreen = () => {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
+      
       <Text style={styles.title}>{beer.name || 'No name available'}</Text>
       <Text style={styles.detail}>Style: {beer.style || 'N/A'}</Text>
       <Text style={styles.detail}>Alcohol: {beer.alcohol || 'N/A'}</Text>
@@ -80,8 +82,8 @@ const BeerDetailsScreen = () => {
       <Text style={styles.title}>Rating</Text>
       <ReviewForm beerId={id} onSubmit={handleReviewSubmit} />
       <Reviews beerId={id} beer={beer}/>
-      <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
-    </ScrollView>
+      
+    </View>
   );
 };
 
