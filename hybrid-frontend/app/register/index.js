@@ -4,7 +4,7 @@ import { Input, Button, Text } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Asegúrate de importar AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RegisterScreen = () => {
   const router = useRouter();
@@ -14,6 +14,13 @@ const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Address fields
+  const [line1, setLine1] = useState('');
+  const [line2, setLine2] = useState('');
+  const [city, setCity] = useState('');
+  const [country, setCountry] = useState(''); // Añadido campo de país
+
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -28,6 +35,13 @@ const RegisterScreen = () => {
     try {
       console.log('Registrando usuario...');
 
+      // Solo incluimos los campos de dirección si están presentes
+      const address = {};
+      if (line1) address.line1 = line1;
+      if (line2) address.line2 = line2;
+      if (city) address.city = city;
+      if (country) address.country = country;
+
       const response = await axios.post(
         `${NGROK_URL}/api/v1/signup`,
         {
@@ -38,10 +52,11 @@ const RegisterScreen = () => {
             email: email.toLowerCase(),
             password,
             password_confirmation: confirmPassword,
+            ...(Object.keys(address).length && { address }) // Solo incluir dirección si hay al menos un campo
           },
         },
         {
-          headers: { 'Content-Type': 'application/json' }, // Headers correctamente fuera del cuerpo de la solicitud
+          headers: { 'Content-Type': 'application/json' },
         }
       );
 
@@ -50,9 +65,9 @@ const RegisterScreen = () => {
 
       if (response.headers && response.headers.authorization) {
         const token = response.headers['authorization'];
-        console.log("token",token);
+        console.log("token", token);
         if (token) {
-          await AsyncStorage.setItem('authToken', token); // Almacenar el token en AsyncStorage
+          await AsyncStorage.setItem('authToken', token); 
           Alert.alert('Registro exitoso');
           router.push('/home');
         } else {
@@ -139,6 +154,33 @@ const RegisterScreen = () => {
         }}
         secureTextEntry
       />
+
+      {/* Address Fields (Opcionales) */}
+      <Input
+        placeholder="Dirección Línea 1 (Opcional)"
+        value={line1}
+        onChangeText={setLine1}
+        autoCapitalize="words"
+      />
+      <Input
+        placeholder="Dirección Línea 2 (Opcional)"
+        value={line2}
+        onChangeText={setLine2}
+        autoCapitalize="words"
+      />
+      <Input
+        placeholder="Ciudad (Opcional)"
+        value={city}
+        onChangeText={setCity}
+        autoCapitalize="words"
+      />
+      <Input
+        placeholder="País (Opcional)"
+        value={country}
+        onChangeText={setCountry}
+        autoCapitalize="words"
+      />
+
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
       <Button
         title="Registrarse"
