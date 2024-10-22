@@ -1,0 +1,72 @@
+// src/components/UserSearch.jsx
+import React, { useState } from 'react';
+import { View, TextInput, Button, FlatList, Text, StyleSheet } from 'react-native';
+import axios from 'axios';
+import { NGROK_URL } from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const UserSearch = () => {
+  const [handle, setHandle] = useState('');
+  const [results, setResults] = useState([]);
+  const [error, setError] = useState('');
+
+  const searchUser = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axios.get(`${NGROK_URL}/api/v1/users/search`, {
+        params: { handle },
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setResults(response.data.users);
+    } catch (err) {
+      setError('Error al buscar el usuario');
+    }
+  };
+
+  const addFriend = async (userId) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      await axios.post(`${NGROK_URL}/api/v1/friendships`, 
+        { friend_id: userId },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      alert('Solicitud de amistad enviada');
+    } catch (err) {
+      setError('Error al agregar amigo');
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        placeholder="Buscar por handle"
+        value={handle}
+        onChangeText={setHandle}
+      />
+      <Button title="Buscar" onPress={searchUser} />
+      {error && <Text style={styles.error}>{error}</Text>}
+      <FlatList
+        data={results}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.result}>
+            <Text>{item.handle}</Text>
+            <Button title="Agregar Amigo" onPress={() => addFriend(item.id)} />
+          </View>
+        )}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: { padding: 20 },
+  input: { borderWidth: 1, padding: 10, marginBottom: 10 },
+  error: { color: 'red', marginTop: 10 },
+  result: { marginVertical: 10 }
+});
+
+export default UserSearch;

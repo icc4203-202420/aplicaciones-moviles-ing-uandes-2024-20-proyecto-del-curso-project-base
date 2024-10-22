@@ -7,26 +7,31 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const HomeScreen = () => {
   const router = useRouter();
   console.log("app/home");
-  console.log("HomeScreen component loaded"); // Log para verificar la carga del componente
+  console.log("HomeScreen component loaded"); // Log to verify component loading
 
   const handleLogout = async () => {
     try {
-      // Elimina el token del almacenamiento
+      // Remove the token from storage
       await AsyncStorage.removeItem('authToken');
-      console.log('Token eliminado, cerrando sesión');
+      console.log('Token removed, logging out');
 
-      // Redirige al usuario a la pantalla de inicio de sesión
+      // Redirect the user to the login screen
       router.push('/');
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-      Alert.alert('Error', 'No se pudo cerrar la sesión. Inténtalo de nuevo.');
+      console.error('Error logging out:', error);
+      Alert.alert('Error', 'Could not log out. Please try again.');
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Welcome to the Home Screen</Text>
-      <Link href="/beers" style={styles.link}>Go to Beer Search</Link>
+      <Link href="/beers" style={styles.link}>
+        <Text>Go to Beer Search</Text> {/* Ensure this text is inside a <Text> component */}
+      </Link>
+      <Link href="/users" style={styles.link}>
+        <Text>Go to Search Friend</Text> {/* Ensure this text is inside a <Text> component */}
+      </Link>
       <Button title="Logout" onPress={handleLogout} buttonStyle={styles.button} />
     </View>
   );
@@ -35,8 +40,8 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center', // Centra verticalmente
-    alignItems: 'center', // Centra horizontalmente
+    justifyContent: 'center', // Center vertically
+    alignItems: 'center', // Center horizontally
     padding: 20,
   },
   text: {
