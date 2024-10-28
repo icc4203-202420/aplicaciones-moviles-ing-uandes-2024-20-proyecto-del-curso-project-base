@@ -14,7 +14,7 @@ function BeerList() {
 
     const fetchBeers = async () => {
         try {
-            const response = await axios.get('https://c91e-200-124-48-32.ngrok-free.app/api/v1/beers'); // Your API endpoint
+            const response = await axios.get('https://a559-201-214-18-177.ngrok-free.app/api/v1/beers'); // Your API endpoint
             console.log(response.data); // Log the entire response
             setBeers(response.data.beers || []); // Update the state with the beers data
         } catch (error) {

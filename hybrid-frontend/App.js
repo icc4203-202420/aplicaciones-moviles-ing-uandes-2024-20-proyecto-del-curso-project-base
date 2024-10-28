@@ -6,6 +6,7 @@ import Home from './components/Home';
 import Register from './components/Auth/Register';
 import BeerList from './components/Beers/BeerList';
 import BeerDetails from './components/Beers/BeerDetails';
+import FriendDetails from './components/Friends/FriendDetails';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
@@ -43,6 +44,7 @@ export default function App() {
             <Stack.Screen name="BeerDetails" options={{ title: 'Beer Details' }}>
               {props => <BeerDetails {...props} user={user} />}
             </Stack.Screen>
+            <Stack.Screen name="FriendDetails" component={FriendDetails} options={{ title: 'Friend Details' }} />
           </>
         ) : (
           <>

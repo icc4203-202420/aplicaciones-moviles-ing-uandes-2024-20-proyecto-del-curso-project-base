@@ -18,7 +18,7 @@ function BeerDetails({ route, user }) {
 
   const fetchBeerDetails = async () => {
     try {
-      const response = await axios.get(`https://c91e-200-124-48-32.ngrok-free.app/api/v1/beers/${beerId}`);
+      const response = await axios.get(`https://a559-201-214-18-177.ngrok-free.app/api/v1/beers/${beerId}`);
       if (response.status !== 200) {
         throw new Error('Error fetching beer details');
       }
@@ -33,7 +33,7 @@ function BeerDetails({ route, user }) {
 
   const fetchReviews = async () => {
     try {
-      const response = await axios.get(`https://c91e-200-124-48-32.ngrok-free.app/api/v1/reviews`);
+      const response = await axios.get(`https://a559-201-214-18-177.ngrok-free.app/api/v1/reviews`);
       if (response.status === 200) {
         console.log('Reviews fetched:', response.data); // Log the response to verify
         const filteredReviews = response.data.reviews.filter(review => review.beer_id === beerId);
@@ -53,7 +53,7 @@ function BeerDetails({ route, user }) {
 
     try {
       console.log('Submitting review for user:', user.id); // Log user ID for debugging
-      const response = await axios.post(`https://c91e-200-124-48-32.ngrok-free.app/api/v1/users/${user.id}/reviews`, {
+      const response = await axios.post(`https://a559-201-214-18-177.ngrok-free.app/api/v1/users/${user.id}/reviews`, {
         review: {
           text: comment,
           rating: rating.toString(), // Ensure rating is a string

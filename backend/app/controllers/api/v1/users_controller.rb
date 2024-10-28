@@ -31,18 +31,16 @@ class API::V1::UsersController < ApplicationController
 
   def search
     if params[:handle].present?
-      # Asegurarnos de que el handle siempre comience con '@' y no tenga espacios extra
       search_handle = params[:handle].strip
-      search_handle = search_handle.start_with?('@') ? search_handle : "@#{search_handle}"
-  
-      # Buscar usuarios cuyo handle coincida exactamente con el término de búsqueda
-      @users = User.where("handle = ?", search_handle)
+      # Modificación para buscar sin necesidad de @ en el handle
+      @users = User.where("handle LIKE ?", "%#{search_handle}%")
       
       render json: @users, status: :ok
     else
       render json: { error: 'Handle parameter is missing' }, status: :unprocessable_entity
     end
   end
+  
   
   def friends
     @user = User.find(params[:id])

@@ -15,7 +15,7 @@ const validationSchema = yup.object().shape({
 export default function Login({ setIsAuthenticated, navigation, setUser }) {
     const handleSubmit = async (values) => {
         try {
-            const response = await axios.post('https://c91e-200-124-48-32.ngrok-free.app/api/v1/login', 
+            const response = await axios.post('https://a559-201-214-18-177.ngrok-free.app/api/v1/login', 
                 {
                     user: {
                         email: values.email,

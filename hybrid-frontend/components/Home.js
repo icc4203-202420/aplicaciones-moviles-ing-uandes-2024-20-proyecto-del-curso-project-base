@@ -21,6 +21,10 @@ export default function Home({ navigation, setIsAuthenticated, setUser, user }) 
         <Text style={styles.buttonText}>Buscar Cerveza</Text>
       </Pressable>
 
+      <Pressable style={styles.button} onPress={() => navigation.navigate('FriendDetails')}>
+        <Text style={styles.buttonText}>Amigos</Text>
+      </Pressable>
+
       <Pressable style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
         <Text style={styles.buttonText}>Cerrar Sesión</Text>
       </Pressable>

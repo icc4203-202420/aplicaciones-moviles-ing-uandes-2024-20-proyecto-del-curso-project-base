@@ -17,7 +17,7 @@ const validationSchema = Yup.object().shape({
 export default function Register({ navigation }) {
   const handleSubmit = async (values) => {
     try {
-      const response = await axios.post('https://c91e-200-124-48-32.ngrok-free.app/api/v1/signup', 
+      const response = await axios.post('https://a559-201-214-18-177.ngrok-free.app/api/v1/signup', 
         {
           user: {
             first_name: values.firstname,
