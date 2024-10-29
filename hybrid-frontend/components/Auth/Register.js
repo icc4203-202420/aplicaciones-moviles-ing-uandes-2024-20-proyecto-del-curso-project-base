@@ -4,6 +4,7 @@ import { Input } from 'react-native-elements';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
+import API_BASE_URL from '../Hooks/fetchAxios';
 
 // Esquema de validación con Yup
 const validationSchema = Yup.object().shape({
@@ -17,7 +18,7 @@ const validationSchema = Yup.object().shape({
 export default function Register({ navigation }) {
   const handleSubmit = async (values) => {
     try {
-      const response = await axios.post('https://a559-201-214-18-177.ngrok-free.app/api/v1/signup', 
+      const response = await axios.post(`${API_BASE_URL}/signup`, 
         {
           user: {
             first_name: values.firstname,

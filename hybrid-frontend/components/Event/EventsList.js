@@ -4,28 +4,27 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import API_BASE_URL from '../Hooks/fetchAxios';
 
-function BeerList() {
-    const [beers, setBeers] = useState([]);
+function EventsList() {
+    const [events, setEvents] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const navigation = useNavigation();
 
     useEffect(() => {
-        fetchBeers();
+        fetchEvents();
     }, []);
 
-    const fetchBeers = async () => {
+    const fetchEvents = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/beers`); // Your API endpoint
-            console.log(response.data); // Log the entire response
-            setBeers(response.data.beers || []); // Update the state with the beers data
+            const response = await axios.get(`${API_BASE_URL}/events`); // Your API endpoint
+            console.log('Eventos Recibidos', response.data); // Log the entire response
+            setEvents(Array.isArray(response.data)? response.data : []); // Update the state with the beers data
         } catch (error) {
-            console.error('Error fetching beers:', error);
+            console.error('Error fetching events:', error);
         }
     };
     
-
-    const filteredBeers = beers.filter(beer =>
-        beer.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredEvents = events.filter(event =>
+        event.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     
@@ -33,23 +32,23 @@ function BeerList() {
         <ScrollView style={styles.pageContainer}>
             <View style={styles.container}>
                 <TextInput
-                    placeholder="Busca Cerveza..."
+                    placeholder="Busca eventos..."
                     value={searchTerm}
                     onChangeText={setSearchTerm}
                     style={styles.input}
                 />
-
                 <View style={styles.listContainer}>
-                    {/* FlatList para manejar el listado de cervezas */}
                     <FlatList
-                        data={filteredBeers}
-                        keyExtractor={beer => beer.id.toString()}
+                        data={filteredEvents}
+                        keyExtractor={event => event.id.toString()}
                         renderItem={({ item }) => (
                             <Pressable 
-                                onPress={() => navigation.navigate('BeerDetails', { beerId: item.id })} 
-                                style={styles.beerButton}
+                                onPress={() => navigation.navigate('EventsDetails', { eventId: item.id })} 
+                                style={styles.eventButton}
                             >
-                                <Text style={styles.beerText}>{item.name}</Text>
+                                <Text style={styles.eventText}>{item.name}</Text>
+                                <Text style={styles.eventDate}>fecha: {new Date(item.date).toLocaleDateString()}</Text>
+                                <Text style={styles.barName}>Bar: {item.bar?.name || 'No disponible'} </Text>
                             </Pressable>
                         )}
                         contentContainerStyle={{ paddingBottom: 20 }}
@@ -78,16 +77,20 @@ const styles = StyleSheet.create({
     listContainer: {
         flex: 1,
     },
-    beerButton: {
+    eventButton: {
         backgroundColor: '#ccc', // Botones en gris
         padding: 15,
         marginBottom: 10,
         borderRadius: 10,
     },
-    beerText: {
+    eventText: {
         color: '#f0f0f0', // Color del background del login para el texto
         fontSize: 16,
     },
+    eventDate: {
+        color: '#666',
+        fontSize: 14,
+    },
 });
 
-export default BeerList;
+export default EventsList;

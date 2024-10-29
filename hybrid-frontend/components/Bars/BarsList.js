@@ -4,28 +4,28 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import API_BASE_URL from '../Hooks/fetchAxios';
 
-function BeerList() {
-    const [beers, setBeers] = useState([]);
+function BarsList() {
+    const [bars, setBars] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const navigation = useNavigation();
 
     useEffect(() => {
-        fetchBeers();
+        fetchBars();
     }, []);
 
-    const fetchBeers = async () => {
+    const fetchBars = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/beers`); // Your API endpoint
+            const response = await axios.get(`${API_BASE_URL}/bars`); // Your API endpoint
             console.log(response.data); // Log the entire response
-            setBeers(response.data.beers || []); // Update the state with the beers data
+            setBars(response.data.bars || []); // Update the state with the beers data
         } catch (error) {
-            console.error('Error fetching beers:', error);
+            console.error('Error fetching bars:', error);
         }
     };
     
 
-    const filteredBeers = beers.filter(beer =>
-        beer.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredBars = bars.filter(bar =>
+        bar.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     
@@ -33,7 +33,7 @@ function BeerList() {
         <ScrollView style={styles.pageContainer}>
             <View style={styles.container}>
                 <TextInput
-                    placeholder="Busca Cerveza..."
+                    placeholder="Busca Bares..."
                     value={searchTerm}
                     onChangeText={setSearchTerm}
                     style={styles.input}
@@ -42,14 +42,14 @@ function BeerList() {
                 <View style={styles.listContainer}>
                     {/* FlatList para manejar el listado de cervezas */}
                     <FlatList
-                        data={filteredBeers}
-                        keyExtractor={beer => beer.id.toString()}
+                        data={filteredBars}
+                        keyExtractor={bar => bar.id.toString()}
                         renderItem={({ item }) => (
                             <Pressable 
-                                onPress={() => navigation.navigate('BeerDetails', { beerId: item.id })} 
-                                style={styles.beerButton}
+                                onPress={() => navigation.navigate('BarsDetails', { barId: item.id })} 
+                                style={styles.barButton}
                             >
-                                <Text style={styles.beerText}>{item.name}</Text>
+                                <Text style={styles.barText}>{item.name}</Text>
                             </Pressable>
                         )}
                         contentContainerStyle={{ paddingBottom: 20 }}
@@ -78,16 +78,16 @@ const styles = StyleSheet.create({
     listContainer: {
         flex: 1,
     },
-    beerButton: {
+    barButton: {
         backgroundColor: '#ccc', // Botones en gris
         padding: 15,
         marginBottom: 10,
         borderRadius: 10,
     },
-    beerText: {
+    barText: {
         color: '#f0f0f0', // Color del background del login para el texto
         fontSize: 16,
     },
 });
 
-export default BeerList;
+export default BarsList;

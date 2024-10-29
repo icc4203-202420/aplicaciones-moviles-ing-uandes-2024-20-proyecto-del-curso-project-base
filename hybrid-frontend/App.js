@@ -3,10 +3,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from './components/Auth/Login';
 import Home from './components/Home';
-import Register from './components/Auth/Register';
+import Register from './components/Auth/Register';    
 import BeerList from './components/Beers/BeerList';
 import BeerDetails from './components/Beers/BeerDetails';
 import FriendDetails from './components/Friends/FriendDetails';
+import BarsDetails from './components/Bars/BarsDetails';
+import BarsList from './components/Bars/BarsList';
+import EventsList from './components/Event/EventsList';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
@@ -45,6 +48,9 @@ export default function App() {
               {props => <BeerDetails {...props} user={user} />}
             </Stack.Screen>
             <Stack.Screen name="FriendDetails" component={FriendDetails} options={{ title: 'Friend Details' }} />
+            <Stack.Screen name="BarsDetails" component={BarsDetails} options={{ title: 'Bar Details' }} />
+            <Stack.Screen name="BarsList" component={BarsList} options={{ title: 'Bar List' }} />
+            <Stack.Screen name="EventsList" component={EventsList} options={{ title: 'Events List' }} />
           </>
         ) : (
           <>

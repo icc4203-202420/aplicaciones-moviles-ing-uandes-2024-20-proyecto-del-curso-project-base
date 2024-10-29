@@ -5,6 +5,7 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import API_BASE_URL from '../Hooks/fetchAxios';
 
 // Validation schema using Yup
 const validationSchema = yup.object().shape({
@@ -15,7 +16,7 @@ const validationSchema = yup.object().shape({
 export default function Login({ setIsAuthenticated, navigation, setUser }) {
     const handleSubmit = async (values) => {
         try {
-            const response = await axios.post('https://a559-201-214-18-177.ngrok-free.app/api/v1/login', 
+            const response = await axios.post(`${API_BASE_URL}/login`, 
                 {
                     user: {
                         email: values.email,
@@ -28,22 +29,22 @@ export default function Login({ setIsAuthenticated, navigation, setUser }) {
                     },
                 }
             );
-
+    
             const userData = response.data.status.data.user;
-
+    
             if (response.status === 200) {
                 alert('Login Exitoso');
                 setIsAuthenticated(true);
                 setUser(userData);
                 console.log('User:', userData);
                 navigation.navigate('Home');
-                await AsyncStorage.setItem('user', JSON.stringify(userData)); // Store user data
+                await AsyncStorage.setItem('user', JSON.stringify(userData)); // Almacena el usuario
             } else {
-                alert(`Error: ${response.data.status.message}`); // Corrected error handling
+                alert(`Error: ${response.data.status.message}`);
             }
         } catch (error) {
             console.error('Error en el login:', error);
-            alert('Error en el login: ' + error.message); // More descriptive error message
+            alert('Error en el login: ' + error.message);
         }
     };
             

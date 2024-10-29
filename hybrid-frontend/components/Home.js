@@ -25,6 +25,14 @@ export default function Home({ navigation, setIsAuthenticated, setUser, user }) 
         <Text style={styles.buttonText}>Amigos</Text>
       </Pressable>
 
+      <Pressable style={styles.button} onPress={() => navigation.navigate('BarsList')}>
+        <Text style={styles.buttonText}>Bares</Text>
+      </Pressable>
+
+      <Pressable style={styles.button} onPress={() => navigation.navigate('EventsList')}>
+        <Text style={styles.buttonText}>Eventos</Text>
+      </Pressable>
+
       <Pressable style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
         <Text style={styles.buttonText}>Cerrar Sesión</Text>
       </Pressable>

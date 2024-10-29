@@ -3,6 +3,7 @@ import { View, TextInput, StyleSheet, FlatList, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import SearchFriendList from "./FriendList";
+import API_BASE_URL from "../Hooks/fetchAxios";
 
 export default function FriendsDetails() {
     const [friends, setFriends] = useState([]); 
@@ -29,7 +30,7 @@ export default function FriendsDetails() {
     const fetchFriends = async (userId) => {
         if (!userId) return;
         try {
-            const response = await axios.get(`https://a559-201-214-18-177.ngrok-free.app/api/v1/users/${userId}/friends`)
+            const response = await axios.get(`${API_BASE_URL}/users/${userId}/friends`)
             setFriends(response.data)
         } catch (error) {
             console.error("Error al cargar amigos:", error);
@@ -39,7 +40,7 @@ export default function FriendsDetails() {
     const searchFriends = async () => {
         if (searchTerm.trim() !== "") {
             try {
-                const response = await axios.get(`https://a559-201-214-18-177.ngrok-free.app/api/v1/users/search?handle=${searchTerm}`);
+                const response = await axios.get(`${API_BASE_URL}/users/search?handle=${searchTerm}`);
                 setSearchResults(response.data); 
             } catch (error) {
                 console.error("Error al buscar amigos:", error);
@@ -52,7 +53,7 @@ export default function FriendsDetails() {
     const handleAddFriend = async (friendId) => {
         if (!currentUser || !currentUser.id) return;
         try {
-            const response = await axios.post(`https://a559-201-214-18-177.ngrok-free.app/api/v1/friendships`, {
+            const response = await axios.post(`${API_BASE_URL}/friendships`, {
                 friendship: { user_id: currentUser.id, friend_id: friendId },
             });
 
