@@ -38,6 +38,16 @@ class API::V1::AttendancesController < ApplicationController
     end
   end
 
+  def destroy 
+    @attendance = Attendance.find_by(user_id: params[:user_id], event_id: params[:event_id])
+    if @attendance
+      @attendance.destroy
+      render json: { message: 'Asistencia eliminada correctamente' }, status: :ok
+    else
+      render json: { message: 'No se encontró la asistencia' }, status: :not_found
+    end
+  end
+
   private
 
   def attendance_params

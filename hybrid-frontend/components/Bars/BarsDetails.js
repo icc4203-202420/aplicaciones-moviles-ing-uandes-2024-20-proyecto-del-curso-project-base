@@ -2,18 +2,44 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import API_BASE_URL from '../Hooks/fetchAxios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function BarsDetails({ route }) {
     const { barId } = route.params; 
     const [barDetails, setBarDetails] = useState(null);
     const [events, setEvents] = useState([]); 
     const [currentUser, setCurrentUser] = useState(null);
+    const [checkedInEvents, setCheckedInEvents] = useState({});
+    const [participants, setParticipants] = useState({});
 
     useEffect(() => {
         fetchBarDetails();
         fetchBarEvents();
         fetchCurrentUser();
+        loadCheckedInEvents();
     }, []);
+
+    useEffect(() => {
+        if (events.length > 0) {
+            loadCheckedInEvents();
+        }
+    }, [events]);
+
+    const loadCheckedInEvents = async () => {
+        try {
+            const updatedCheckedInEvents = {};
+            for (const event of events) {
+                const checkedInStatus = await AsyncStorage.getItem(`checkedInEvents_${event.id}`);
+                if (checkedInStatus) {
+                    updatedCheckedInEvents[event.id] = JSON.parse(checkedInStatus);
+                    fetchParticipants(event.id); // Cargar participantes si está en el evento
+                }
+            }
+            setCheckedInEvents(updatedCheckedInEvents);
+        } catch (error) {
+            console.error("Error loading checked-in events:", error);
+        }
+    };
 
     const fetchCurrentUser = async () => {
         try {
@@ -58,6 +84,18 @@ function BarsDetails({ route }) {
         }
     };
 
+    const fetchParticipants = async (eventId) => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/bars/${barId}/events/${eventId}/attendees`);
+            setParticipants((prev) => ({
+                ...prev,
+                [eventId]: response.data
+            }));
+        } catch (error) {
+            console.error('Error fetching participants:', error);
+        }
+    };
+
     const handleCheckIn = async (eventId) => {
         if (!currentUser || !currentUser.id) {
             Alert.alert("Error", "Usuario no encontrado. Inicia sesión nuevamente.");
@@ -72,11 +110,31 @@ function BarsDetails({ route }) {
     
             if (response.status === 201) {
                 Alert.alert("Check-in realizado", "Has sido registrado en este evento.");
-                // Aquí podríamos notificar a los amigos
+                setCheckedInEvents((prev) => ({...prev, [eventId]: true}));
+                await AsyncStorage.setItem(`checkedInEvents_${eventId}`, JSON.stringify(true));
+                fetchParticipants(eventId);
             }
         } catch (error) {
             console.error('Error al realizar check-in:', error);
             Alert.alert("Error", "No se pudo completar el check-in.");
+        }
+    };
+    
+    const handleCheckOut = async (eventId) => {
+        try {
+            const response = await axios.delete(
+                `${API_BASE_URL}/bars/${barId}/events/${eventId}/attendances/${currentUser.id}`
+            );
+    
+            if (response.status === 200) { // Verifica si tu controller responde con el estado 200
+                Alert.alert("Check-out realizado", "Has sido eliminado de este evento.");
+                setCheckedInEvents((prev) => ({...prev, [eventId]: false}));
+                await AsyncStorage.removeItem(`checkedInEvents_${eventId}`);
+                setParticipants((prev) => ({...prev, [eventId]: []}));
+            }
+        } catch (error) {
+            console.error('Error al realizar check-out:', error);
+            Alert.alert("Error", "No se pudo completar el check-out.");
         }
     };
 
@@ -105,12 +163,42 @@ function BarsDetails({ route }) {
                                 <Text style={styles.eventName}>{item.name}</Text>
                                 <Text style={styles.eventDate}>Fecha: {new Date(item.date).toLocaleDateString()}</Text>
                                 <Text style={styles.eventDescription}>{item.description}</Text>
-                                <Pressable
-                                    style={styles.checkInButton}
-                                    onPress={() => handleCheckIn(item.id)}
-                                >
-                                    <Text style={styles.checkInText}>Hacer Check-In</Text>
-                                </Pressable>
+
+                                {checkedInEvents[item.id] ? (
+                                    <>
+                                        <View style={styles.participantsContainer}>
+                                            <Text style={styles.participantsTitle}>Participantes:</Text>
+                                            {participants[item.id] ? (
+                                                <FlatList
+                                                    data={participants[item.id]}
+                                                    keyExtractor={(participant) => participant.id.toString()}
+                                                    renderItem={({ item: participant }) => (
+                                                        <View style={styles.participantItem}>
+                                                            <Text style={styles.participantName}>
+                                                                {participant.first_name} {participant.last_name}
+                                                            </Text>
+                                                        </View>
+                                                    )}
+                                                />
+                                            ) : (
+                                                <Text>Cargando participantes...</Text>
+                                            )}
+                                        </View>
+                                        <Pressable
+                                            style={styles.checkOutButton}
+                                            onPress={() => handleCheckOut(item.id)}
+                                        >
+                                            <Text style={styles.checkOutText}>Salir del Evento</Text>
+                                        </Pressable>
+                                    </>
+                                ) : (
+                                    <Pressable
+                                        style={styles.checkInButton}
+                                        onPress={() => handleCheckIn(item.id)}
+                                    >
+                                        <Text style={styles.checkInText}>Hacer Check-In</Text>
+                                    </Pressable>
+                                )}
                             </View>
                         )}
                         contentContainerStyle={{ paddingBottom: 20 }}
@@ -192,11 +280,37 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
     },
+    checkOutButton: {
+        backgroundColor: '#d9534f',
+        padding: 10,
+        borderRadius: 8,
+        marginTop: 10,
+        alignItems: 'center',
+    },
+    checkOutText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
     noEventsText: {
         fontSize: 16,
         color: '#888',
         textAlign: 'center',
         marginTop: 10,
+    },
+    participantsContainer: {
+        marginTop: 10,
+    },
+    participantsTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    participantItem: {
+        marginVertical: 5,
+    },
+    participantName: {
+        fontSize: 14,
+        color: '#333',
     },
 });
 

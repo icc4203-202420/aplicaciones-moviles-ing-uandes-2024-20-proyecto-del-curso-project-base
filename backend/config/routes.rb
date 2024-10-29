@@ -20,7 +20,7 @@ Rails.application.routes.draw do
         resources :events do
           resources :attendances, only: [:create, :index] # POST for checking in
           resources :event_pictures, only: [:create, :index, :show]
-          
+          delete 'attendances/:user_id', to: 'attendances#destroy', as: 'attendance_destroy'
           get 'attendees', on: :member # GET for listing attendees
         end
       end
@@ -48,6 +48,8 @@ Rails.application.routes.draw do
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
 
       resources :friendships, only: [:index, :create, :destroy]
+
+
       
     end
   end
