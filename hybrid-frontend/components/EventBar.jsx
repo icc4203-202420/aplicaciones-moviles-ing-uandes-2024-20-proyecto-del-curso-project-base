@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, FlatList, Image, TextInput, ScrollView, TouchableOpacity } from 'react-native';
-import { Snackbar, Avatar } from 'react-native-paper'; // Import Avatar from react-native-paper
+import { Snackbar, Avatar } from 'react-native-paper';
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store'; // Import SecureStore
+import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute } from '@react-navigation/native';
 import { backend_url } from '@env';
@@ -54,6 +54,47 @@ const EventBar = () => {
   const handleCloseSnackbar = () => {
     setSnackbarVisible(false);
   };
+
+  const handleCheckIn = async (eventId) => {
+    try {
+      const token = await AsyncStorage.getItem('jwtToken');
+  
+      if (!token) {
+        setError('Token not found. Please log in again.');
+        setSnackbarVisible(true);
+        return;
+      }
+  
+      const data = {
+        user_id: userId,
+        event: String(eventId),
+      };
+  
+      await axios.post(
+        `${backend_url}/api/v1/bars/${barId}/events/${eventId}/check_in`,
+        data,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+  
+      const eventsResponse = await axios.get(`${backend_url}/api/v1/bars/${barId}/events`);
+      setEvents(eventsResponse.data.events || []);
+  
+    } catch (error) {
+      console.error('Error during check-in:', error);
+  
+      if (error.response) {
+        if (error.response.status === 401) {
+          setError('Unauthorized. Please check your token.');
+        } else {
+          setError('Failed to check in: ' + (error.response.data.message || 'Unknown error'));
+        }
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
+  
+      setSnackbarVisible(true);
+    }
+  };  
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text style={{ color: 'red' }}>{error}</Text>;
