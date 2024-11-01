@@ -3,6 +3,7 @@ import { View, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { Card, Title, Paragraph, Button, Text } from 'react-native-paper';
 import axios from 'axios';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { backend_url } from '@env'
 
 const BarDetail = () => {
   const route = useRoute();
@@ -15,7 +16,7 @@ const BarDetail = () => {
   useEffect(() => {
     const fetchBarDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/api/v1/bars/${id}`);
+        const response = await axios.get(`${backend_url}/api/v1/bars/${id}`);
         setBar(response.data.bar);
       } catch (err) {
         console.error('Failed to load bar details:', err);

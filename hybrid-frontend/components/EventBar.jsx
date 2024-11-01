@@ -4,6 +4,7 @@ import { Snackbar } from 'react-native-paper';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store'; // Importa SecureStore
 import { useRoute } from '@react-navigation/native';
+import { backend_url } from '@env';
 
 const EventBar = () => {
   const route = useRoute();
@@ -35,7 +36,7 @@ const EventBar = () => {
 
     const fetchEvents = async () => {
       try {
-        const eventsResponse = await axios.get(`http://localhost:3001/api/v1/bars/${barId}/events`);
+        const eventsResponse = await axios.get(`${backend_url}/api/v1/bars/${barId}/events`);
         setEvents(eventsResponse.data.events || []);
       } catch (err) {
         setError('Failed to load events');

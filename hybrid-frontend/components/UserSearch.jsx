@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, FlatList, Text, Button, Modal, TouchableOpacity, Alert } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { backend_url } from '@env';
 
 const UserSearch = () => {
   const [search, setSearch] = useState('');
@@ -35,7 +36,7 @@ const UserSearch = () => {
     const fetchUsers = async () => {
       if (search.length > 2) {
         try {
-          const response = await axios.get(`http://localhost:3001/api/v1/users?handle=${search}`);
+          const response = await axios.get(`${backend_url}/api/v1/users?handle=${search}`);
           setUsers(response.data);
           setError(null);
         } catch (err) {
@@ -53,7 +54,7 @@ const UserSearch = () => {
   useEffect(() => {
     const fetchBars = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/v1/bars');
+        const response = await axios.get('${backend_url}/api/v1/bars');
         setBars(response.data);
       } catch (err) {
         console.error('Failed to fetch bars:', err);
@@ -85,7 +86,7 @@ const UserSearch = () => {
 
     try {
       await axios.post(
-        `http://localhost:3001/api/v1/users/${currentUserId}/friendships`,
+        `${backend_url}/api/v1/users/${currentUserId}/friendships`,
         data,
         { headers: { Authorization: `Bearer ${token}` } }
       );

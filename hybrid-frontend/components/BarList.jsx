@@ -3,6 +3,7 @@ import { View, StyleSheet, FlatList, ActivityIndicator, TextInput, Text } from '
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import { backend_url } from '@env'
 
 const BarList = () => {
   const [bars, setBars] = useState([]);
@@ -14,7 +15,7 @@ const BarList = () => {
   useEffect(() => {
     const fetchBars = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/api/v1/bars');
+        const response = await axios.get( `${backend_url}/api/v1/bars`);
         if (Array.isArray(response.data)) {
           setBars(response.data);
         } else {
