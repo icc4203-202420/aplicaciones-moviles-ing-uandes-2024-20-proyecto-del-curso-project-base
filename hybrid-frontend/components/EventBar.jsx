@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, FlatList, Image, TextInput, ScrollView, Alert } from 'react-native';
-import { Snackbar } from 'react-native-paper';
+import { View, Text, Button, FlatList, Image, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { Snackbar, Avatar } from 'react-native-paper'; // Import Avatar from react-native-paper
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store'; // Importa SecureStore
+import * as SecureStore from 'expo-secure-store'; // Import SecureStore
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute } from '@react-navigation/native';
 import { backend_url } from '@env';
 
@@ -20,15 +21,15 @@ const EventBar = () => {
   useEffect(() => {
     const fetchUserId = async () => {
       try {
-        const storedUserId = await SecureStore.getItemAsync('userId'); // Cambia a SecureStore
+        const storedUserId = await AsyncStorage.getItem('userId');
         if (storedUserId) {
           setUserId(Number(storedUserId));
         } else {
-          setError('User ID not found in SecureStore');
+          setError('User ID not found in AsyncStorage');
           setSnackbarVisible(true);
         }
       } catch (error) {
-        console.error('Error fetching user ID from SecureStore:', error);
+        console.error('Error fetching user ID from AsyncStorage:', error);
         setError('Failed to retrieve User ID');
         setSnackbarVisible(true);
       }

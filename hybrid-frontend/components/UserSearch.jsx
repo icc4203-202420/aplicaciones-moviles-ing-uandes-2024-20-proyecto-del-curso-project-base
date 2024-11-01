@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, FlatList, Text, Button, Modal, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Button, FlatList, Image, TextInput, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { backend_url } from '@env';
 
 const UserSearch = () => {
@@ -17,11 +18,11 @@ const UserSearch = () => {
   useEffect(() => {
     const fetchUserId = async () => {
         try {
-          const storedUserId = await SecureStore.getItemAsync('userId'); // Cambia a SecureStore
+          const storedUserId = await AsyncStorage.getItem('userId');
           if (storedUserId) {
             setUserId(Number(storedUserId));
           } else {
-            setError('User ID not found in SecureStore');
+            setError('User ID not found in AsyncStorage');
             setSnackbarVisible(true);
           }
         } catch (error) {
