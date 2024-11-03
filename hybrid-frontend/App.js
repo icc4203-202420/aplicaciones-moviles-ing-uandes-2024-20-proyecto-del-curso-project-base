@@ -1,15 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { Router } from 'expo-router';
-import Toast from 'react-native-toast-message'; // Asegúrate de importar correctamente
+import { RootSiblingParent } from 'react-native-root-siblings';
 
 export default function App() {
   return (
-    <View style={styles.container}>
+    <RootSiblingParent>
       <Router />
-      <Toast ref={(ref) => Toast.setRef(ref)} />
+      {/* <Toast ref={(ref) => Toast.setRef(ref)} /> */}
       <StatusBar style="auto" />
-    </View>
+    </RootSiblingParent>
   );
 }
 

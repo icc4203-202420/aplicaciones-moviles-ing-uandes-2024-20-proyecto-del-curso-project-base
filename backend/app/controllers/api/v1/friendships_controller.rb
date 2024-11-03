@@ -24,24 +24,25 @@ class API::V1::FriendshipsController < ApplicationController
 
   # GET /api/v1/users/:user_id/friendships/:friend_id
   def show
-    friend = User.find_by(id: params[:friend_id])
+    friendship = @user.friendships.find_by(friend_id: params[:friend_id])
 
-    if friend.nil?
-      return render json: { error: "Friend not found" }, status: :not_found
-    end
-
-    friendship = Friendship.find_by(user_id: @user.id, friend_id: friend.id)
-
-    if friendship
+    if friendship.nil?
+      render json: { error: 'Friendship not found' }, status: :not_found
+    else
       render json: {
-        is_friend: true,
         friendship: {
+          id: friendship.id,
           friend_id: friendship.friend_id,
-          event_id: friendship.event_id
+          bar_id: friendship.bar_id,
+          event_id: friendship.event_id,
+        },
+        friend: {
+          id: friendship.friend.id,
+          first_name: friendship.friend.first_name,
+          last_name: friendship.friend.last_name,
+          handle: friendship.friend.handle,
         }
       }, status: :ok
-    else
-      render json: { is_friend: false }, status: :ok
     end
   end
 
@@ -70,7 +71,7 @@ class API::V1::FriendshipsController < ApplicationController
     # Crear una nueva solicitud de amistad
     @friendship = @user.friendships.build(friendship_params)
     @friendship.bar_id = friendship_params[:bar_id] if friendship_params[:bar_id].present?
-
+    @friendship.event_id = friendship_params[:event_id] if friendship_params[:event_id].present?
     if @friendship.save
       render json: @friendship, status: :created
     else

@@ -3,7 +3,7 @@ import { View, Modal, StyleSheet, Text, TouchableOpacity, Button, FlatList } fro
 import { Input, Icon } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
-import Toast from 'react-native-toast-message'; // Importar Toast
+import Toast from 'react-native-root-toast';
 
 const EventModal = ({ visible, onClose, onSubmit, friendId }) => {
   const [events, setEvents] = useState([]);
@@ -37,7 +37,7 @@ const EventModal = ({ visible, onClose, onSubmit, friendId }) => {
 
   const handleSubmit = async () => {
     try {
-      await onSubmit(selectedEvent); // Asegúrate de que onSubmit maneja el envío correctamente
+      await onSubmit(friendId, selectedEvent?.id); // Envía friendId y eventId
       Toast.show({
         text1: 'Friend Request Sent',
         text2: 'The friend request was sent successfully!',
