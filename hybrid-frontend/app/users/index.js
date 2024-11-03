@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { Input, ListItem, Button } from '@rneui/themed';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet, TextInput } from 'react-native';
+import { Input, ListItem, Button, Icon } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import EventModal from './EventModal'; // Importa el modal
 
 const UserSearchScreen = () => {
   const [currentUserId, setCurrentUserId] = useState('');
@@ -12,8 +13,8 @@ const UserSearchScreen = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filteredUsers, setFilteredUsers] = useState([]);
-
-  const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedFriendId, setSelectedFriendId] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,9 +52,35 @@ const UserSearchScreen = () => {
     setFilteredUsers(results);
   }, [searchText, users]); // Filter whenever searchText or users change
 
+  const handleAddFriend = (userId) => {
+    setSelectedFriendId(userId);
+    setModalVisible(true); // Show the modal when adding a friend
+  };
+
+  const handleModalSubmit = async (event) => {
+    if (!currentUserId || !event) return; // Ensure event is selected
+
+    try {
+      await axios.post(`${NGROK_URL}/api/v1/users/${currentUserId}/friendships`, {
+        friendship: {
+          friend_id: selectedFriendId,
+          event_id: event.id,
+        },
+      });
+      // Notify friend about the new friendship
+      notifyFriend(selectedFriendId);
+      alert('Friend request sent successfully!');
+    } catch (error) {
+      console.error('Error adding friend:', error);
+    }
+  };
+
+  const notifyFriend = async (friendId) => {
+    console.log(`Notification sent to friend with ID: ${friendId}`);
+  };
+
   return (
     <View style={styles.container}>
-      <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
       <Input
         placeholder="Buscar por handle..."
         value={searchText}
@@ -67,17 +94,29 @@ const UserSearchScreen = () => {
           data={filteredUsers}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <ListItem onPress={() => router.push(`/users/${item.id}`)}>
+            <ListItem>
               <ListItem.Content>
                 <ListItem.Title>{item.handle}</ListItem.Title>
                 <ListItem.Subtitle>{`${item.first_name} ${item.last_name}`}</ListItem.Subtitle>
               </ListItem.Content>
               <ListItem.Chevron />
+              <Button 
+                title="" 
+                onPress={() => handleAddFriend(item.id)} 
+                icon={<Icon name="person-add" color="#ffffff" />}
+              />
             </ListItem>
           )}
           ListEmptyComponent={<Text style={styles.emptyText}>No se encontraron usuarios.</Text>}
         />
       )}
+      {/* Modal para agregar amigos */}
+      <EventModal 
+        visible={modalVisible} 
+        onClose={() => setModalVisible(false)} 
+        onSubmit={handleModalSubmit}
+        friendId={selectedFriendId}
+      />
     </View>
   );
 };
@@ -87,9 +126,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     backgroundColor: '#fff',
-  },
-  backButton: {
-    marginBottom: 10,
   },
   input: {
     marginBottom: 10,
