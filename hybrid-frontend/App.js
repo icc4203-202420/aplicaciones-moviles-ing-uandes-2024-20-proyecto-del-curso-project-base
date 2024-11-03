@@ -6,7 +6,7 @@ import { Router } from 'expo-router';
 export default function App() {
   return (
     <>
-      <Router />  {/* Make sure Router is imported from expo-router */}
+      <Router />  
       <StatusBar style="auto" />
     </>
   );

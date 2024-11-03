@@ -6,6 +6,11 @@ class API::V1::UsersController < ApplicationController
   #   @users = User.includes(:reviews, :address).all
   #   render json: { users: @users }, status: :ok
   # end
+  def search
+    @users = User.where("handle LIKE ?", "%#{params[:handle]}%")
+    render json: @users
+  end
+
   def index
     if params[:attended_event] && current_user
       # Filtrar usuarios que asistieron a los mismos eventos que el usuario actual

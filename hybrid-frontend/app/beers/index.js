@@ -3,45 +3,50 @@ import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { Input, ListItem, Button } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import { NGROK_URL } from '@env';
+
 const BeerSearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [beers, setBeers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filteredBeers, setFilteredBeers] = useState([]);
   const router = useRouter();
-  console.log("app/beers/");
+
   useEffect(() => {
     fetchBeers();
   }, []);
 
-  useEffect(() => {
-    if (searchQuery === '') {
-      fetchBeers(); // Fetch all beers if search query is cleared
-    } else {
-      fetchBeers();
-    }
-  }, [searchQuery]);
-
+  // Fetch all beers once on component mount
   const fetchBeers = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${NGROK_URL}/api/v1/beers?query=${searchQuery}`);
+      const response = await fetch(`${NGROK_URL}/api/v1/beers`);
       if (!response.ok) {
         throw new Error('Error fetching beers. Status: ' + response.status);
       }
 
       const data = await response.json();
-
       if (!data.beers || !Array.isArray(data.beers)) {
         setBeers([]);
+        setFilteredBeers([]); // Clear filtered beers
         return;
       }
 
       setBeers(data.beers);
+      setFilteredBeers(data.beers); // Initialize filtered beers with all beers
     } catch (error) {
+      console.error('Error fetching beers:', error);
       setBeers([]);
+      setFilteredBeers([]); // Clear filtered beers on error
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    const results = beers.filter(beer =>
+      beer.name.toLowerCase().includes(searchQuery.toLowerCase()) // Filter by beer name
+    );
+    setFilteredBeers(results);
+  }, [searchQuery, beers]); // Filter whenever searchQuery or beers change
 
   return (
     <View style={styles.container}>
@@ -54,7 +59,7 @@ const BeerSearchScreen = () => {
       />
       {loading && <Text style={styles.loadingText}>Loading...</Text>}
       <FlatList
-        data={beers}
+        data={filteredBeers}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <ListItem onPress={() => router.push(`/beers/${item.id}`)}>

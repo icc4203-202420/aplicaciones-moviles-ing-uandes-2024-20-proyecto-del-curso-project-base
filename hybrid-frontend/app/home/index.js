@@ -27,10 +27,10 @@ const HomeScreen = () => {
     <View style={styles.container}>
       <Text style={styles.text}>Welcome to the Home Screen</Text>
       <Link href="/beers" style={styles.link}>
-        <Text>Go to Beer Search</Text> {/* Ensure this text is inside a <Text> component */}
+        <Text>Beer</Text> {/* Ensure this text is inside a <Text> component */}
       </Link>
       <Link href="/users" style={styles.link}>
-        <Text>Go to Search Friend</Text> {/* Ensure this text is inside a <Text> component */}
+        <Text>Users</Text> {/* Ensure this text is inside a <Text> component */}
       </Link>
       <Button title="Logout" onPress={handleLogout} buttonStyle={styles.button} />
     </View>

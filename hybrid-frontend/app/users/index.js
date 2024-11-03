@@ -1,80 +1,104 @@
-// src/components/UserSearch.jsx
-import React, { useState } from 'react';
-import { View, TextInput, Button, FlatList, Text, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { Input, ListItem, Button } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
-const UserSearch = () => {
-  const [handle, setHandle] = useState('');
-  const [results, setResults] = useState([]);
-  const [error, setError] = useState('');
+const UserSearchScreen = () => {
+  const [currentUserId, setCurrentUserId] = useState('');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState([]);
+
   const router = useRouter();
 
-  const searchUser = async () => {
+  useEffect(() => {
+    const fetchUser = async () => {
+      const storedUserId = await AsyncStorage.getItem('CURRENT_USER_ID');
+      if (storedUserId) {
+        setCurrentUserId(storedUserId);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    fetchUsers(); // Fetch all users on component mount
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      const response = await axios.get(`${NGROK_URL}/api/v1/users`, {
-        params: { handle },
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      setResults(response.data.users);
-      setError('');
-    } catch (err) {
-      setError('Error al buscar el usuario');
+      const response = await axios.get(`${NGROK_URL}/api/v1/users`);
+      const filteredUsers = response.data.users.filter(user => user.id !== parseInt(currentUserId));
+      setUsers(filteredUsers);
+      setFilteredUsers(filteredUsers); // Initialize filtered users
+    } catch (error) {
+      console.error('Error al obtener los usuarios:', error);
+      setUsers([]); // Clear users on error
+    } finally {
+      setLoading(false);
     }
   };
 
-  const addFriend = async (userId) => {
-    try {
-      const token = await AsyncStorage.getItem('authToken');
-      await axios.post(`${NGROK_URL}/api/v1/friendships`, 
-        { friend_id: userId },
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      Alert.alert('Solicitud de amistad enviada');
-    } catch (err) {
-      setError('Error al agregar amigo');
-    }
-  };
+  useEffect(() => {
+    const results = users.filter(user =>
+      user.handle.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setFilteredUsers(results);
+  }, [searchText, users]); // Filter whenever searchText or users change
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Buscar por handle"
-        value={handle}
-        onChangeText={setHandle}
+      <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
+      <Input
+        placeholder="Buscar por handle..."
+        value={searchText}
+        onChangeText={setSearchText}
+        containerStyle={styles.input}
       />
-      <Button title="Buscar" onPress={searchUser} />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <FlatList
-        data={results}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.result}>
-            <Text>{item.handle}</Text>
-            <Button title="Agregar Amigo" onPress={() => addFriend(item.id)} />
-          </View>
-        )}
-        ListEmptyComponent={<Text>No se encontraron usuarios</Text>}
-      />
-      <Button title="Back" onPress={() => router.back()} style={styles.backButton} />
+      {loading ? (
+        <ActivityIndicator size="small" color="#000" />
+      ) : (
+        <FlatList
+          data={filteredUsers}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <ListItem onPress={() => router.push(`/users/${item.id}`)}>
+              <ListItem.Content>
+                <ListItem.Title>{item.handle}</ListItem.Title>
+                <ListItem.Subtitle>{`${item.first_name} ${item.last_name}`}</ListItem.Subtitle>
+              </ListItem.Content>
+              <ListItem.Chevron />
+            </ListItem>
+          )}
+          ListEmptyComponent={<Text style={styles.emptyText}>No se encontraron usuarios.</Text>}
+        />
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  input: { borderWidth: 1, padding: 10, marginBottom: 10 },
-  error: { color: 'red', marginTop: 10 },
-  result: { marginVertical: 10 },
+  container: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: '#fff',
+  },
   backButton: {
+    marginBottom: 10,
+  },
+  input: {
+    marginBottom: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
     marginTop: 20,
+    color: 'gray',
   },
 });
 
-export default UserSearch;
+export default UserSearchScreen;
