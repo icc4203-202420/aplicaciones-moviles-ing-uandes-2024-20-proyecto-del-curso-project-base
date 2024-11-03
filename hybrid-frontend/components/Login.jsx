@@ -16,7 +16,6 @@ const Login = ({ setIsAuthenticated, navigation }) => {
       await AsyncStorage.setItem('jwtToken', token)
       await AsyncStorage.setItem('userId', userId.toString())
       setIsAuthenticated(true)
-      navigation.navigate('Map')
     } catch (e) {
       console.error('Failed to save token or userId in AsyncStorage:', e)
     }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, FlatList, Image, TextInput, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
+import { Modal } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { backend_url } from '@env';
@@ -17,20 +18,18 @@ const UserSearch = () => {
 
   useEffect(() => {
     const fetchUserId = async () => {
-        try {
-          const storedUserId = await AsyncStorage.getItem('userId');
-          if (storedUserId) {
-            setUserId(Number(storedUserId));
-          } else {
-            setError('User ID not found in AsyncStorage');
-            setSnackbarVisible(true);
-          }
-        } catch (error) {
-          console.error('Error fetching user ID from SecureStore:', error);
-          setError('Failed to retrieve User ID');
-          setSnackbarVisible(true);
+      try {
+        const storedUserId = await AsyncStorage.getItem('userId');
+        if (storedUserId) {
+          setCurrentUserId(Number(storedUserId)); // Cambiado a setCurrentUserId
+        } else {
+          setError('User ID not found in AsyncStorage');
         }
-      };
+      } catch (error) {
+        console.error('Error fetching user ID from SecureStore:', error);
+        setError('Failed to retrieve User ID');
+      }
+    };
 
     fetchUserId();
 
@@ -55,7 +54,7 @@ const UserSearch = () => {
   useEffect(() => {
     const fetchBars = async () => {
       try {
-        const response = await axios.get('${backend_url}/api/v1/bars');
+        const response = await axios.get(`${backend_url}/api/v1/bars`); // Usar backticks aquí
         setBars(response.data);
       } catch (err) {
         console.error('Failed to fetch bars:', err);

@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as PaperProvider } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'; // Add ActivityIndicator here
 import Home from './components/Home'; 
 import Login from './components/Login';
@@ -94,14 +95,16 @@ const App = () => {
               headerShown: false,
             }}/>
             <Tab.Screen 
-              name="Logout" 
-              component={() => null} // No necesitamos renderizar nada en esta pantalla
+              name="Logout"
               options={{
                 tabBarButton: (props) => (
                   <LogoutButton {...props} onLogout={handleLogout} />
                 )
               }}
-            />
+            >
+              {() => null}
+            </Tab.Screen>
+
           </Tab.Navigator>
         ) : (
           <Stack.Navigator>
