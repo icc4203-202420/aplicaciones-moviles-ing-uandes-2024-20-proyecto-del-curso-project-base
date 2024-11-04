@@ -275,6 +275,7 @@ const EventBar = () => {
                     onChangeText={setImageDescription}
                     style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginTop: 10 }}
                   />
+                  
                   <Button title="Select Image" onPress={handleSelectImage} />
                   {selectedImage && <Image source={{ uri: selectedImage.uri }} style={{ width: 200, height: 200, marginVertical: 10 }} />}
                   <Button

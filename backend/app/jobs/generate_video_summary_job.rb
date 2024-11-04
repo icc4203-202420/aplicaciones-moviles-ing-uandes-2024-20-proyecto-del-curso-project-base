@@ -27,12 +27,16 @@ class GenerateVideoSummaryJob < ApplicationJob
             img.format "jpg"         # Convertir a JPEG
           end
 
-          # Verificar que las dimensiones sean divisibles por 2
+          # Ajustar las dimensiones a pares si es necesario
           width = processed_image.width
           height = processed_image.height
-          if width % 2 != 0 || height % 2 != 0
-            Rails.logger.warn("La imagen procesada con ID #{event_picture.id} tiene dimensiones no divisibles por 2 (#{width}x#{height}). Se omitirá.")
-            next
+          if width.odd?
+            processed_image.crop("#{width - 1}x#{height}+1+0")  # Recortar 1 píxel de ancho
+            Rails.logger.info("Se recortó 1 píxel de ancho para la imagen procesada con ID #{event_picture.id}.")
+          end
+          if height.odd?
+            processed_image.crop("#{width}x#{height - 1}+0+1")  # Recortar 1 píxel de alto
+            Rails.logger.info("Se recortó 1 píxel de alto para la imagen procesada con ID #{event_picture.id}.")
           end
 
           # Guardar la imagen procesada en un archivo temporal
@@ -68,7 +72,10 @@ class GenerateVideoSummaryJob < ApplicationJob
   def create_video_from_images(temp_images, event_id, tmpdir)
     concat_file_path = File.join(tmpdir, "concat_list.txt")
     File.open(concat_file_path, "w") do |file|
-      temp_images.each { |img| file.puts "file '#{img}'" }
+      temp_images.each do |img|
+        file.puts "file '#{img}'"
+        file.puts "duration 1"  # Duración de 1 segundo por imagen
+      end
     end
 
     # Ruta para el video de salida
