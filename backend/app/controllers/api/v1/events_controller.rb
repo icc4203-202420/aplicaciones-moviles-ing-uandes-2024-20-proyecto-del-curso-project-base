@@ -40,6 +40,7 @@ class API::V1::EventsController < ApplicationController
   def show
     address = Address.find_by(id: Bar.find_by(id: @event.bar_id).address_id)
     @event_pictures = @event.event_pictures
+    Rails.logger.info "Addresses are: #{address}"
 
     event_pictures_data = @event_pictures.map do |picture|
       { id: picture.id, description: picture.description, image_url: url_for(picture.image) }
@@ -85,36 +86,45 @@ class API::V1::EventsController < ApplicationController
     head :no_content
   end
 
-  def generate_summary
-    # Lógica para generar el resumen
-    attendees = @event.users
+  def check_in
+    event = Event.find_by(id: params[:id])
 
-    # Envía las notificaciones
-    notification_service = NotificationService.new(@event, attendees)
-    notification_service.send_notifications
-
-    render json: { message: 'Summary generation initiated and notifications sent.' }, status: :ok
-  end
-
-  private
-
-  class NotificationService
-    def initialize(event, attendees)
-      @event = event
-      @attendees = attendees
+    if event.nil?
+      render json: { success: false, message: 'Event not found' }, status: :not_found
+      return
     end
 
-    def send_notifications
-      @attendees.each do |attendee|
-        # Implementa aquí la lógica de envío de notificaciones (correo, push, etc.)
-        puts "Sending notification to #{attendee.email} for event #{@event.name}"
+    user_id = params[:user_id]
+    user = User.find_by(id: user_id)
+
+    if user.nil?
+      render json: { success: false, message: 'User not found' }, status: :not_found
+      return
+    end
+
+    attendance = Attendance.find_or_initialize_by(user_id: user.id, event_id: event.id)
+
+    if attendance.checked_in
+      render json: { success: false, message: 'Already checked in' }, status: :unprocessable_entity
+    else
+      if attendance.update(checked_in: true)
+        render json: { success: true, message: 'Checked in successfully' }, status: :ok
+      else
+        render json: { success: false, message: 'Failed to check in' }, status: :unprocessable_entity
       end
     end
   end
 
+  def generate_summary
+    GenerateVideoSummaryJob.perform_later(@event.id)
+    flash[:notice] = "La generación del video ha comenzado. Te notificaremos cuando esté listo."
+    redirect_to @event
+  end
+
+  private
+
   def set_event
-    @event = Event.find_by(id: params[:id])
-    render json: { error: 'event not found' }, status: :not_found if @event.nil?
+    @event = Event.find(params[:id])
   end
 
   def event_params
@@ -131,5 +141,19 @@ class API::V1::EventsController < ApplicationController
   def verify_jwt_token
     authenticate_user!
     head :unauthorized unless current_user
+  end
+
+  def create_event_summary(event)
+    # Implementar la lógica para crear el resumen aquí
+    # Por ejemplo, simular que se generó un resumen exitoso
+    { success: true }
+  end
+
+  def send_notifications(event)
+    attendees = event.users
+
+    attendees.each do |user|
+      NotificationService.send_summary_notification(user, event)
+    end
   end
 end
