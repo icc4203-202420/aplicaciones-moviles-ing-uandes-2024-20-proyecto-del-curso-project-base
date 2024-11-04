@@ -117,8 +117,8 @@ class API::V1::EventsController < ApplicationController
 
   def generate_summary
     GenerateVideoSummaryJob.perform_later(@event.id)
-    flash[:notice] = "La generación del video ha comenzado. Te notificaremos cuando esté listo."
-    redirect_to @event
+
+    render json: { success: true, message: 'Video generation started. You will be notified when it is ready.' }, status: :accepted
   end
 
   private
