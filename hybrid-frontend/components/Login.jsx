@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { backend_url } from '@env'
+import * as SecureStore from 'expo-secure-store'
 
 const Login = ({ setIsAuthenticated, navigation }) => {
   const [email, setEmail] = useState('')
@@ -13,8 +14,8 @@ const Login = ({ setIsAuthenticated, navigation }) => {
     const userId = data.status.data.user.id
 
     try {
-      await AsyncStorage.setItem('jwtToken', token)
-      await AsyncStorage.setItem('userId', userId.toString())
+      await SecureStore.setItemAsync('jwtToken', token)
+      await SecureStore.setItemAsync('userId', userId.toString())
       setIsAuthenticated(true)
     } catch (e) {
       console.error('Failed to save token or userId in AsyncStorage:', e)

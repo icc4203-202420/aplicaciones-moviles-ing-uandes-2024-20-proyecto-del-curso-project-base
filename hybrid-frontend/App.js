@@ -3,9 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as PaperProvider } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'; // Add ActivityIndicator here
+import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import Home from './components/Home'; 
 import Login from './components/Login';
 import Register from './components/Register';
@@ -24,18 +23,18 @@ const Tab = createBottomTabNavigator();
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true); // Estado de carga
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const token = await SecureStore.getItemAsync('jwtToken');
-        setIsAuthenticated(!!token);  // Si no hay token, isAuthenticated será false
+        setIsAuthenticated(!!token);
       } catch (error) {
         console.error('Error fetching token', error);
-        setIsAuthenticated(false);  // Si ocurre algún error, desautentica
+        setIsAuthenticated(false);
       } finally {
-        setLoading(false);  // Termina la verificación, sea cual sea el resultado
+        setLoading(false);
       }
     };
     checkAuth();
@@ -47,7 +46,6 @@ const App = () => {
   };
 
   if (loading) {
-    // Muestra un indicador de carga mientras se verifica el token
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -78,24 +76,23 @@ const App = () => {
         {isAuthenticated ? (
           <Tab.Navigator>
             <Tab.Screen name="Map" component={Map} />
-            <Tab.Screen name="Beers" component={BeerStack} 
-            options={{
-              tabBarLabel: 'Beers',
-              headerShown: false,
-            }}
-            />
-            <Tab.Screen name="Bar" component={BarStack} 
-            options={{
-              tabBarLabel: 'Bars',
-              headerShown: false,
-            }}/>
-            <Tab.Screen name="UserSearch" component={UserSearch} 
-            options={{
-              tabBarLabel: 'Search Users',
-              headerShown: false,
-            }}/>
             <Tab.Screen 
-              name="Logout"
+              name="Beers" 
+              component={BeerStack} 
+              options={{ tabBarLabel: 'Beers', headerShown: false }}
+            />
+            <Tab.Screen 
+              name="Bar" 
+              component={BarStack} 
+              options={{ tabBarLabel: 'Bars', headerShown: false }}
+            />
+            <Tab.Screen 
+              name="UserSearch" 
+              component={UserSearch} 
+              options={{ tabBarLabel: 'Search Users', headerShown: false }}
+            />
+            <Tab.Screen 
+              name="Logout" 
               options={{
                 tabBarButton: (props) => (
                   <LogoutButton {...props} onLogout={handleLogout} />
@@ -104,7 +101,6 @@ const App = () => {
             >
               {() => null}
             </Tab.Screen>
-
           </Tab.Navigator>
         ) : (
           <Stack.Navigator>
@@ -122,18 +118,21 @@ const App = () => {
 };
 
 // Botón personalizado para hacer logout desde la pestaña
-const LogoutButton = ({ onLogout }) => {
-  return (
-    <View style={styles.logoutButton}>
-      <Text onPress={onLogout} style={styles.logoutText}>Logout</Text>
-    </View>
-  );
-};
+const LogoutButton = ({ onLogout }) => (
+  <View style={styles.logoutButton}>
+    <Text onPress={onLogout} style={styles.logoutText}>Logout</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   logoutButton: {
     padding: 10,
-    backgroundColor: '#FF5733', // Cambia el color según tu preferencia
+    backgroundColor: '#FF5733',
     borderRadius: 5,
   },
   logoutText: {

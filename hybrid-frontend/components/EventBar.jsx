@@ -16,20 +16,20 @@ const EventBar = () => {
   const [error, setError] = useState('');
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [userId, setUserId] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null); // Store the selected image
+  const [selectedImage, setSelectedImage] = useState(null);
   const [imageDescription, setImageDescription] = useState('');
 
   // Request media library and camera permissions
   const requestPermissions = async () => {
     if (Platform.OS !== 'web') {
       const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (mediaStatus !== 'granted') {
-        alert('Permission to access media library is required!');
-      }
+      console.log('Media Library Permission Status:', mediaStatus);
 
       const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-      if (cameraStatus !== 'granted') {
-        alert('Permission to access camera is required!');
+      console.log('Camera Permission Status:', cameraStatus);
+
+      if (mediaStatus !== 'granted' || cameraStatus !== 'granted') {
+        alert('Permission to access media library and camera is required!');
       }
     }
   };
@@ -88,26 +88,27 @@ const EventBar = () => {
   };
 
   // Upload image with description
-  const handleUploadImage = async (eventId) => {
+  const handleUploadImage = async (eventId, userId) => {
     try {
       const token = await AsyncStorage.getItem('jwtToken');
-
+    
       if (!token) {
         setError('Token not found. Please log in again.');
         setSnackbarVisible(true);
         return;
       }
-
+    
       const formData = new FormData();
-      formData.append('description', imageDescription);
-      formData.append('image', {
+      formData.append('event_picture[description]', imageDescription);
+      formData.append('event_picture[image]', {
         uri: selectedImage.uri,
-        type: selectedImage.type,
+        type: 'image/jpeg',
         name: selectedImage.fileName || 'uploaded_image.jpg',
       });
-
-      await axios.post(
-        `${backend_url}/api/v1/bars/${barId}/events/${eventId}/upload_image`,
+      formData.append('event_picture[user_id]', userId); // Agrega el user_id
+  
+      const response = await axios.post(
+        `${backend_url}/api/v1/bars/${barId}/events/${eventId}/event_pictures`,
         formData,
         {
           headers: {
@@ -116,46 +117,62 @@ const EventBar = () => {
           },
         }
       );
-
-      // Refresh events to show the new image
-      const eventsResponse = await axios.get(`${backend_url}/api/v1/bars/${barId}/events`);
-      setEvents(eventsResponse.data.events || []);
+  
+      // Refresca los eventos para mostrar la nueva imagen
+      await fetchEvents();
       setImageDescription('');
       setSelectedImage(null);
+  
     } catch (error) {
       console.error('Error during image upload:', error);
+  
+      if (axios.isAxiosError(error)) {
+        console.error('Axios Error:', error.message);
+        if (error.response) {
+          console.error('Response Data:', error.response.data);
+          console.error('Response Status:', error.response.status);
+        } else {
+          console.error('Request Config:', error.config);
+        }
+      } else {
+        console.error('Unexpected Error:', error);
+      }
+  
       setError('Failed to upload image. Please try again.');
       setSnackbarVisible(true);
     }
   };
+  
+  
+  
 
   const handleCheckIn = async (eventId) => {
     try {
       const token = await AsyncStorage.getItem('jwtToken');
-  
+
       if (!token) {
         setError('Token not found. Please log in again.');
         setSnackbarVisible(true);
         return;
       }
-  
+
       const data = {
         user_id: userId,
         event: String(eventId),
       };
-  
+
       await axios.post(
         `${backend_url}/api/v1/bars/${barId}/events/${eventId}/check_in`,
         data,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       const eventsResponse = await axios.get(`${backend_url}/api/v1/bars/${barId}/events`);
       setEvents(eventsResponse.data.events || []);
-  
+
     } catch (error) {
       console.error('Error during check-in:', error);
-  
+
       if (error.response) {
         if (error.response.status === 401) {
           setError('Unauthorized. Please check your token.');
@@ -165,7 +182,7 @@ const EventBar = () => {
       } else {
         setError('Something went wrong. Please try again.');
       }
-  
+
       setSnackbarVisible(true);
     }
   };
@@ -235,8 +252,8 @@ const EventBar = () => {
         )}
       />
 
-      <Snackbar visible={snackbarVisible} onDismiss={handleCloseSnackbar} duration={6000}>
-        <Text>{error}</Text>
+      <Snackbar visible={snackbarVisible} onDismiss={handleCloseSnackbar} duration={3000}>
+        {error}
       </Snackbar>
     </View>
   );
