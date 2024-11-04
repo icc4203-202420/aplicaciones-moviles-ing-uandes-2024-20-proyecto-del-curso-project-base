@@ -18,18 +18,13 @@ const EventBar = () => {
   const [userId, setUserId] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageDescription, setImageDescription] = useState('');
-  const [availableUsers, setAvailableUsers] = useState([]);
-  
-  
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
-  // Request media library and camera permissions
   const requestPermissions = async () => {
     if (Platform.OS !== 'web') {
       const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      console.log('Media Library Permission Status:', mediaStatus);
-
       const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-      console.log('Camera Permission Status:', cameraStatus);
 
       if (mediaStatus !== 'granted' || cameraStatus !== 'granted') {
         alert('Permission to access media library and camera is required!');
@@ -38,7 +33,6 @@ const EventBar = () => {
   };
 
   useEffect(() => {
-    // Request permissions on component mount
     requestPermissions();
 
     const fetchUserId = async () => {
@@ -77,7 +71,6 @@ const EventBar = () => {
     setSnackbarVisible(false);
   };
 
-  // Open the image picker
   const handleSelectImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -90,14 +83,6 @@ const EventBar = () => {
     }
   };
 
-  const handleUserSelect = (userHandle) => {
-    setImageDescription(prev => `${prev} @${userHandle} `);
-    setAvailableUsers(availableUsers.filter(user => user.handle !== userHandle));
-  };
-
-
-
-  // Upload image with description
   const handleUploadImage = async (eventId, userId) => {
     try {
       const token = await SecureStore.getItemAsync('jwtToken');
@@ -115,9 +100,8 @@ const EventBar = () => {
         type: 'image/jpeg',
         name: selectedImage.fileName || 'uploaded_image.jpg',
       });
-      formData.append('event_picture[user_id]', userId)
+      formData.append('event_picture[user_id]', userId);
 
-  
       const response = await axios.post(
         `${backend_url}/api/v1/bars/${barId}/events/${eventId}/event_pictures`,
         formData,
@@ -128,35 +112,29 @@ const EventBar = () => {
           },
         }
       );
-  
 
       setImageDescription('');
       setSelectedImage(null);
   
     } catch (error) {
       console.error('Error during image upload:', error);
-  
-      if (axios.isAxiosError(error)) {
-        console.error('Axios Error:', error.message);
-        if (error.response) {
-          console.error('Response Data:', error.response.data);
-          console.error('Response Status:', error.response.status);
-        } else {
-          console.error('Request Config:', error.config);
-        }
-      } else {
-        console.error('Unexpected Error:', error);
-      }
-  
       setError('Failed to upload image. Please try again.');
       setSnackbarVisible(true);
     }
   };
+
+  const handleUserSelect = (value) => {
+    if (!value) return; // Si no hay valor, salir de la función
   
+    setImageDescription((prevDescription) => {
+      return prevDescription ? `${prevDescription} @${value}` : `@${value}`;
+    });
+    setSelectedUser(null);
+  };
+
   const handleCheckIn = async (eventId) => {
     try {
       const token = await SecureStore.getItemAsync('jwtToken');
-
       if (!token) {
         setError('Token not found. Please log in again.');
         setSnackbarVisible(true);
@@ -179,17 +157,7 @@ const EventBar = () => {
 
     } catch (error) {
       console.error('Error during check-in:', error);
-
-      if (error.response) {
-        if (error.response.status === 401) {
-          setError('Unauthorized. Please check your token.');
-        } else {
-          setError('Failed to check in: ' + (error.response.data.message || 'Unknown error'));
-        }
-      } else {
-        setError('Something went wrong. Please try again.');
-      }
-
+      setError('Failed to check in. Please try again.');
       setSnackbarVisible(true);
     }
   };
@@ -226,14 +194,19 @@ const EventBar = () => {
   return (
     <View style={{ flex: 1, padding: 16 }}>
       <Text style={{ fontSize: 24, marginVertical: 16 }}>Events at this Bar</Text>
-
+  
       <FlatList
         data={events}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item: event }) => {
           const eventDate = new Date(event.date);
           const isEventPast = eventDate < new Date();
-
+  
+          const dropdownItems = event.attendees.map((attendee) => ({
+            label: attendee.handle,
+            value: attendee.handle
+          }));
+  
           return (
             <View style={{ marginVertical: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 16 }}>
               <Text style={{ fontSize: 18 }}>{event.name}</Text>
@@ -242,10 +215,10 @@ const EventBar = () => {
                 {eventDate.toLocaleDateString()} {' '}
                 {eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </Text>
-
+  
               <Text style={{ marginTop: 10 }}>Attendees</Text>
               <ScrollView horizontal style={{ paddingVertical: 10 }}>
-                {event.attendees && event.attendees.length > 0 ? (
+                {event.attendees.length > 0 ? (
                   event.attendees.map((attendee) => (
                     <TouchableOpacity key={attendee.id} style={{ marginRight: 10, alignItems: 'center' }}>
                       <Avatar.Image size={40} source={{ uri: attendee.avatar_url }} />
@@ -256,28 +229,40 @@ const EventBar = () => {
                   <Text>No attendees for this event</Text>
                 )}
               </ScrollView>
-
-              {/* Conditionally render buttons based on event date */}
+  
               {isEventPast ? (
-                <>
-                  <Button title="Summary" onPress={() => handleGenerateSummary(event.id)} />
-                </>
+                <Button title="Summary" onPress={() => handleGenerateSummary(event.id)} />
               ) : (
                 <>
-                  {event.user_has_checked_in ? (
-                    <Button title="You're in!" disabled />
-                  ) : (
-                    <Button title="Check In" onPress={() => handleCheckIn(event.id)} />
-                  )}
+                  <Button title="Check In" onPress={() => handleCheckIn(event.id)} />
+  
                   <TextInput
                     placeholder="Image description"
                     value={imageDescription}
                     onChangeText={setImageDescription}
                     style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginTop: 10 }}
                   />
-                  
+  
+                  <DropDownPicker
+                    open={dropdownOpen}
+                    setOpen={setDropdownOpen}
+                    value={selectedUser}
+                    setValue={setSelectedUser}
+                    items={dropdownItems}
+                    placeholder="Select user"
+                    containerStyle={{ marginBottom: 10 }}
+                    onChangeValue={handleUserSelect} // Utiliza la función aquí
+                  />
+  
+                  {selectedUser && (
+                    <Text style={{ color: 'blue', marginTop: 10 }}>
+                      {selectedUser}{/* Mostrar descripción con el usuario seleccionado */}
+                    </Text>
+                  )}
+  
                   <Button title="Select Image" onPress={handleSelectImage} />
-                  {selectedImage && <Image source={{ uri: selectedImage.uri }} style={{ width: 200, height: 200, marginVertical: 10 }} />}
+                  {selectedImage && <Image source={{ uri: selectedImage.uri }} style={{ width: 200, height: 200, marginTop: 10 }} />}
+  
                   <Button
                     title="Upload Image"
                     onPress={() => handleUploadImage(event.id, userId)}
@@ -292,23 +277,15 @@ const EventBar = () => {
                         </View>
                       ))}
                     </ScrollView>
-                      )}
+                  )}
                 </>
               )}
             </View>
           );
         }}
       />
-
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={handleCloseSnackbar}
-        duration={5000}
-        action={{
-          label: 'Close',
-          onPress: handleCloseSnackbar,
-        }}
-      >
+  
+      <Snackbar visible={snackbarVisible} onDismiss={handleCloseSnackbar}>
         {error}
       </Snackbar>
     </View>

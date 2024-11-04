@@ -1,5 +1,3 @@
-require 'open3'
-
 class GenerateVideoSummaryJob < ApplicationJob
   queue_as :default
 
@@ -27,17 +25,10 @@ class GenerateVideoSummaryJob < ApplicationJob
             img.format "jpg"         # Convertir a JPEG
           end
 
-          # Ajustar las dimensiones a pares si es necesario
+          # Ajustar dimensiones a pares
           width = processed_image.width
           height = processed_image.height
-          if width.odd?
-            processed_image.crop("#{width - 1}x#{height}+1+0")  # Recortar 1 píxel de ancho
-            Rails.logger.info("Se recortó 1 píxel de ancho para la imagen procesada con ID #{event_picture.id}.")
-          end
-          if height.odd?
-            processed_image.crop("#{width}x#{height - 1}+0+1")  # Recortar 1 píxel de alto
-            Rails.logger.info("Se recortó 1 píxel de alto para la imagen procesada con ID #{event_picture.id}.")
-          end
+          processed_image.crop "#{width - (width % 2)}x#{height - (height % 2)}+0+0" if width % 2 != 0 || height % 2 != 0
 
           # Guardar la imagen procesada en un archivo temporal
           image_path = File.join(tmpdir, "event_#{event_id}_img_#{index}.jpg")
@@ -58,7 +49,10 @@ class GenerateVideoSummaryJob < ApplicationJob
       end
 
       # Crear el video a partir de las imágenes procesadas
-      create_video_from_images(temp_images, event_id, tmpdir)
+      video_path = create_video_from_images(temp_images, event_id, tmpdir)
+
+      # Notificar al frontend que el video está listo
+      notify_video_ready(event_id, video_path)
     end
   end
 
@@ -88,9 +82,14 @@ class GenerateVideoSummaryJob < ApplicationJob
 
     if status.success?
       Rails.logger.info("Video creado exitosamente: #{video_path}")
+      return video_path
     else
       Rails.logger.error("Error al ejecutar FFmpeg: #{stderr}")
       raise "Error al crear el video con FFmpeg: #{stderr}"
     end
+  end
+
+  def notify_video_ready(event_id, video_path)
+    Rails.logger.info("Notificando que el video está listo para el evento con ID #{event_id}: #{video_path}")
   end
 end
