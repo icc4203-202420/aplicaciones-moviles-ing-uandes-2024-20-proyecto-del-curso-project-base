@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, FlatList, Image, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Button, FlatList, Image, TextInput, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Snackbar, Avatar } from 'react-native-paper';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute } from '@react-navigation/native';
 import { backend_url } from '@env';
+import * as ImagePicker from 'expo-image-picker';
 
 const EventBar = () => {
   const route = useRoute();
@@ -15,10 +16,28 @@ const EventBar = () => {
   const [error, setError] = useState('');
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [userId, setUserId] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null); // Store the selected image
   const [imageDescription, setImageDescription] = useState('');
 
+  // Request media library and camera permissions
+  const requestPermissions = async () => {
+    if (Platform.OS !== 'web') {
+      const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (mediaStatus !== 'granted') {
+        alert('Permission to access media library is required!');
+      }
+
+      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+      if (cameraStatus !== 'granted') {
+        alert('Permission to access camera is required!');
+      }
+    }
+  };
+
   useEffect(() => {
+    // Request permissions on component mount
+    requestPermissions();
+
     const fetchUserId = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userId');
@@ -53,6 +72,61 @@ const EventBar = () => {
 
   const handleCloseSnackbar = () => {
     setSnackbarVisible(false);
+  };
+
+  // Open the image picker
+  const handleSelectImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0]);
+    }
+  };
+
+  // Upload image with description
+  const handleUploadImage = async (eventId) => {
+    try {
+      const token = await AsyncStorage.getItem('jwtToken');
+
+      if (!token) {
+        setError('Token not found. Please log in again.');
+        setSnackbarVisible(true);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('description', imageDescription);
+      formData.append('image', {
+        uri: selectedImage.uri,
+        type: selectedImage.type,
+        name: selectedImage.fileName || 'uploaded_image.jpg',
+      });
+
+      await axios.post(
+        `${backend_url}/api/v1/bars/${barId}/events/${eventId}/upload_image`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      // Refresh events to show the new image
+      const eventsResponse = await axios.get(`${backend_url}/api/v1/bars/${barId}/events`);
+      setEvents(eventsResponse.data.events || []);
+      setImageDescription('');
+      setSelectedImage(null);
+    } catch (error) {
+      console.error('Error during image upload:', error);
+      setError('Failed to upload image. Please try again.');
+      setSnackbarVisible(true);
+    }
   };
 
   const handleCheckIn = async (eventId) => {
@@ -94,7 +168,7 @@ const EventBar = () => {
   
       setSnackbarVisible(true);
     }
-  };  
+  };
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text style={{ color: 'red' }}>{error}</Text>;
@@ -142,11 +216,11 @@ const EventBar = () => {
               style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginTop: 10 }}
             />
 
-            {/* File input is not supported in React Native, consider using a library like react-native-image-picker */}
-            {/* Replace this with an image picker */}
-            <Button title="Upload Image" onPress={() => handleUploadImage(event.id)} disabled={!selectedFile || !imageDescription} />
+            <Button title="Select Image" onPress={handleSelectImage} />
+            {selectedImage && <Image source={{ uri: selectedImage.uri }} style={{ width: 100, height: 100, marginTop: 10 }} />}
 
-            {/* Image gallery */}
+            <Button title="Upload Image" onPress={() => handleUploadImage(event.id)} disabled={!selectedImage || !imageDescription} />
+
             {event.event_pictures && event.event_pictures.length > 0 && (
               <ScrollView horizontal style={{ maxHeight: 200, marginTop: 10 }}>
                 {event.event_pictures.map((picture) => (
