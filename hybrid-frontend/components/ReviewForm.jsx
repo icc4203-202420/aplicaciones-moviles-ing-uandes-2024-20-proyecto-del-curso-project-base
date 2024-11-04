@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Text, TextInput, Button, View, StyleSheet } from 'react-native';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { useRoute } from '@react-navigation/native';
 import { backend_url } from '@env';
 
@@ -16,7 +16,7 @@ const ReviewForm = () => {
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const storedUserId = await AsyncStorage.getItem('userId');
+      const storedUserId = await SecureStore.getItemAsync('userId');
       if (storedUserId) {
         setCurrentUserId(Number(storedUserId));
       } else {
@@ -29,7 +29,7 @@ const ReviewForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);
-    const token = await AsyncStorage.getItem('jwtToken');
+    const token = await SecureStore.getItemAsync('jwtToken');
 
     if (!rating || rating < 1 || rating > 5) {
       setError('Rating must be a number between 1 and 5.');

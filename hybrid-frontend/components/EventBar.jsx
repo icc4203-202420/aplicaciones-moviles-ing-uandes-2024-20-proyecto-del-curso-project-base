@@ -3,7 +3,6 @@ import { View, Text, Button, FlatList, Image, TextInput, ScrollView, TouchableOp
 import { Snackbar, Avatar } from 'react-native-paper';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute } from '@react-navigation/native';
 import { backend_url } from '@env';
 import * as ImagePicker from 'expo-image-picker';
@@ -40,15 +39,15 @@ const EventBar = () => {
 
     const fetchUserId = async () => {
       try {
-        const storedUserId = await AsyncStorage.getItem('userId');
+        const storedUserId = await SecureStore.getItemAsync('userId');
         if (storedUserId) {
           setUserId(Number(storedUserId));
         } else {
-          setError('User ID not found in AsyncStorage');
+          setError('User ID not found in SecureStore');
           setSnackbarVisible(true);
         }
       } catch (error) {
-        console.error('Error fetching user ID from AsyncStorage:', error);
+        console.error('Error fetching user ID from SecureStore:', error);
         setError('Failed to retrieve User ID');
         setSnackbarVisible(true);
       }
@@ -87,10 +86,12 @@ const EventBar = () => {
     }
   };
 
+
+
   // Upload image with description
   const handleUploadImage = async (eventId, userId) => {
     try {
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await SecureStore.getItemAsync('jwtToken');
     
       if (!token) {
         setError('Token not found. Please log in again.');
@@ -105,7 +106,8 @@ const EventBar = () => {
         type: 'image/jpeg',
         name: selectedImage.fileName || 'uploaded_image.jpg',
       });
-      formData.append('event_picture[user_id]', userId); // Agrega el user_id
+      formData.append('event_picture[user_id]', userId)
+
   
       const response = await axios.post(
         `${backend_url}/api/v1/bars/${barId}/events/${eventId}/event_pictures`,
@@ -118,8 +120,7 @@ const EventBar = () => {
         }
       );
   
-      // Refresca los eventos para mostrar la nueva imagen
-      await fetchEvents();
+
       setImageDescription('');
       setSelectedImage(null);
   
@@ -148,7 +149,7 @@ const EventBar = () => {
 
   const handleCheckIn = async (eventId) => {
     try {
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await SecureStore.getItemAsync('jwtToken');
 
       if (!token) {
         setError('Token not found. Please log in again.');
@@ -236,7 +237,7 @@ const EventBar = () => {
             <Button title="Select Image" onPress={handleSelectImage} />
             {selectedImage && <Image source={{ uri: selectedImage.uri }} style={{ width: 100, height: 100, marginTop: 10 }} />}
 
-            <Button title="Upload Image" onPress={() => handleUploadImage(event.id)} disabled={!selectedImage || !imageDescription} />
+            <Button title="Upload Image" onPress={() => handleUploadImage(event.id, userId)} disabled={!selectedImage || !imageDescription} />
 
             {event.event_pictures && event.event_pictures.length > 0 && (
               <ScrollView horizontal style={{ maxHeight: 200, marginTop: 10 }}>
