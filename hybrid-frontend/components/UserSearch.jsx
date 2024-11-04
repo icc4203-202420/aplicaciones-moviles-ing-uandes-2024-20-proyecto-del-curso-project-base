@@ -76,7 +76,7 @@ const UserSearch = () => {
   };
 
   const addFriend = async (friendId, barId) => {
-    const token = sessionStorage.getItem('jwtToken');
+    const token = SecureStore.getItem('jwtToken');
 
     const data = {
       bar_id: barId || null,

@@ -101,8 +101,6 @@ const EventBar = () => {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      <Button title="Back to Bar Details" onPress={() => navigation.goBack()} />
-
       <Text style={{ fontSize: 24, marginVertical: 16 }}>Events at this Bar</Text>
 
       <FlatList
