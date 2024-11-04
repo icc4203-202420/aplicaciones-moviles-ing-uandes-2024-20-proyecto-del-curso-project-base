@@ -1,59 +1,65 @@
-require 'open3'
-
 class GenerateVideoSummaryJob < ApplicationJob
   queue_as :default
 
   def perform(event_id)
     event = Event.find(event_id)
+    images = event.event_pictures.map(&:image) # Obtener las imágenes de event_pictures
 
-    # Genera el video y obtiene la ruta del video
-    video_url = create_video(event)
+    # Asegúrate de que haya imágenes disponibles
+    return if images.empty?
 
-    # En este punto, en lugar de almacenar la URL en la base de datos,
-    # puedes manejar la URL como necesites.
-    Rails.logger.info "Video generated for event #{event_id}: #{video_url}"
+    # Crear una lista de archivos de imagen temporal
+    image_files = images.map do |image|
+      download_image(image)
+    end
 
-    # Si necesitas realizar otras acciones, puedes hacerlo aquí
+    # Define la ruta del archivo de salida
+    output_file = "/tmp/video_summary_#{event_id}.mp4"
+
+    # Generar el video usando FFmpeg
+    create_video(image_files, output_file)
+
+    # Subir el video a Active Storage
+    upload_video_to_storage(event, output_file)
+
+    # Eliminar archivos temporales
+    cleanup_temp_files(image_files, output_file)
   end
 
   private
 
-  def create_video(event)
-    images = event.event_pictures.map(&:image) # Asumiendo que event_pictures tiene un atributo 'image'
-    
-    # Crear un array para almacenar los archivos temporales
-    temp_files = []
-  
-    images.each do |image|
-      # Asegúrate de que la imagen esté adjunta
-      next unless image.attached?
-  
-      # Descarga la imagen y guárdala temporalmente
-      temp_file = Tempfile.new(['image', File.extname(image.filename.to_s)])
-      temp_file.binmode
-      temp_file.write(image.download)
-      temp_file.rewind
-      temp_files << temp_file.path
-    end
-  
-    # Llama a tu método de FFmpeg para crear el video
-    video_url = generate_video_from_images(temp_files)
-  
-    # Limpia los archivos temporales después de usarlos
-    temp_files.each { |path| File.delete(path) if File.exist?(path) }
-  
-    video_url
-  end
-  
-  def generate_video_from_images(image_paths)
-    output_video_path = "public/uploads/videos/event_video_#{SecureRandom.uuid}.mp4" # Cambia a un directorio accesible
+  def download_image(image)
+    # Aquí se asume que la imagen está almacenada en Active Storage.
+    temp_file = "/tmp/#{image.filename}"
 
-    # Comando de FFmpeg (ajusta según tus necesidades)
-    command = "ffmpeg -y -framerate 1 -i #{image_paths.join(' -i ')} -c:v libx264 -pix_fmt yuv420p #{output_video_path}"
-    
+    # Guardar el archivo temporalmente
+    File.open(temp_file, 'wb') do |file|
+      file.write(image.download)
+    end
+
+    temp_file
+  end
+
+  def create_video(image_files, output_file)
+    # Genera el comando FFmpeg
+    # Ajusta la construcción del comando para usar una lista de imágenes
+    inputs = image_files.map { |file| "-i #{file}" }.join(" ")
+    command = "ffmpeg -y -framerate 1 #{inputs} -filter_complex \"concat=n=#{image_files.size}:v=1:a=0\" -c:v libx264 -pix_fmt yuv420p #{output_file}"
+
+    # Ejecuta el comando
     system(command)
-  
-    # Retorna la URL o el path del video generado
-    output_video_path
-  end  
+
+    # Verifica si el comando se ejecutó correctamente
+    raise "FFmpeg failed to create video" unless $?.success?
+  end
+
+  def upload_video_to_storage(event, output_file)
+    # Sube el video a Active Storage
+    event.video.attach(io: File.open(output_file), filename: "video_summary_#{event.id}.mp4")
+  end
+
+  def cleanup_temp_files(image_files, output_file)
+    image_files.each { |file| File.delete(file) if File.exist?(file) }
+    File.delete(output_file) if File.exist?(output_file)
+  end
 end
