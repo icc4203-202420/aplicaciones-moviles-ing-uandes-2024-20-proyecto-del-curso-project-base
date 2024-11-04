@@ -52,6 +52,10 @@ const RegisterScreen = () => {
             email: email.toLowerCase(),
             password,
             password_confirmation: confirmPassword,
+            // country,
+            // line1,
+            // line2,
+            // city,
             ...(Object.keys(address).length && { address }) // Solo incluir dirección si hay al menos un campo
           },
         },

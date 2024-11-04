@@ -1,3 +1,4 @@
+# require_relative '../services/push_notification_service'
 class API::V1::FriendshipsController < ApplicationController
   include Authenticable
 
@@ -58,26 +59,48 @@ class API::V1::FriendshipsController < ApplicationController
       return
     end
 
-    # Verificar si la amistad ya es mutua
+    # Check for mutual friendship
     if @user.friendships.exists?(friend: @friend) && @friend.friendships.exists?(friend: @user)
       render json: { error: "You are already friends with this user" }, status: :unprocessable_entity
       return
-    # Verificar si hay una solicitud pendiente
+    # Check for pending friend request
     elsif @user.friendships.exists?(friend: @friend)
       render json: { message: "Pending friend request" }, status: :ok
       return
     end
 
-    # Crear una nueva solicitud de amistad
+    # Create a new friendship request
     @friendship = @user.friendships.build(friendship_params)
     @friendship.bar_id = friendship_params[:bar_id] if friendship_params[:bar_id].present?
     @friendship.event_id = friendship_params[:event_id] if friendship_params[:event_id].present?
+
     if @friendship.save
+      # Get the push tokens
+      friend_push_token = @friend.push_token
+      user_push_token = @user.push_token
+
+      # Send notification to the friend
+      PushNotificationService.send_notification(
+        to: friend_push_token, # Token for the friend
+        title: 'New Friend Request',
+        body: "#{@user.first_name} #{@user.last_name} has sent you a friend request.",
+        data: { friendship_id: @friendship.id }
+      )
+
       render json: @friendship, status: :created
     else
+      # Send notification to the current user about the failure
+      PushNotificationService.send_notification(
+        to: user_push_token, # Token for the current user
+        title: 'Friend Request Failed',
+        body: 'Could not send the friend request. Please try again later.',
+        data: { error: @friendship.errors.full_messages }
+      )
+
       render json: { errors: @friendship.errors.full_messages }, status: :unprocessable_entity
     end
   end
+
 
   private
 

@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { View, Modal, StyleSheet, Text, TouchableOpacity, Button, FlatList } from 'react-native';
 import { Input, Icon } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
-import Toast from 'react-native-root-toast';
+import * as Notifications from 'expo-notifications'; 
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
 
-const EventModal = ({ visible, onClose, onSubmit, friendId }) => {
+const EventModal = ({ visible, onClose, friendId }) => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchText, setSearchText] = useState('');
@@ -23,13 +24,28 @@ const EventModal = ({ visible, onClose, onSubmit, friendId }) => {
     fetchEvents();
   }, []);
 
-  // Reset selectedEvent when modal opens
   useEffect(() => {
     if (visible) {
       setSelectedEvent(null);
-      setSearchText(''); // Optional: reset search text as well
+      setSearchText('');
     }
   }, [visible]);
+
+  useEffect(() => {
+    const receivedListener = Notifications.addNotificationReceivedListener(async (notification) => {
+      const { title, body , data } = notification.request.content;
+      console.log('Notification received: ', title, body, data);
+    });
+
+    const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
+      console.log('Notification response received: ', response);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(receivedListener);
+      Notifications.removeNotificationSubscription(responseListener);
+    };
+  }, []); 
 
   const filteredEvents = events.filter(event =>
     event.name.toLowerCase().includes(searchText.toLowerCase())
@@ -37,21 +53,43 @@ const EventModal = ({ visible, onClose, onSubmit, friendId }) => {
 
   const handleSubmit = async () => {
     try {
-      await onSubmit(friendId, selectedEvent?.id); // Envía friendId y eventId
-      Toast.show({
-        text1: 'Friend Request Sent',
-        text2: 'The friend request was sent successfully!',
-        type: 'success',
+      const token = await AsyncStorage.getItem('authToken');
+      const userId = await AsyncStorage.getItem('USER_ID');
+
+      const requestBody = {
+        friendship: {
+          friend_id: friendId,
+          bar_id: selectedEvent?.id,
+        },
+      };
+
+      await axios.post(`${NGROK_URL}/api/v1/users/${userId}/friendships`, requestBody, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
       });
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Friend Request Sent',
+          body: 'The friend request was sent successfully!'
+        },
+        trigger: null,
+      });
+      Alert.alert('Success', 'The friend request was sent successfully!');
     } catch (error) {
       console.error('Error sending friend request:', error);
-      Toast.show({
-        text1: 'Error',
-        text2: 'Could not send the friend request. Please try again.',
-        type: 'error',
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Error',
+          body: 'Could not send the friend request. Please try again.',
+        },
+        trigger: null,
       });
+      Alert.alert('Error', 'Could not send the friend request. Please try again.');
     } finally {
-      onClose(); // Cerrar modal después de la presentación
+      onClose();
     }
   };
 

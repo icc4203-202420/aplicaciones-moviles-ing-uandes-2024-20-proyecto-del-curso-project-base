@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NGROK_URL } from '@env';
+import { registerForPushNotificationsAsync } from "../util/Notifications";
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -14,11 +15,14 @@ const Login = () => {
   const handleLogin = async () => {
     setErrorMessage(""); // Limpiar el mensaje de error al intentar iniciar sesión
     try {
+      const pushToken = await registerForPushNotificationsAsync();
+      // console.log("PUSH TOKEN:", pushToken);
       // Realizar la solicitud de inicio de sesión
       const response = await axios.post(`${NGROK_URL}/api/v1/login`, {
         user: {
           email: email.toLowerCase(),
           password,
+          // push_token: pushToken,
         },
       });
 
@@ -27,8 +31,10 @@ const Login = () => {
         const USER_ID = response.data.status.data.user.id;
         // Guardar el token en AsyncStorage
         await AsyncStorage.setItem("authToken", token);
+        // await AsyncStorage.setItem("pushToken", pushToken);
         await AsyncStorage.setItem("USER_ID", USER_ID.toString());
-        console.log("Token guardado:", token);
+        console.log("Token JWT guardado:", token);
+        // console.log("Token notificaciones guardado:", pushToken);
         // Redirigir al usuario a la página principal
         router.push("/home");
       } else {
