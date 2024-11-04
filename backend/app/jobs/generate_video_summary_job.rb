@@ -1,65 +1,89 @@
+require 'open3'
+
 class GenerateVideoSummaryJob < ApplicationJob
   queue_as :default
 
   def perform(event_id)
-    event = Event.find(event_id)
-    images = event.event_pictures.map(&:image) # Obtener las imágenes de event_pictures
+    # Directorio temporal para las imágenes procesadas
+    Dir.mktmpdir do |tmpdir|
+      temp_images = []
 
-    # Asegúrate de que haya imágenes disponibles
-    return if images.empty?
+      # Descargar y procesar imágenes
+      images = download_images(event_id)
+      if images.empty?
+        Rails.logger.error("No se encontraron imágenes para el evento con ID #{event_id}")
+        return  # Salir si no hay imágenes
+      end
 
-    # Crear una lista de archivos de imagen temporal
-    image_files = images.map do |image|
-      download_image(image)
+      images.each_with_index do |event_picture, index|
+        unless event_picture.image.attached?
+          Rails.logger.error("El EventPicture con ID #{event_picture.id} no tiene una imagen adjunta")
+          next
+        end
+
+        begin
+          processed_image = MiniMagick::Image.read(event_picture.image.download) do |img|
+            img.resize "1280x720!"  # Redimensionar a 1280x720
+            img.format "jpg"         # Convertir a JPEG
+          end
+
+          # Verificar que las dimensiones sean divisibles por 2
+          width = processed_image.width
+          height = processed_image.height
+          if width % 2 != 0 || height % 2 != 0
+            Rails.logger.warn("La imagen procesada con ID #{event_picture.id} tiene dimensiones no divisibles por 2 (#{width}x#{height}). Se omitirá.")
+            next
+          end
+
+          # Guardar la imagen procesada en un archivo temporal
+          image_path = File.join(tmpdir, "event_#{event_id}_img_#{index}.jpg")
+          File.open(image_path, "wb") { |file| file.write(processed_image.to_blob) }
+
+          # Verificar que la imagen se haya guardado correctamente
+          if File.exist?(image_path) && File.size(image_path) > 0
+            temp_images << image_path
+            Rails.logger.info("Imagen procesada y guardada: #{image_path}")
+          else
+            raise "Error: El archivo de imagen temporal no se creó o está vacío: #{image_path}"
+          end
+
+        rescue => e
+          Rails.logger.error("Error al procesar la imagen: #{e.message}")
+          raise e  # Propagar el error para reintentar el trabajo o registrar el fallo
+        end
+      end
+
+      # Crear el video a partir de las imágenes procesadas
+      create_video_from_images(temp_images, event_id, tmpdir)
     end
-
-    # Define la ruta del archivo de salida
-    output_file = "/tmp/video_summary_#{event_id}.mp4"
-
-    # Generar el video usando FFmpeg
-    create_video(image_files, output_file)
-
-    # Subir el video a Active Storage
-    upload_video_to_storage(event, output_file)
-
-    # Eliminar archivos temporales
-    cleanup_temp_files(image_files, output_file)
   end
 
   private
 
-  def download_image(image)
-    # Aquí se asume que la imagen está almacenada en Active Storage.
-    temp_file = "/tmp/#{image.filename}"
+  def download_images(event_id)
+    event = Event.find_by(id: event_id)
+    event ? event.event_pictures.with_attached_image : []
+  end
 
-    # Guardar el archivo temporalmente
-    File.open(temp_file, 'wb') do |file|
-      file.write(image.download)
+  def create_video_from_images(temp_images, event_id, tmpdir)
+    concat_file_path = File.join(tmpdir, "concat_list.txt")
+    File.open(concat_file_path, "w") do |file|
+      temp_images.each { |img| file.puts "file '#{img}'" }
     end
 
-    temp_file
-  end
+    # Ruta para el video de salida
+    video_path = Rails.root.join("tmp", "event_#{event_id}.mp4")
 
-  def create_video(image_files, output_file)
-    # Genera el comando FFmpeg
-    # Ajusta la construcción del comando para usar una lista de imágenes
-    inputs = image_files.map { |file| "-i #{file}" }.join(" ")
-    command = "ffmpeg -y -framerate 1 #{inputs} -filter_complex \"concat=n=#{image_files.size}:v=1:a=0\" -c:v libx264 -pix_fmt yuv420p #{output_file}"
+    # Comando FFmpeg con -y para sobrescribir el archivo existente
+    output_command = "ffmpeg -y -f concat -safe 0 -i '#{concat_file_path}' -c:v libx264 -pix_fmt yuv420p '#{video_path}'"
 
-    # Ejecuta el comando
-    system(command)
+    stdout, stderr, status = Open3.capture3(output_command)
 
-    # Verifica si el comando se ejecutó correctamente
-    raise "FFmpeg failed to create video" unless $?.success?
-  end
-
-  def upload_video_to_storage(event, output_file)
-    # Sube el video a Active Storage
-    event.video.attach(io: File.open(output_file), filename: "video_summary_#{event.id}.mp4")
-  end
-
-  def cleanup_temp_files(image_files, output_file)
-    image_files.each { |file| File.delete(file) if File.exist?(file) }
-    File.delete(output_file) if File.exist?(output_file)
+    if status.success?
+      Rails.logger.info("Video creado exitosamente: #{video_path}")
+    else
+      Rails.logger.error("Error al ejecutar FFmpeg: #{stderr}")
+      raise "Error al crear el video con FFmpeg: #{stderr}"
+    end
   end
 end

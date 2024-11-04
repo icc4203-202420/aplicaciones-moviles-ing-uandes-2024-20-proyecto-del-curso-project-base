@@ -6,6 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useRoute } from '@react-navigation/native';
 import { backend_url } from '@env';
 import * as ImagePicker from 'expo-image-picker';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const EventBar = () => {
   const route = useRoute();
@@ -17,6 +18,9 @@ const EventBar = () => {
   const [userId, setUserId] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageDescription, setImageDescription] = useState('');
+  const [availableUsers, setAvailableUsers] = useState([]);
+  
+  
 
   // Request media library and camera permissions
   const requestPermissions = async () => {
@@ -84,6 +88,11 @@ const EventBar = () => {
     if (!result.canceled) {
       setSelectedImage(result.assets[0]);
     }
+  };
+
+  const handleUserSelect = (userHandle) => {
+    setImageDescription(prev => `${prev} @${userHandle} `);
+    setAvailableUsers(availableUsers.filter(user => user.handle !== userHandle));
   };
 
 
@@ -273,6 +282,16 @@ const EventBar = () => {
                     onPress={() => handleUploadImage(event.id, userId)}
                     disabled={!selectedImage}
                   />
+                  {event.event_pictures && event.event_pictures.length > 0 && (
+                    <ScrollView horizontal style={{ maxHeight: 200, marginTop: 10 }}>
+                      {event.event_pictures.map((picture) => (
+                        <View key={picture.id} style={{ marginRight: 10 }}>
+                          <Image source={{ uri: picture.image_url }} style={{ width: 100, height: 100, borderRadius: 8 }} />
+                          <Text>{picture.description}</Text>
+                        </View>
+                      ))}
+                    </ScrollView>
+                      )}
                 </>
               )}
             </View>
