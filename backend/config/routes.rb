@@ -25,11 +25,16 @@ Rails.application.routes.draw do
         resources :events, only: [:index, :show, :create, :update, :destroy] do
           resources :event_pictures, only: [:create]
           post 'check_in', on: :member
+
+          # Agrega la ruta para generate_summary aquí
+          post 'generate_summary', on: :member  # Esta línea añade la nueva ruta
         end
       end
+
       resources :beers do
         resources :reviews, only: [:index, :create]
       end
+      
       resources :users do
         resources :reviews, only: [:index]
         member do
@@ -41,5 +46,4 @@ Rails.application.routes.draw do
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
     end
   end
-
 end

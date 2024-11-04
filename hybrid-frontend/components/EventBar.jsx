@@ -6,6 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useRoute } from '@react-navigation/native';
 import { backend_url } from '@env';
 import * as ImagePicker from 'expo-image-picker';
+import { Video } from 'expo-av';
 
 const EventBar = () => {
   const route = useRoute();
@@ -18,14 +19,10 @@ const EventBar = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageDescription, setImageDescription] = useState('');
 
-  // Request media library and camera permissions
   const requestPermissions = async () => {
     if (Platform.OS !== 'web') {
       const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      console.log('Media Library Permission Status:', mediaStatus);
-
       const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-      console.log('Camera Permission Status:', cameraStatus);
 
       if (mediaStatus !== 'granted' || cameraStatus !== 'granted') {
         alert('Permission to access media library and camera is required!');
@@ -34,7 +31,6 @@ const EventBar = () => {
   };
 
   useEffect(() => {
-    // Request permissions on component mount
     requestPermissions();
 
     const fetchUserId = async () => {
@@ -47,7 +43,6 @@ const EventBar = () => {
           setSnackbarVisible(true);
         }
       } catch (error) {
-        console.error('Error fetching user ID from SecureStore:', error);
         setError('Failed to retrieve User ID');
         setSnackbarVisible(true);
       }
@@ -73,7 +68,6 @@ const EventBar = () => {
     setSnackbarVisible(false);
   };
 
-  // Open the image picker
   const handleSelectImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -86,19 +80,16 @@ const EventBar = () => {
     }
   };
 
-
-
-  // Upload image with description
-  const handleUploadImage = async (eventId, userId) => {
+  const handleUploadImage = async (eventId) => {
     try {
       const token = await SecureStore.getItemAsync('jwtToken');
-    
+
       if (!token) {
         setError('Token not found. Please log in again.');
         setSnackbarVisible(true);
         return;
       }
-    
+
       const formData = new FormData();
       formData.append('event_picture[description]', imageDescription);
       formData.append('event_picture[image]', {
@@ -106,10 +97,9 @@ const EventBar = () => {
         type: 'image/jpeg',
         name: selectedImage.fileName || 'uploaded_image.jpg',
       });
-      formData.append('event_picture[user_id]', userId)
+      formData.append('event_picture[user_id]', userId);
 
-  
-      const response = await axios.post(
+      await axios.post(
         `${backend_url}/api/v1/bars/${barId}/events/${eventId}/event_pictures`,
         formData,
         {
@@ -119,33 +109,15 @@ const EventBar = () => {
           },
         }
       );
-  
 
       setImageDescription('');
       setSelectedImage(null);
-  
+
     } catch (error) {
-      console.error('Error during image upload:', error);
-  
-      if (axios.isAxiosError(error)) {
-        console.error('Axios Error:', error.message);
-        if (error.response) {
-          console.error('Response Data:', error.response.data);
-          console.error('Response Status:', error.response.status);
-        } else {
-          console.error('Request Config:', error.config);
-        }
-      } else {
-        console.error('Unexpected Error:', error);
-      }
-  
       setError('Failed to upload image. Please try again.');
       setSnackbarVisible(true);
     }
   };
-  
-  
-  
 
   const handleCheckIn = async (eventId) => {
     try {
@@ -157,11 +129,7 @@ const EventBar = () => {
         return;
       }
 
-      const data = {
-        user_id: userId,
-        event: String(eventId),
-      };
-
+      const data = { user_id: userId, event: String(eventId) };
       await axios.post(
         `${backend_url}/api/v1/bars/${barId}/events/${eventId}/check_in`,
         data,
@@ -172,18 +140,31 @@ const EventBar = () => {
       setEvents(eventsResponse.data.events || []);
 
     } catch (error) {
-      console.error('Error during check-in:', error);
+      setError('Failed to check in. Please try again.');
+      setSnackbarVisible(true);
+    }
+  };
 
-      if (error.response) {
-        if (error.response.status === 401) {
-          setError('Unauthorized. Please check your token.');
-        } else {
-          setError('Failed to check in: ' + (error.response.data.message || 'Unknown error'));
-        }
-      } else {
-        setError('Something went wrong. Please try again.');
+  const handleGenerateSummary = async (eventId) => {
+    try {
+      const token = await SecureStore.getItemAsync('jwtToken');
+
+      if (!token) {
+        setError('Token not found. Please log in again.');
+        setSnackbarVisible(true);
+        return;
       }
 
+      await axios.post(
+        `${backend_url}/api/v1/bars/${barId}/events/${eventId}/generate_summary`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setError('Video on progress, you will receive a notification when it is ready!');
+      setSnackbarVisible(true);
+    } catch (error) {
+      setError('Something went worng, try again later');
       setSnackbarVisible(true);
     }
   };
@@ -202,10 +183,7 @@ const EventBar = () => {
           <View style={{ marginVertical: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 16 }}>
             <Text style={{ fontSize: 18 }}>{event.name}</Text>
             <Text>{event.description}</Text>
-            <Text>
-              {new Date(event.date).toLocaleDateString()} {' '}
-              {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
+            <Text>{new Date(event.date).toLocaleDateString()} {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
 
             <Text style={{ marginTop: 10 }}>Attendees</Text>
             <ScrollView horizontal style={{ paddingVertical: 10 }}>
@@ -221,33 +199,26 @@ const EventBar = () => {
               )}
             </ScrollView>
 
-            {event.user_has_checked_in ? (
-              <Button title="You're in!" disabled />
+            {new Date(event.date) < new Date() ? (
+              event.summary_video_url ? (
+                <Video
+                  source={{ uri: event.summary_video_url }}
+                  rate={1.0}
+                  volume={1.0}
+                  isMuted={false}
+                  resizeMode="cover"
+                  shouldPlay
+                  style={{ width: 300, height: 200 }}
+                />
+              ) : (
+                <Button title="Resumen" onPress={() => handleGenerateSummary(event.id)} />
+              )
             ) : (
-              <Button title="Check In" onPress={() => handleCheckIn(event.id)} />
-            )}
-
-            <TextInput
-              placeholder="Image description"
-              value={imageDescription}
-              onChangeText={setImageDescription}
-              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginTop: 10 }}
-            />
-
-            <Button title="Select Image" onPress={handleSelectImage} />
-            {selectedImage && <Image source={{ uri: selectedImage.uri }} style={{ width: 100, height: 100, marginTop: 10 }} />}
-
-            <Button title="Upload Image" onPress={() => handleUploadImage(event.id, userId)} disabled={!selectedImage || !imageDescription} />
-
-            {event.event_pictures && event.event_pictures.length > 0 && (
-              <ScrollView horizontal style={{ maxHeight: 200, marginTop: 10 }}>
-                {event.event_pictures.map((picture) => (
-                  <View key={picture.id} style={{ marginRight: 10 }}>
-                    <Image source={{ uri: picture.image_url }} style={{ width: 100, height: 100, borderRadius: 8 }} />
-                    <Text>{picture.description}</Text>
-                  </View>
-                ))}
-              </ScrollView>
+              event.user_has_checked_in ? (
+                <Button title="You're in!" disabled />
+              ) : (
+                <Button title="Check In" onPress={() => handleCheckIn(event.id)} />
+              )
             )}
           </View>
         )}

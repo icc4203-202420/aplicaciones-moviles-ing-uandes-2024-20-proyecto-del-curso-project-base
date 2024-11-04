@@ -3,7 +3,7 @@ class API::V1::EventsController < ApplicationController
   include Authenticable
 
   respond_to :json
-  before_action :set_event, only: [:show, :update, :destroy]
+  before_action :set_event, only: [:show, :update, :destroy, :generate_summary]
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
   before_action :authenticate_user!, only: [:create, :update, :destroy]
 
@@ -17,7 +17,7 @@ class API::V1::EventsController < ApplicationController
           name: event.name,
           description: event.description,
           date: event.date,
-          flyer_url: event.flyer.attached? ? url_for(event.flyer) : nil,  # Asegura que se incluya la URL del flyer
+          flyer_url: event.flyer.attached? ? url_for(event.flyer) : nil,
           attendees: event.users.map do |user|
             {
               id: user.id,
@@ -28,7 +28,7 @@ class API::V1::EventsController < ApplicationController
           event_pictures: event.event_pictures.map do |picture|
             {
               id: picture.id,
-              image_url: url_for(picture.image),  # Asegura que se incluya la URL de las imágenes de los eventos
+              image_url: url_for(picture.image),
               description: picture.description
             }
           end
@@ -37,11 +37,9 @@ class API::V1::EventsController < ApplicationController
     }
   end
 
-
   def show
     address = Address.find_by(id: Bar.find_by(id: @event.bar_id).address_id)
-    @event_pictures = @event.event_pictures # Get all event pictures associated with the event
-    Rails.logger.info "Addresses are: #{address}"
+    @event_pictures = @event.event_pictures
 
     event_pictures_data = @event_pictures.map do |picture|
       { id: picture.id, description: picture.description, image_url: url_for(picture.image) }
@@ -87,39 +85,32 @@ class API::V1::EventsController < ApplicationController
     head :no_content
   end
 
-  def check_in
-    event = Event.find_by(id: params[:id])
-  
-    if event.nil?
-      render json: { success: false, message: 'Event not found' }, status: :not_found
-      return
-    end
-  
-    # Usa el user_id enviado en los parámetros
-    user_id = params[:user_id]
-  
-    # Encuentra al usuario basado en el user_id proporcionado
-    user = User.find_by(id: user_id)
-  
-    if user.nil?
-      render json: { success: false, message: 'User not found' }, status: :not_found
-      return
-    end
-  
-    attendance = Attendance.find_or_initialize_by(user_id: user.id, event_id: event.id)
-  
-    if attendance.checked_in
-      render json: { success: false, message: 'Already checked in' }, status: :unprocessable_entity
-    else
-      if attendance.update(checked_in: true)
-        render json: { success: true, message: 'Checked in successfully' }, status: :ok
-      else
-        render json: { success: false, message: 'Failed to check in' }, status: :unprocessable_entity
-      end
-    end
-  end  
+  def generate_summary
+    # Lógica para generar el resumen
+    attendees = @event.users
+
+    # Envía las notificaciones
+    notification_service = NotificationService.new(@event, attendees)
+    notification_service.send_notifications
+
+    render json: { message: 'Summary generation initiated and notifications sent.' }, status: :ok
+  end
 
   private
+
+  class NotificationService
+    def initialize(event, attendees)
+      @event = event
+      @attendees = attendees
+    end
+
+    def send_notifications
+      @attendees.each do |attendee|
+        # Implementa aquí la lógica de envío de notificaciones (correo, push, etc.)
+        puts "Sending notification to #{attendee.email} for event #{@event.name}"
+      end
+    end
+  end
 
   def set_event
     @event = Event.find_by(id: params[:id])
