@@ -144,9 +144,6 @@ const EventBar = () => {
     }
   };
   
-  
-  
-
   const handleCheckIn = async (eventId) => {
     try {
       const token = await SecureStore.getItemAsync('jwtToken');
@@ -188,6 +185,32 @@ const EventBar = () => {
     }
   };
 
+  const handleGenerateSummary = async (eventId) => {
+    try {
+      const token = await SecureStore.getItemAsync('jwtToken');
+      if (!token) {
+        setError('Token not found. Please log in again.');
+        setSnackbarVisible(true);
+        return;
+      }
+
+      const response = await axios.post(
+        `${backend_url}/api/v1/bars/${barId}/events/${eventId}/generate_summary`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        setSnackbarVisible(true);
+        setError('Video generation started. You will be notified when it is ready.');
+      }
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      setError('Failed to generate summary. Please try again.');
+      setSnackbarVisible(true);
+    }
+  };
+
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text style={{ color: 'red' }}>{error}</Text>;
 
@@ -198,62 +221,74 @@ const EventBar = () => {
       <FlatList
         data={events}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item: event }) => (
-          <View style={{ marginVertical: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 16 }}>
-            <Text style={{ fontSize: 18 }}>{event.name}</Text>
-            <Text>{event.description}</Text>
-            <Text>
-              {new Date(event.date).toLocaleDateString()} {' '}
-              {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
+        renderItem={({ item: event }) => {
+          const eventDate = new Date(event.date);
+          const isEventPast = eventDate < new Date();
 
-            <Text style={{ marginTop: 10 }}>Attendees</Text>
-            <ScrollView horizontal style={{ paddingVertical: 10 }}>
-              {event.attendees && event.attendees.length > 0 ? (
-                event.attendees.map((attendee) => (
-                  <TouchableOpacity key={attendee.id} style={{ marginRight: 10, alignItems: 'center' }}>
-                    <Avatar.Image size={40} source={{ uri: attendee.avatar_url }} />
-                    <Text>{attendee.handle}</Text>
-                  </TouchableOpacity>
-                ))
-              ) : (
-                <Text>No attendees for this event</Text>
-              )}
-            </ScrollView>
+          return (
+            <View style={{ marginVertical: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 16 }}>
+              <Text style={{ fontSize: 18 }}>{event.name}</Text>
+              <Text>{event.description}</Text>
+              <Text>
+                {eventDate.toLocaleDateString()} {' '}
+                {eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Text>
 
-            {event.user_has_checked_in ? (
-              <Button title="You're in!" disabled />
-            ) : (
-              <Button title="Check In" onPress={() => handleCheckIn(event.id)} />
-            )}
-
-            <TextInput
-              placeholder="Image description"
-              value={imageDescription}
-              onChangeText={setImageDescription}
-              style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginTop: 10 }}
-            />
-
-            <Button title="Select Image" onPress={handleSelectImage} />
-            {selectedImage && <Image source={{ uri: selectedImage.uri }} style={{ width: 100, height: 100, marginTop: 10 }} />}
-
-            <Button title="Upload Image" onPress={() => handleUploadImage(event.id, userId)} disabled={!selectedImage || !imageDescription} />
-
-            {event.event_pictures && event.event_pictures.length > 0 && (
-              <ScrollView horizontal style={{ maxHeight: 200, marginTop: 10 }}>
-                {event.event_pictures.map((picture) => (
-                  <View key={picture.id} style={{ marginRight: 10 }}>
-                    <Image source={{ uri: picture.image_url }} style={{ width: 100, height: 100, borderRadius: 8 }} />
-                    <Text>{picture.description}</Text>
-                  </View>
-                ))}
+              <Text style={{ marginTop: 10 }}>Attendees</Text>
+              <ScrollView horizontal style={{ paddingVertical: 10 }}>
+                {event.attendees && event.attendees.length > 0 ? (
+                  event.attendees.map((attendee) => (
+                    <TouchableOpacity key={attendee.id} style={{ marginRight: 10, alignItems: 'center' }}>
+                      <Avatar.Image size={40} source={{ uri: attendee.avatar_url }} />
+                      <Text>{attendee.handle}</Text>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <Text>No attendees for this event</Text>
+                )}
               </ScrollView>
-            )}
-          </View>
-        )}
+
+              {/* Conditionally render buttons based on event date */}
+              {isEventPast ? (
+                <>
+                  <Button title="Summary" onPress={() => handleGenerateSummary(event.id)} />
+                </>
+              ) : (
+                <>
+                  {event.user_has_checked_in ? (
+                    <Button title="You're in!" disabled />
+                  ) : (
+                    <Button title="Check In" onPress={() => handleCheckIn(event.id)} />
+                  )}
+                  <TextInput
+                    placeholder="Image description"
+                    value={imageDescription}
+                    onChangeText={setImageDescription}
+                    style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginTop: 10 }}
+                  />
+                  <Button title="Select Image" onPress={handleSelectImage} />
+                  {selectedImage && <Image source={{ uri: selectedImage.uri }} style={{ width: 200, height: 200, marginVertical: 10 }} />}
+                  <Button
+                    title="Upload Image"
+                    onPress={() => handleUploadImage(event.id, userId)}
+                    disabled={!selectedImage}
+                  />
+                </>
+              )}
+            </View>
+          );
+        }}
       />
 
-      <Snackbar visible={snackbarVisible} onDismiss={handleCloseSnackbar} duration={3000}>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={handleCloseSnackbar}
+        duration={5000}
+        action={{
+          label: 'Close',
+          onPress: handleCloseSnackbar,
+        }}
+      >
         {error}
       </Snackbar>
     </View>
