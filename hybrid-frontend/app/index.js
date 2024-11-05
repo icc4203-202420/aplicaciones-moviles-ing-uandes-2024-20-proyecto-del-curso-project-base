@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import { Input, Button, Text } from "@rneui/themed";
 import { useRouter } from "expo-router";
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from 'expo-secure-store'; 
 import { NGROK_URL } from '@env';
+import { savePushToken } from '../util/Notifications';
 // import { registerForPushNotificationsAsync } from "../util/Notifications";
+
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -15,34 +17,30 @@ const Login = () => {
   const handleLogin = async () => {
     setErrorMessage(""); // Limpiar el mensaje de error al intentar iniciar sesión
     try {
-      const pushToken = await registerForPushNotificationsAsync();
-      console.log("PUSH TOKEN:", pushToken);
-      // Realizar la solicitud de inicio de sesión
       const response = await axios.post(`${NGROK_URL}/api/v1/login`, {
         user: {
           email: email.toLowerCase(),
           password,
-          // push_token: pushToken,
         },
       });
 
       if (response.status === 200) {
         const token = response.headers['authorization'];
         const USER_ID = response.data.status.data.user.id;
-        // Guardar el token en AsyncStorage
-        await AsyncStorage.setItem("authToken", token);
-        await AsyncStorage.setItem("pushToken", pushToken);
-        await AsyncStorage.setItem("USER_ID", USER_ID.toString());
+
+        // Guardar el token en SecureStore
+        await SecureStore.setItemAsync('authToken', token);
+        await SecureStore.setItemAsync('USER_ID', USER_ID.toString()); // Corregido de CURRENT_USER_ID a USER_ID
+        const pushToken = await savePushToken(); // Asegúrate de definir y utilizar esta función correctamente
         console.log("Token JWT guardado:", token);
         console.log("Token notificaciones guardado:", pushToken);
+        Alert.alert('Login Successful!');
         // Redirigir al usuario a la página principal
         router.push("/home");
       } else {
-        // Manejar el error en caso de credenciales inválidas
         setErrorMessage(response.data.message || "Credenciales inválidas, por favor intente nuevamente.");
       }
     } catch (error) {
-      // Manejo de errores de red y errores específicos de la respuesta
       if (error.response) {
         setErrorMessage("Credenciales incorrectas");
       } else {
@@ -54,8 +52,8 @@ const Login = () => {
   useEffect(() => {
     // Verificar si hay un token existente y redirigir si el usuario ya está autenticado
     const checkLoginStatus = async () => {
-      const token = await AsyncStorage.getItem("authToken");
-      const user = await AsyncStorage.getItem("USER_ID");
+      const token = await SecureStore.getItemAsync("authToken");
+      const user = await SecureStore.getItemAsync("USER_ID");
       if (token) {
         console.log("Usuario ya autenticado, redirigiendo...");
         console.log(token);
