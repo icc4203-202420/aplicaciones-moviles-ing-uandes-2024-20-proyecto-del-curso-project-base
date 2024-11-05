@@ -55,11 +55,12 @@ const EventModal = ({ visible, onClose, friendId }) => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       const userId = await AsyncStorage.getItem('USER_ID');
-
+      console.log("auth token: ", token);
+      console.log("user id: ", userId);
       const requestBody = {
         friendship: {
           friend_id: friendId,
-          bar_id: selectedEvent?.id,
+          event_id: selectedEvent?.id,
         },
       };
 
