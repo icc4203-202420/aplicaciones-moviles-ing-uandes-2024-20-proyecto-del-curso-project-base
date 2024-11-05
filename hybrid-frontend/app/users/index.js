@@ -53,30 +53,10 @@ const UserSearchScreen = () => {
     setFilteredUsers(results);
   }, [searchText, users]);
 
-  const handleAddFriendWithEvent = (userId) => {
+  const handleAddFriend = (userId) => {
     setSelectedFriendId(userId);
     setModalVisible(true);
   };
-
-  const handleAddFriendDirect = async (userId) => {
-    try {
-      const token = await AsyncStorage.getItem('authToken');
-      await axios.post(`${NGROK_URL}/api/v1/users/${currentUserId}/friendships`, {
-        friendship: {
-          friend_id: selectedFriendId,
-        }
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });      
-      alert('Solicitud de amistad enviada.');
-    } catch (error) {
-      console.error('Error al agregar amigo:', error);
-      alert('Error al agregar amigo.');
-    }
-  };
-  
 
   const handleModalSubmit = async (event) => {
     if (!currentUserId || !event) return;
@@ -97,15 +77,15 @@ const UserSearchScreen = () => {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Solicitud de Amistad',
-          body: 'Has enviado una solicitud de amistad con evento asociado.',
+          body: 'Has enviado una solicitud de amistad.',
         },
         trigger: null,
       });
 
-      Alert.alert('Éxito', 'Solicitud de amistad con evento enviada.');
+      Alert.alert('Éxito', 'Solicitud de amistad enviada.');
     } catch (error) {
       console.error('Error al agregar amigo:', error);
-      Alert.alert('Error', 'No se pudo enviar la solicitud de amistad con evento.');
+      Alert.alert('Error', 'No se pudo enviar la solicitud de amistad.');
     } finally {
       setModalVisible(false);
     }
@@ -131,20 +111,11 @@ const UserSearchScreen = () => {
                 <ListItem.Title>{item.handle}</ListItem.Title>
                 <ListItem.Subtitle>{`${item.first_name} ${item.last_name}`}</ListItem.Subtitle>
               </ListItem.Content>
-              <View style={styles.buttonContainer}>
-                <Button
-                  title=""
-                  onPress={() => handleAddFriendDirect(item.id)}
-                  icon={<Icon name="person-add" color="#ffffff" />}
-                  buttonStyle={styles.button}
-                />
-                <Button
-                  title=""
-                  onPress={() => handleAddFriendWithEvent(item.id)}
-                  icon={<Icon name="event" color="#ffffff" />}
-                  buttonStyle={styles.button}
-                />
-              </View>
+              <Button 
+                title="" 
+                onPress={() => handleAddFriend(item.id)} 
+                icon={<Icon name="person-add" color="#ffffff" />}
+              />
             </ListItem>
           )}
           ListEmptyComponent={<Text style={styles.emptyText}>No se encontraron usuarios.</Text>}
@@ -173,14 +144,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     color: 'gray',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: 100,
-  },
-  button: {
-    marginHorizontal: 5,
   },
 });
 
