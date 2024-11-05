@@ -15,8 +15,8 @@ const Login = () => {
   const handleLogin = async () => {
     setErrorMessage(""); // Limpiar el mensaje de error al intentar iniciar sesión
     try {
-      // const pushToken = await registerForPushNotificationsAsync();
-      // console.log("PUSH TOKEN:", pushToken);
+      const pushToken = await registerForPushNotificationsAsync();
+      console.log("PUSH TOKEN:", pushToken);
       // Realizar la solicitud de inicio de sesión
       const response = await axios.post(`${NGROK_URL}/api/v1/login`, {
         user: {
@@ -31,10 +31,10 @@ const Login = () => {
         const USER_ID = response.data.status.data.user.id;
         // Guardar el token en AsyncStorage
         await AsyncStorage.setItem("authToken", token);
-        // await AsyncStorage.setItem("pushToken", pushToken);
+        await AsyncStorage.setItem("pushToken", pushToken);
         await AsyncStorage.setItem("USER_ID", USER_ID.toString());
         console.log("Token JWT guardado:", token);
-        // console.log("Token notificaciones guardado:", pushToken);
+        console.log("Token notificaciones guardado:", pushToken);
         // Redirigir al usuario a la página principal
         router.push("/home");
       } else {
