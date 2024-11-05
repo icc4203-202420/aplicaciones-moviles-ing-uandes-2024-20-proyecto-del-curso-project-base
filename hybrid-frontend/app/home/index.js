@@ -32,6 +32,9 @@ const HomeScreen = () => {
       <Link href="/users" style={styles.link}>
         <Text>Users</Text> {/* Ensure this text is inside a <Text> component */}
       </Link>
+      <Link href="/events" style={styles.link}>
+        <Text>Event</Text> {/* Ensure this text is inside a <Text> component */}
+      </Link>
       <Button title="Logout" onPress={handleLogout} buttonStyle={styles.button} />
     </View>
   );

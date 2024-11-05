@@ -93,6 +93,7 @@ const UserSearchScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
       <Input
         placeholder="Buscar por handle..."
         value={searchText}
