@@ -35,8 +35,6 @@ export async function registerForPushNotificationsAsync() {
     if (token) {
       await SecureStore.setItemAsync('pushToken', token);
     }
-  } else {
-    alert('Must use physical device for Push Notifications');
   }
 
   if (Platform.OS === 'android') {
