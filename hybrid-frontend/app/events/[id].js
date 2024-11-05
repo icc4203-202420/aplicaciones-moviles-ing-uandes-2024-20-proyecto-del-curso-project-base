@@ -1,6 +1,7 @@
 // src/components/EventCheckIn.jsx
 import React, { useState } from 'react';
-import { View, Button, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Button } from '@rneui/themed'; // Asegúrate de que esto esté bien importado
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,6 +23,9 @@ const EventCheckIn = ({ eventId }) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <Text style={styles.backButtonText}>Back</Text>
+      </TouchableOpacity>
       <Button title="Hacer Check-in" onPress={checkIn} />
       {message && <Text style={styles.message}>{message}</Text>}
     </View>
