@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Button } from '@rneui/themed'; // Asegúrate de que esto esté bien importado
+import { Button } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import { useRouter } from 'expo-router';
@@ -27,7 +27,17 @@ const EventIndex = () => {
   };
 
   const handleSharePhoto = (eventId) => {
-    router.push(`${eventId}`);
+    router.push(`/events/share-photo/${eventId}`);
+  };
+
+  const handleCheckIn = async (eventId) => {
+    try {
+      const response = await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/check_in`);
+      alert('Check-in successful!');
+    } catch (error) {
+      console.error('Error during check-in:', error);
+      alert('Error during check-in. Please try again.');
+    }
   };
 
   return (
@@ -51,6 +61,12 @@ const EventIndex = () => {
                 onPress={() => handleSharePhoto(item.id)}
               >
                 <Text style={styles.buttonText}>Share Photo</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.checkInButton}
+                onPress={() => handleCheckIn(item.id)}
+              >
+                <Text style={styles.buttonText}>Check In</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -102,6 +118,13 @@ const styles = StyleSheet.create({
   },
   shareButton: {
     backgroundColor: '#28a745',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  checkInButton: {
+    backgroundColor: '#ffc107',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
