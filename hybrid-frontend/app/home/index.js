@@ -2,17 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Button } from '@rneui/themed';
 import { Link, useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store'; // Importa Secure Store
 
 const HomeScreen = () => {
   const router = useRouter();
   console.log("app/home");
-  console.log("HomeScreen component loaded"); // Log to verify component loading
+  console.log("HomeScreen component loaded"); // Log para verificar la carga del componente
 
   const handleLogout = async () => {
     try {
       // Remove the token from storage
-      await AsyncStorage.removeItem('authToken');
+      await SecureStore.deleteItemAsync('authToken'); // Cambia a Secure Store
       console.log('Token removed, logging out');
 
       // Redirect the user to the login screen
@@ -27,13 +27,13 @@ const HomeScreen = () => {
     <View style={styles.container}>
       <Text style={styles.text}>Welcome to the Home Screen</Text>
       <Link href="/beers" style={styles.link}>
-        <Text>Beer</Text> {/* Ensure this text is inside a <Text> component */}
+        <Text>Beer</Text> {/* Asegúrate de que este texto esté dentro de un componente <Text> */}
       </Link>
       <Link href="/users" style={styles.link}>
-        <Text>Users</Text> {/* Ensure this text is inside a <Text> component */}
+        <Text>Users</Text> {/* Asegúrate de que este texto esté dentro de un componente <Text> */}
       </Link>
       <Link href="/events" style={styles.link}>
-        <Text>Event</Text> {/* Ensure this text is inside a <Text> component */}
+        <Text>Event</Text> {/* Asegúrate de que este texto esté dentro de un componente <Text> */}
       </Link>
       <Button title="Logout" onPress={handleLogout} buttonStyle={styles.button} />
     </View>
@@ -43,8 +43,8 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center', // Center vertically
-    alignItems: 'center', // Center horizontally
+    justifyContent: 'center', // Centrar verticalmente
+    alignItems: 'center', // Centrar horizontalmente
     padding: 20,
   },
   text: {

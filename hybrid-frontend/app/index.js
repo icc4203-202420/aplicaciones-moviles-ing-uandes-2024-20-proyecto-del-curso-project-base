@@ -30,10 +30,11 @@ const Login = () => {
 
         // Guardar el token en SecureStore
         await SecureStore.setItemAsync('authToken', token);
-        await SecureStore.setItemAsync('USER_ID', USER_ID.toString()); // Corregido de CURRENT_USER_ID a USER_ID
-        const pushToken = await savePushToken(); // Asegúrate de definir y utilizar esta función correctamente
+        await SecureStore.setItemAsync('USER_ID', USER_ID.toString()); 
+        const pushToken = await savePushToken();
         console.log("Token JWT guardado:", token);
-        console.log("Token notificaciones guardado:", pushToken);
+        console.log("USER_ID", USER_ID);
+        // console.log("Token notificaciones guardado:", pushToken);
         Alert.alert('Login Successful!');
         // Redirigir al usuario a la página principal
         router.push("/home");

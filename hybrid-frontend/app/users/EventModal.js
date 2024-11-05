@@ -4,7 +4,7 @@ import { Input, Icon } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import * as Notifications from 'expo-notifications'; 
-import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import * as SecureStore from 'expo-secure-store'; // Importa Secure Store
 import { Alert } from 'react-native'; 
 
 const EventModal = ({ visible, onClose, friendId }) => {
@@ -35,7 +35,7 @@ const EventModal = ({ visible, onClose, friendId }) => {
 
   useEffect(() => {
     const receivedListener = Notifications.addNotificationReceivedListener(async (notification) => {
-      const { title, body , data } = notification.request.content;
+      const { title, body, data } = notification.request.content;
       console.log('Notification received: ', title, body, data);
     });
 
@@ -57,14 +57,14 @@ const EventModal = ({ visible, onClose, friendId }) => {
     if (!friendId) return;
     setLoading(true); // Inicia el estado de carga
     try {
-        const token = await AsyncStorage.getItem('authToken');
+        const token = await SecureStore.getItemAsync('authToken'); // Cambia a Secure Store
         if (!token) {
           console.error('Token de autenticación no encontrado');
           return;
         }
         console.log("AUTH TOKEN: ", token);
-        const userId = await AsyncStorage.getItem('USER_ID');
-        
+        const userId = await SecureStore.getItemAsync('USER_ID'); // Cambia a Secure Store
+        console.log("USER ", userId);
         // Define el cuerpo de la solicitud, haciendo que `event_id` sea opcional
         const requestBody = {
             friendship: {
@@ -106,7 +106,6 @@ const EventModal = ({ visible, onClose, friendId }) => {
         onClose();
     }
   };
-
 
   return (
     <Modal

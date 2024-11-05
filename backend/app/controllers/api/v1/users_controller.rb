@@ -6,6 +6,14 @@ class API::V1::UsersController < ApplicationController
   #   @users = User.includes(:reviews, :address).all
   #   render json: { users: @users }, status: :ok
   # end
+  def push_token
+    if current_user.update(push_token: params[:push_token])
+      head :ok
+    else
+      render json: { error: 'Unable to update token' }, status: :unprocessable_entity
+    end
+  end
+
   def search
     @users = User.where("handle LIKE ?", "%#{params[:handle]}%")
     render json: @users
@@ -47,14 +55,6 @@ class API::V1::UsersController < ApplicationController
       render json: @user, status: :ok
     else
       render json: @user.errors, status: :unprocessable_entity
-    end
-  end
-
-  def push_token
-    if current_user.update(push_token: params[:push_token])
-      head :ok
-    else
-      render json: { error: 'Unable to update token' }, status: :unprocessable_entity
     end
   end
 
