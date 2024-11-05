@@ -1,22 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Button } from '@rneui/themed';
 import { Link, useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store'; // Importa Secure Store
+import * as SecureStore from 'expo-secure-store';
 
 const HomeScreen = () => {
   const router = useRouter();
-  console.log("app/home");
-  console.log("HomeScreen component loaded"); // Log para verificar la carga del componente
+  const [userId, setUserId] = useState(null); // Inicializa userId en null
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const id = await SecureStore.getItemAsync('USER_ID'); // Obtiene el USER_ID de Secure Store
+        setUserId(id); // Establece el userId en el estado
+      } catch (error) {
+        console.error('Error fetching user ID:', error);
+        Alert.alert('Error', 'No se pudo obtener el ID de usuario.');
+      }
+    };
+
+    fetchUserId(); // Llama a la función para obtener el userId al cargar el componente
+  }, []);
 
   const handleLogout = async () => {
     try {
-      // Remove the token from storage
       await SecureStore.deleteItemAsync('authToken'); // Cambia a Secure Store
       console.log('Token removed, logging out');
-
-      // Redirect the user to the login screen
-      router.push('/');
+      router.push('/'); // Redirige a la pantalla de inicio
     } catch (error) {
       console.error('Error logging out:', error);
       Alert.alert('Error', 'Could not log out. Please try again.');
@@ -27,14 +37,19 @@ const HomeScreen = () => {
     <View style={styles.container}>
       <Text style={styles.text}>Welcome to the Home Screen</Text>
       <Link href="/beers" style={styles.link}>
-        <Text>Beer</Text> {/* Asegúrate de que este texto esté dentro de un componente <Text> */}
+        <Text>Beer</Text>
       </Link>
       <Link href="/users" style={styles.link}>
-        <Text>Users</Text> {/* Asegúrate de que este texto esté dentro de un componente <Text> */}
+        <Text>Users</Text>
       </Link>
       <Link href="/events" style={styles.link}>
-        <Text>Event</Text> {/* Asegúrate de que este texto esté dentro de un componente <Text> */}
+        <Text>Event</Text>
       </Link>
+      {userId && ( // Asegúrate de que userId no es null antes de mostrar el enlace
+        <Link href={`/users/${userId}`} style={styles.link}>
+          <Text>Your Profile</Text> {/* Enlace al perfil del usuario */}
+        </Link>
+      )}
       <Button title="Logout" onPress={handleLogout} buttonStyle={styles.button} />
     </View>
   );

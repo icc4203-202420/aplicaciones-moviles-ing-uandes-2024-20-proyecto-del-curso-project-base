@@ -4,7 +4,7 @@ import { Input, Button, Text } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store'; 
 
 const RegisterScreen = () => {
   const router = useRouter();
@@ -71,7 +71,7 @@ const RegisterScreen = () => {
         const token = response.headers['authorization'];
         console.log("token", token);
         if (token) {
-          await AsyncStorage.setItem('authToken', token); 
+          await SecureStore.setItemAsync('authToken', token); // Guarda el token en SecureStore
           Alert.alert('Registro exitoso');
           router.push('/home');
         } else {

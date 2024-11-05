@@ -23,23 +23,17 @@ const Login = () => {
           password,
         },
       });
-
-      if (response.status === 200) {
-        const token = response.headers['authorization'];
-        const USER_ID = response.data.status.data.user.id;
-
-        // Guardar el token en SecureStore
-        await SecureStore.setItemAsync('authToken', token);
-        await SecureStore.setItemAsync('USER_ID', USER_ID.toString()); 
-        const pushToken = await savePushToken();
-        console.log("Token JWT guardado:", token);
-        console.log("USER_ID", USER_ID);
-        Alert.alert('Login Successful!');
-        // Redirigir al usuario a la página principal
-        router.push("/home");
-      } else {
-        setErrorMessage(response.data.message || "Credenciales inválidas, por favor intente nuevamente.");
-      }
+      const token = response.headers['authorization'];
+      const USER_ID = response.data.status.data.user.id;
+      // Guardar el token en SecureStore
+      await SecureStore.setItemAsync('authToken', token);
+      await SecureStore.setItemAsync('USER_ID', USER_ID.toString()); 
+      const pushToken = await savePushToken();
+      console.log("Token JWT guardado:", token);
+      console.log("USER_ID", USER_ID);
+      Alert.alert('Login Successful!');
+      // Redirigir al usuario a la página principal
+      router.push("/home");
     } catch (error) {
       if (error.response) {
         setErrorMessage("Credenciales incorrectas");
