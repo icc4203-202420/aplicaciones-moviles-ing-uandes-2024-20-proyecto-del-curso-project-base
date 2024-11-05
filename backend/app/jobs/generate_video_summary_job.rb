@@ -72,8 +72,11 @@ class GenerateVideoSummaryJob < ApplicationJob
       end
     end
 
-    # Ruta para el video de salida
-    video_path = Rails.root.join("tmp", "event_#{event_id}.mp4")
+    # Ruta para el video de salida en el directorio público
+    video_path = Rails.root.join("public", "videos", "event_#{event_id}.mp4")
+
+    # Crear el directorio si no existe
+    FileUtils.mkdir_p(File.dirname(video_path))
 
     # Comando FFmpeg con -y para sobrescribir el archivo existente
     output_command = "ffmpeg -y -f concat -safe 0 -i '#{concat_file_path}' -c:v libx264 -pix_fmt yuv420p '#{video_path}'"
@@ -90,6 +93,21 @@ class GenerateVideoSummaryJob < ApplicationJob
   end
 
   def notify_video_ready(event_id, video_path)
-    Rails.logger.info("Notificando que el video está listo para el evento con ID #{event_id}: #{video_path}")
+    # Recuperar todos los usuarios
+    users = User.all
+
+    # Obtener el host de la configuración de tu aplicación
+    host = Rails.application.credentials.dig(:app, :host) || 'localhost:3001' # Cambia esto según tu configuración
+    protocol = 'http://'  # O 'https://' dependiendo de tu entorno
+    video_url = "#{protocol}#{host}/videos/event_#{event_id}.mp4" # Actualizar la URL
+
+    users.each do |user|
+      # Enviar una notificación a cada usuario.
+      ActionCable.server.broadcast "video_notification_channel", {
+        user_id: user.id,
+        message: "El video para el evento '#{event_id}' está listo para ver.",
+        video_url: video_url
+      }
+    end
   end
 end

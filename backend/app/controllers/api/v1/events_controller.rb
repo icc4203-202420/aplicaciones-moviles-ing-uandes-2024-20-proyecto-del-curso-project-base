@@ -116,9 +116,19 @@ class API::V1::EventsController < ApplicationController
   end
 
   def generate_summary
-    GenerateVideoSummaryJob.perform_later(@event.id)
+    # Use the instance variable set by before_action
+    event = @event
+    Rails.logger.debug("Parameters: #{params.inspect}")
 
-    render json: { success: true, message: 'Video generation started. You will be notified when it is ready.' }, status: :accepted
+    # Actualizar la URL del video para que apunte a la nueva ubicación
+    video_url = "#{request.protocol}#{request.host_with_port}/videos/event_#{event.id}.mp4"
+
+    # Start the background job for video generation
+    GenerateVideoSummaryJob.perform_later(event.id)
+    Rails.logger.debug(video_url)
+
+    # Return the video URL (it may not be ready yet)
+    render json: { success: true, message: "Video generation started.", video_url: video_url }
   end
 
   private

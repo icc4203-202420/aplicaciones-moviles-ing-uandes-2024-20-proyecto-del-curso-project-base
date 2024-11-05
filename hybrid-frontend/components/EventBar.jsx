@@ -7,6 +7,8 @@ import { useRoute } from '@react-navigation/native';
 import { backend_url } from '@env';
 import * as ImagePicker from 'expo-image-picker';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { Video } from 'expo-av';
+import { Linking } from 'react-native';
 
 const EventBar = () => {
   const route = useRoute();
@@ -20,6 +22,7 @@ const EventBar = () => {
   const [imageDescription, setImageDescription] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [videoUrl, setVideoUrl] = useState(null); // Estado para la URL del video
 
   const requestPermissions = async () => {
     if (Platform.OS !== 'web') {
@@ -66,6 +69,13 @@ const EventBar = () => {
     fetchUserId();
     fetchEvents();
   }, [barId]);
+
+  // useEffect para verificar el valor de videoUrl
+  useEffect(() => {
+    if (videoUrl) {
+      console.log('Video URL set:', videoUrl);
+    }
+  }, [videoUrl]);
 
   const handleCloseSnackbar = () => {
     setSnackbarVisible(false);
@@ -170,23 +180,27 @@ const EventBar = () => {
         setSnackbarVisible(true);
         return;
       }
-
+  
       const response = await axios.post(
         `${backend_url}/api/v1/bars/${barId}/events/${eventId}/generate_summary`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
       if (response.data.success) {
+        const videoUrl = response.data.video_url; // Asegúrate de que el backend devuelva esto
+        setVideoUrl(videoUrl); // Almacena la URL en el estado
+        console.log("Video URL:", videoUrl); // Agregar esta línea para verificar la URL     
+      } else {
+        setError('Failed to generate summary.');
         setSnackbarVisible(true);
-        setError('Video generation started. You will be notified when it is ready.');
       }
     } catch (error) {
       console.error('Error generating summary:', error);
       setError('Failed to generate summary. Please try again.');
       setSnackbarVisible(true);
     }
-  };
+  };  
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text style={{ color: 'red' }}>{error}</Text>;
@@ -235,57 +249,39 @@ const EventBar = () => {
               ) : (
                 <>
                   <Button title="Check In" onPress={() => handleCheckIn(event.id)} />
-  
-                  <TextInput
-                    placeholder="Image description"
-                    value={imageDescription}
-                    onChangeText={setImageDescription}
-                    style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginTop: 10 }}
-                  />
-  
-                  <DropDownPicker
-                    open={dropdownOpen}
-                    setOpen={setDropdownOpen}
-                    value={selectedUser}
-                    setValue={setSelectedUser}
-                    items={dropdownItems}
-                    placeholder="Select user"
-                    containerStyle={{ marginBottom: 10 }}
-                    onChangeValue={handleUserSelect} // Utiliza la función aquí
-                  />
-  
-                  {selectedUser && (
-                    <Text style={{ color: 'blue', marginTop: 10 }}>
-                      {selectedUser}{/* Mostrar descripción con el usuario seleccionado */}
-                    </Text>
-                  )}
-  
+                  <Button title="Upload Image" onPress={() => handleUploadImage(event.id, userId)} />
                   <Button title="Select Image" onPress={handleSelectImage} />
-                  {selectedImage && <Image source={{ uri: selectedImage.uri }} style={{ width: 200, height: 200, marginTop: 10 }} />}
-  
-                  <Button
-                    title="Upload Image"
-                    onPress={() => handleUploadImage(event.id, userId)}
-                    disabled={!selectedImage}
-                  />
-                  {event.event_pictures && event.event_pictures.length > 0 && (
-                    <ScrollView horizontal style={{ maxHeight: 200, marginTop: 10 }}>
-                      {event.event_pictures.map((picture) => (
-                        <View key={picture.id} style={{ marginRight: 10 }}>
-                          <Image source={{ uri: picture.image_url }} style={{ width: 100, height: 100, borderRadius: 8 }} />
-                          <Text>{picture.description}</Text>
-                        </View>
-                      ))}
-                    </ScrollView>
-                  )}
                 </>
               )}
-            </View>
-          );
-        }}
-      />
+{videoUrl && (
+  <View style={{ marginTop: 20 }}>
+    <Text style={{ fontSize: 20 }}>Video Ready:</Text>
+    <Video
+      source={{ uri: videoUrl }} // Utiliza la URL del video
+      style={{ width: '100%', height: 200 }} // Ajusta el tamaño según sea necesario
+      useNativeControls
+      resizeMode="contain"
+      isLooping
+    />
+    <Button title="Play Video" onPress={() => setVideoUrl(videoUrl)} />
+  </View>
+)}
+          </View>
+        );
+      }}
+    />
   
-      <Snackbar visible={snackbarVisible} onDismiss={handleCloseSnackbar}>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={handleCloseSnackbar}
+        duration={3000}
+        action={{
+          label: 'Close',
+          onPress: () => {
+            handleCloseSnackbar();
+          },
+        }}
+      >
         {error}
       </Snackbar>
     </View>
