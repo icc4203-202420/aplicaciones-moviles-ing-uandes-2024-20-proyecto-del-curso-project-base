@@ -1,9 +1,10 @@
 # require_relative '../services/push_notification_service'
 class API::V1::FriendshipsController < ApplicationController
-  include Authenticable
+  # include Authenticable
 
   respond_to :json
   before_action :set_user, only: [:index, :create]
+  # before_action :verify_jwt_token, only: [:index, :create, :show]
 
   # GET /api/v1/users/:user_id/friendships
   def index
@@ -113,5 +114,5 @@ class API::V1::FriendshipsController < ApplicationController
   def friendship_params
     params.require(:friendship).permit(:friend_id, :bar_id, :event_id)
   end
-  
+
 end

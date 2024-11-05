@@ -40,6 +40,24 @@ async function registerForPushNotificationsAsync() {
   return token;
 }
 
+export async function savePushToken() {
+  const pushToken = await registerForPushNotificationsAsync();
+  if (pushToken) {
+    try {
+      const authToken = await SecureStore.getItemAsync('authToken')
+
+      await axios.post(`${NGROK_URL}/api/v1/users/update_push_token`, {
+        push_token: pushToken,
+      }, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+    } catch (error) {
+      console.error('Error al actualizar el token de notificación:', error);
+    }
+  }
+}
 
 module.exports = {
     registerForPushNotificationsAsync

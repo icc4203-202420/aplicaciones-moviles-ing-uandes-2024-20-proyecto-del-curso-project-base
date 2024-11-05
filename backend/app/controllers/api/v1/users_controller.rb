@@ -50,6 +50,14 @@ class API::V1::UsersController < ApplicationController
     end
   end
 
+  def push_token
+    if current_user.update(push_token: params[:push_token])
+      head :ok
+    else
+      render json: { error: 'Unable to update token' }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   # def set_user
@@ -66,6 +74,7 @@ class API::V1::UsersController < ApplicationController
       render json: { error: "User not authenticated" }, status: :unauthorized unless @user
     end
   end
+
   def user_params
     params.fetch(:user, {}).permit(
       :id, :first_name, :last_name, :email, :age, :handle, :password, :password_confirmation,
@@ -76,5 +85,5 @@ class API::V1::UsersController < ApplicationController
       reviews_attributes: [:id, :text, :rating, :beer_id, :_destroy]
     )
   end
-  
+
 end

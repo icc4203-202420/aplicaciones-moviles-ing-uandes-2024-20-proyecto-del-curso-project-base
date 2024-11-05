@@ -5,11 +5,13 @@ import axios from 'axios';
 import { NGROK_URL } from '@env';
 import * as Notifications from 'expo-notifications'; 
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import { Alert } from 'react-native'; 
 
 const EventModal = ({ visible, onClose, friendId }) => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -52,46 +54,59 @@ const EventModal = ({ visible, onClose, friendId }) => {
   );
 
   const handleSubmit = async () => {
+    if (!friendId) return;
+    setLoading(true); // Inicia el estado de carga
     try {
-      const token = await AsyncStorage.getItem('authToken');
-      const userId = await AsyncStorage.getItem('USER_ID');
+        const token = await AsyncStorage.getItem('authToken');
+        if (!token) {
+          console.error('Token de autenticación no encontrado');
+          return;
+        }
+        console.log("AUTH TOKEN: ", token);
+        const userId = await AsyncStorage.getItem('USER_ID');
+        
+        // Define el cuerpo de la solicitud, haciendo que `event_id` sea opcional
+        const requestBody = {
+            friendship: {
+                friend_id: friendId,
+                ...(selectedEvent ? { event_id: selectedEvent.id } : {})
+            },
+        };
 
-      const requestBody = {
-        friendship: {
-          friend_id: friendId,
-          bar_id: selectedEvent?.id,
-        },
-      };
+        // Realiza la solicitud POST a la API
+        await axios.post(`${NGROK_URL}/api/v1/users/${userId}/friendships`, requestBody, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        });
 
-      await axios.post(`${NGROK_URL}/api/v1/users/${userId}/friendships`, requestBody, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-      });
-
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Friend Request Sent',
-          body: 'The friend request was sent successfully!'
-        },
-        trigger: null,
-      });
-      Alert.alert('Success', 'The friend request was sent successfully!');
+        // Notificación de éxito
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: 'Friend Request Sent',
+                body: 'The friend request was sent successfully!'
+            },
+            trigger: null,
+        });
+        Alert.alert('Success', 'The friend request was sent successfully!');
     } catch (error) {
-      console.error('Error sending friend request:', error);
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Error',
-          body: 'Could not send the friend request. Please try again.',
-        },
-        trigger: null,
-      });
-      Alert.alert('Error', 'Could not send the friend request. Please try again.');
+        // Manejador de errores
+        console.error('Error sending friend request:', error);
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: 'Error',
+                body: 'Could not send the friend request. Please try again.',
+            },
+            trigger: null,
+        });
+        Alert.alert('Error', 'Could not send the friend request. Please try again.');
     } finally {
-      onClose();
+        setLoading(false); // Detiene el estado de carga
+        onClose();
     }
   };
+
 
   return (
     <Modal
