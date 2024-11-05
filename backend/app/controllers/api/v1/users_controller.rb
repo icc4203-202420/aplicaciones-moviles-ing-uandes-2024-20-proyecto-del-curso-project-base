@@ -67,11 +67,14 @@ class API::V1::UsersController < ApplicationController
     end
   end
   def user_params
-    params.fetch(:user, {}).
-        permit(:id, :first_name, :last_name, :email, :age,
-            { address_attributes: [:id, :line1, :line2, :city, :country, :country_id,
-              country_attributes: [:id, :name]],
-              reviews_attributes: [:id, :text, :rating, :beer_id, :_destroy]
-            })
+    params.fetch(:user, {}).permit(
+      :id, :first_name, :last_name, :email, :age, :handle, :password, :password_confirmation,
+      address_attributes: [
+        :id, :line1, :line2, :city, :country, :country_id,
+        country_attributes: [:id, :name]
+      ],
+      reviews_attributes: [:id, :text, :rating, :beer_id, :_destroy]
+    )
   end
+  
 end

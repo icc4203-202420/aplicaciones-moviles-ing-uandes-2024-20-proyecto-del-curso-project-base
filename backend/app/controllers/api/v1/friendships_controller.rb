@@ -111,6 +111,7 @@ class API::V1::FriendshipsController < ApplicationController
   end
 
   def friendship_params
-    params.require(:friendship).permit(:friend_id, :bar_id)
+    params.require(:friendship).permit(:friend_id, :bar_id, :event_id)
   end
+  
 end

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, ActivityIndicator, StyleSheet, TextInput } from 'react-native';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { Input, ListItem, Button, Icon } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import EventModal from './EventModal'; // Importa el modal
+import EventModal from './EventModal';
+import * as Notifications from 'expo-notifications';
 
 const UserSearchScreen = () => {
   const [currentUserId, setCurrentUserId] = useState('');
@@ -15,6 +16,8 @@ const UserSearchScreen = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedFriendId, setSelectedFriendId] = useState(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -26,57 +29,86 @@ const UserSearchScreen = () => {
     fetchUser();
   }, []);
 
-  useEffect(() => {
-    fetchUsers(); // Fetch all users on component mount
-  }, []);
-
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const response = await axios.get(`${NGROK_URL}/api/v1/users`);
       const filteredUsers = response.data.users.filter(user => user.id !== parseInt(currentUserId));
       setUsers(filteredUsers);
-      setFilteredUsers(filteredUsers); // Initialize filtered users
+      setFilteredUsers(filteredUsers);
     } catch (error) {
       console.error('Error al obtener los usuarios:', error);
-      setUsers([]); // Clear users on error
+      setUsers([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const results = users.filter(user =>
-      user.handle.toLowerCase().includes(searchText.toLowerCase())
-    );
-    setFilteredUsers(results);
-  }, [searchText, users]); // Filter whenever searchText or users change
+    fetchUsers();
+  }, []);
 
-  const handleAddFriend = (userId) => {
+  useEffect(() => {
+    const results = users.filter(user => user.handle.toLowerCase().includes(searchText.toLowerCase()));
+    setFilteredUsers(results);
+  }, [searchText, users]);
+
+  const handleAddFriendWithEvent = (userId) => {
     setSelectedFriendId(userId);
-    setModalVisible(true); // Show the modal when adding a friend
+    setModalVisible(true);
   };
 
+  const handleAddFriendDirect = async (userId) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      await axios.post(`${NGROK_URL}/api/v1/users/${currentUserId}/friendships`, {
+        friendship: {
+          friend_id: selectedFriendId,
+        }
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });      
+      alert('Solicitud de amistad enviada.');
+    } catch (error) {
+      console.error('Error al agregar amigo:', error);
+      alert('Error al agregar amigo.');
+    }
+  };
+  
+
   const handleModalSubmit = async (event) => {
-    if (!currentUserId || !event) return; // Ensure event is selected
+    if (!currentUserId || !event) return;
 
     try {
+      const token = await AsyncStorage.getItem('authToken');
       await axios.post(`${NGROK_URL}/api/v1/users/${currentUserId}/friendships`, {
         friendship: {
           friend_id: selectedFriendId,
           event_id: event.id,
         },
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      // Notify friend about the new friendship
-      notifyFriend(selectedFriendId);
-      alert('Friend request sent successfully!');
-    } catch (error) {
-      console.error('Error adding friend:', error);
-    }
-  };
 
-  const notifyFriend = async (friendId) => {
-    console.log(`Notification sent to friend with ID: ${friendId}`);
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Solicitud de Amistad',
+          body: 'Has enviado una solicitud de amistad con evento asociado.',
+        },
+        trigger: null,
+      });
+
+      Alert.alert('Éxito', 'Solicitud de amistad con evento enviada.');
+    } catch (error) {
+      console.error('Error al agregar amigo:', error);
+      Alert.alert('Error', 'No se pudo enviar la solicitud de amistad con evento.');
+    } finally {
+      setModalVisible(false);
+    }
   };
 
   return (
@@ -99,18 +131,25 @@ const UserSearchScreen = () => {
                 <ListItem.Title>{item.handle}</ListItem.Title>
                 <ListItem.Subtitle>{`${item.first_name} ${item.last_name}`}</ListItem.Subtitle>
               </ListItem.Content>
-              <ListItem.Chevron />
-              <Button 
-                title="" 
-                onPress={() => handleAddFriend(item.id)} 
-                icon={<Icon name="person-add" color="#ffffff" />}
-              />
+              <View style={styles.buttonContainer}>
+                <Button
+                  title=""
+                  onPress={() => handleAddFriendDirect(item.id)}
+                  icon={<Icon name="person-add" color="#ffffff" />}
+                  buttonStyle={styles.button}
+                />
+                <Button
+                  title=""
+                  onPress={() => handleAddFriendWithEvent(item.id)}
+                  icon={<Icon name="event" color="#ffffff" />}
+                  buttonStyle={styles.button}
+                />
+              </View>
             </ListItem>
           )}
           ListEmptyComponent={<Text style={styles.emptyText}>No se encontraron usuarios.</Text>}
         />
       )}
-      {/* Modal para agregar amigos */}
       <EventModal 
         visible={modalVisible} 
         onClose={() => setModalVisible(false)} 
@@ -134,6 +173,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     color: 'gray',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 100,
+  },
+  button: {
+    marginHorizontal: 5,
   },
 });
 
