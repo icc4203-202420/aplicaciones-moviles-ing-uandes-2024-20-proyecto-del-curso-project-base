@@ -11,11 +11,13 @@ const FriendsTab = ({ userId }) => {
   const fetchFriends = async () => {
     try {
       const token = await SecureStore.getItemAsync('authToken'); // Obtén el token de Secure Store
+      console.log('TOKEN: ',token);
       const response = await axios.get(`${NGROK_URL}/api/v1/users/${userId}/friendships`, {
         headers: { 'Authorization': `Bearer ${token}` }, // Incluye el token en la cabecera
       });
       if (response.status === 200) {
-        setFriends(response.data); // Almacena la lista de amigos en el estado
+        setFriends(response.data); 
+        console.log(response.data);
       }
     } catch (error) {
       console.error('Error fetching friends:', error);
