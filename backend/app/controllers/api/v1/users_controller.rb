@@ -27,8 +27,11 @@ class API::V1::UsersController < ApplicationController
     else
       @users = User.all
     end
-    render json: { users: @users.as_json(include: :events) }, status: :ok
+  
+    # Excluir el atributo password_digest de la serialización
+    render json: { users: @users.as_json(only: [:id, :first_name, :last_name, :email, :handle], include: { events: { only: [:id, :name, :date] } }) }, status: :ok
   end
+  
 
 
   def show
