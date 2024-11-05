@@ -43,10 +43,6 @@ const FriendsTab = ({ userId }) => {
       {friends.length > 0 ? (
         friends.map((friend) => (
           <View key={friend.id} style={styles.friendContainer}>
-            <Image
-              source={{ uri: friend.avatar_url || '/default-avatar.png' }}
-              style={styles.avatar}
-            />
             <View style={styles.textContainer}>
               <Text style={styles.name}>{`${friend.first_name} ${friend.last_name}`}</Text>
               <Text style={styles.handle}>@{friend.handle}</Text>

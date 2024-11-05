@@ -1,61 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Button, StyleSheet, FlatList, Alert, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { NGROK_URL } from '@env';
 
-const UserScreen = () => {
-  const [users, setUsers] = useState([]);
+const FriendRequestsScreen = () => {
   const [friendRequests, setFriendRequests] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserIdAndData = async () => {
+    const fetchFriendRequests = async () => {
       try {
         const userId = await SecureStore.getItemAsync('USER_ID');
         if (userId) {
-          fetchUsers();
-          fetchFriendRequests(userId);
+          const token = await SecureStore.getItemAsync('authToken');
+          const response = await axios.get(`${NGROK_URL}/api/v1/users/${userId}/friend_requests`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setFriendRequests(response.data.friend_requests || []);
         } else {
           console.error('No user ID found');
         }
       } catch (error) {
-        console.error('Error fetching user ID:', error);
+        console.error('Error fetching friend requests:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUserIdAndData();
+    fetchFriendRequests();
   }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get(`${NGROK_URL}/api/v1/users`, {
-        params: { attended_event: true }
-      });
-      setUsers(response.data.users || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchFriendRequests = async (userId) => {
-    try {
-      const token = await SecureStore.getItemAsync('authToken');
-      const response = await axios.get(`${NGROK_URL}/api/v1/users/${userId}/friend_requests`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setFriendRequests(response.data.friend_requests || []);
-    } catch (error) {
-      console.error('Error fetching friend requests:', error);
-    }
-  };
-
-  const handleAddFriend = async (friendId) => {
+  const handleAccept = async (requestId) => {
     try {
       const token = await SecureStore.getItemAsync('authToken');
       const userId = await SecureStore.getItemAsync('USER_ID');
@@ -65,35 +43,50 @@ const UserScreen = () => {
         return;
       }
 
-      const requestBody = {
-        friendship: {
-          friend_id: friendId,
-        },
-      };
+      const response = await axios.post(
+        `${NGROK_URL}/api/v1/users/${userId}/friend_requests/${requestId}/accept`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      await axios.post(`${NGROK_URL}/api/v1/users/${userId}/friendships`, requestBody, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      Alert.alert('Success', 'Friend request sent successfully!');
+      Alert.alert('Success', response.data.message);
+      setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== requestId));
     } catch (error) {
-      console.error('Error adding friend:', error);
-      Alert.alert('Error', 'Failed to send friend request');
+      console.error('Error accepting friend request:', error);
+      Alert.alert('Error', 'Failed to accept friend request');
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const handle = user.handle || '';
-    const fullName = `${user.first_name} ${user.last_name}`.toLowerCase() || '';
-    const eventNames = user.events?.map(event => event.name).join(', ').toLowerCase() || '';
+  const handleReject = async (requestId) => {
+    try {
+      const token = await SecureStore.getItemAsync('authToken');
+      const userId = await SecureStore.getItemAsync('USER_ID');
 
-    return handle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           fullName.includes(searchTerm.toLowerCase()) ||
-           eventNames.includes(searchTerm.toLowerCase());
-  });
+      if (!userId || !token) {
+        Alert.alert('Error', 'User not authenticated');
+        return;
+      }
+
+      await axios.delete(
+        `${NGROK_URL}/api/v1/users/${userId}/friend_requests/${requestId}/reject`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      Alert.alert('Success', 'Friend request rejected');
+      setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== requestId));
+    } catch (error) {
+      console.error('Error rejecting friend request:', error);
+      Alert.alert('Error', 'Failed to reject friend request');
+    }
+  };
 
   if (loading) {
     return (
@@ -105,33 +98,17 @@ const UserScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Users</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Search by handle, name or event"
-        value={searchTerm}
-        onChangeText={setSearchTerm}
-      />
-      <FlatList
-        data={filteredUsers}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.userItem}>
-            <Text style={styles.userText}>{`${item.first_name} ${item.last_name} (@${item.handle})`}</Text>
-            <Button title="Add Friend" onPress={() => handleAddFriend(item.id)} />
-          </View>
-        )}
-        ListEmptyComponent={<Text>No users found</Text>}
-      />
-      <Text style={styles.subtitle}>Friend Requests</Text>
+      <Text style={styles.title}>Friend Requests</Text>
       <FlatList
         data={friendRequests}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.requestItem}>
             <Text style={styles.userText}>{`${item.user.first_name} ${item.user.last_name} (@${item.user.handle})`}</Text>
-            <Button title="Accept" onPress={() => handleAccept(item.id)} />
-            <Button title="Reject" onPress={() => handleReject(item.id)} color="red" />
+            <View style={styles.buttonContainer}>
+              <Button title="Accept" onPress={() => handleAccept(item.id)} />
+              <Button title="Reject" onPress={() => handleReject(item.id)} color="red" />
+            </View>
           </View>
         )}
         ListEmptyComponent={<Text>No friend requests</Text>}
@@ -150,24 +127,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-  },
-  userItem: {
-    padding: 10,
-    marginVertical: 5,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
-  },
   requestItem: {
     padding: 10,
     marginVertical: 5,
@@ -177,6 +136,11 @@ const styles = StyleSheet.create({
   userText: {
     fontSize: 16,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -184,4 +148,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserScreen;
+export default FriendRequestsScreen;
