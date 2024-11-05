@@ -63,7 +63,7 @@ function BeerList() {
 const styles = StyleSheet.create({
     pageContainer: {
         flex: 1,
-        backgroundColor: '#f0f0f0', // Mismo color del login
+        backgroundColor: '#f9a825', // Mismo color del login
     },
     container: {
         paddingHorizontal: 10,
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     beerButton: {
-        backgroundColor: '#ccc', // Botones en gris
+        backgroundColor: '#FF6600', // Botones en gris
         padding: 15,
         marginBottom: 10,
         borderRadius: 10,

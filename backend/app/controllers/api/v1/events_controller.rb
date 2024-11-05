@@ -17,15 +17,22 @@ class API::V1::EventsController < ApplicationController
   end
 
   def show
-    if @event.image.attached?
-      render json: @event.as_json.merge({ 
-        image_url: url_for(@event.image), 
-        thumbnail_url: url_for(@event.thumbnail) }),
-        status: :ok
-    else
-      render json: { event: @event.as_json }, status: :ok
+    images = @event.images.map do |image|
+      {
+        url: url_for(image),
+        thumbnail_url: url_for(image.variant(resize_to_limit: [200, nil]).processed)
+      }
     end
+  
+    # If there are no images, set it to null or an empty array
+    images = images.presence || nil  # Change nil to [] if you want an empty array instead
+  
+    render json: {
+      event: @event.as_json.merge({ images: images })
+    }, status: :ok
   end
+  
+  
 
   def create
     @event = @bar.events.build(event_params.except(:image_base64)) # modificado
@@ -77,13 +84,17 @@ class API::V1::EventsController < ApplicationController
 
   def event_params
     params.require(:event).permit(
-      :name, :latitude, :longitude, :image_base64,
+      :name, :latitude, :longitude, images_base64: [], 
       address_attributes: [:user_id, :line1, :line2, :city, country_attributes: [:name]]
     )
   end
+  
 
   def handle_image_attachment
-    decoded_image = decode_image(event_params[:image_base64])
-    @event.image.attach(io: decoded_image[:io], filename: decoded_image[:filename], content_type: decoded_image[:content_type])
-  end  
+    event_params[:images_base64].each do |image_base64|
+      decoded_image = decode_image(image_base64)
+      @event.images.attach(io: decoded_image[:io], filename: decoded_image[:filename], content_type: decoded_image[:content_type])
+    end
+  end
 end
+  

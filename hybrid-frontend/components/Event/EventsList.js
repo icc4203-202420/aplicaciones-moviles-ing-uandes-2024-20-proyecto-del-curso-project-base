@@ -43,7 +43,7 @@ function EventsList() {
                         keyExtractor={event => event.id.toString()}
                         renderItem={({ item }) => (
                             <Pressable 
-                                onPress={() => navigation.navigate('EventsDetails', { eventId: item.id })} 
+                                onPress={() => navigation.navigate('EventDetail', { eventId: item.id })} 
                                 style={styles.eventButton}
                             >
                                 <Text style={styles.eventText}>{item.name}</Text>

@@ -10,6 +10,9 @@ import FriendDetails from './components/Friends/FriendDetails';
 import BarsDetails from './components/Bars/BarsDetails';
 import BarsList from './components/Bars/BarsList';
 import EventsList from './components/Event/EventsList';
+import EventDetail from './components/Event/EventDetail';
+import EventPhoto from './components/Bars/EventPhoto';
+import ImagePickerExample from './components/Test/test';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
@@ -51,6 +54,9 @@ export default function App() {
             <Stack.Screen name="BarsDetails" component={BarsDetails} options={{ title: 'Bar Details' }} />
             <Stack.Screen name="BarsList" component={BarsList} options={{ title: 'Bar List' }} />
             <Stack.Screen name="EventsList" component={EventsList} options={{ title: 'Events List' }} />
+            <Stack.Screen name="EventDetail" component={EventDetail} options={{ title: 'Events Detail' }} />
+            <Stack.Screen name="EventPhoto" component={EventPhoto} options={{ title: 'Events Photo' }} />
+            <Stack.Screen name="ImagePickerExample" component={ImagePickerExample} options={{ title: 'Image Picker' }} />
           </>
         ) : (
           <>

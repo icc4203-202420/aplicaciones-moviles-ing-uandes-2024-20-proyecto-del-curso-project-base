@@ -36,6 +36,10 @@ export default function Home({ navigation, setIsAuthenticated, setUser, user }) 
       <Pressable style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
         <Text style={styles.buttonText}>Cerrar Sesión</Text>
       </Pressable>
+
+      <Pressable style={styles.button} onPress={() => navigation.navigate('ImagePickerExample')}>
+        <Text style={styles.buttonText}>Seleccionar Imagen</Text>
+      </Pressable>
     </View>
   );
 }

@@ -204,56 +204,33 @@ function BeerDetails({ route, user }) {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF', // Neutral background for main container
     borderRadius: 10,
     margin: 20,
+    borderColor: '#FFDE7D', // Subtle border color to match theme
+    borderWidth: 1,
+  },
+  pageContainer: {
+    flex: 1,
+    backgroundColor: '#f9a825', // Light background with warm color
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFDE7D', // Light background with warm color
   },
   errorText: {
-    color: 'red',
+    color: '#D32F2F', // Red for error messages
     fontSize: 18,
     textAlign: 'center',
   },
   beerName: {
     fontSize: 28,
     fontWeight: 'bold',
+    color: '#FFA726', // Warm accent color for headings
     marginBottom: 10,
     textAlign: 'center',
-  },
-  reviewContainer: {
-    marginTop: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  reviewCard: {
-    padding: 10,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  reviewRating: {
-    fontWeight: 'bold',
-  },
-  reviewText: {
-    marginVertical: 5,
-  },
-  reviewUser: {
-    fontStyle: 'italic',
-    marginBottom: 5,
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#555',
   },
   detailContainer: {
     flexDirection: 'row',
@@ -262,10 +239,11 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: 'bold',
     fontSize: 16,
+    color: '#333333', // Dark color for labels
   },
   info: {
     fontSize: 16,
-    color: '#333',
+    color: '#555555', // Medium-dark gray for descriptive text
   },
   barsContainer: {
     marginTop: 20,
@@ -273,14 +251,53 @@ const styles = StyleSheet.create({
   barName: {
     fontSize: 16,
     paddingLeft: 20,
+    color: '#6A1B9A', // Purple accent for bar names
     marginBottom: 5,
+  },
+  reviewContainer: {
+    marginTop: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#BDBDBD', // Gray border for inputs
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    backgroundColor: '#F5F5F5', // Light background for inputs
+  },
+  reviewCard: {
+    padding: 10,
+    borderColor: '#BDBDBD',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
+    backgroundColor: '#FAFAFA', // Light gray for review cards
+  },
+  reviewRating: {
+    fontWeight: 'bold',
+    color: '#FFA726', // Accent color for ratings
+  },
+  reviewText: {
+    marginVertical: 5,
+    color: '#333333',
+  },
+  reviewUser: {
+    fontStyle: 'italic',
+    color: '#757575', // Dark gray for usernames
+    marginBottom: 5,
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: '#757575',
   },
   averageRating: {
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 20,
     textAlign: 'center',
+    color: '#388E3C', // Green for average rating
   },
 });
+
 
 export default BeerDetails;

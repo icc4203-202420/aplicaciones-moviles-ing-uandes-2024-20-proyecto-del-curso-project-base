@@ -330,6 +330,7 @@ DEPENDENCIES
   image_processing (~> 1.2)
   jbuilder
   jsonapi-serializer
+  mini_magick
   pry (~> 0.14.2)
   pry-byebug
   pry-rails

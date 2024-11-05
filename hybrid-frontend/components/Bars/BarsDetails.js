@@ -3,9 +3,11 @@ import { View, Text, FlatList, Pressable, StyleSheet, ScrollView, Alert } from '
 import axios from 'axios';
 import API_BASE_URL from '../Hooks/fetchAxios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 function BarsDetails({ route }) {
     const { barId } = route.params; 
+    const navigation = useNavigation(); // Get navigation object
     const [barDetails, setBarDetails] = useState(null);
     const [events, setEvents] = useState([]); 
     const [currentUser, setCurrentUser] = useState(null);
@@ -32,7 +34,7 @@ function BarsDetails({ route }) {
                 const checkedInStatus = await AsyncStorage.getItem(`checkedInEvents_${event.id}`);
                 if (checkedInStatus) {
                     updatedCheckedInEvents[event.id] = JSON.parse(checkedInStatus);
-                    fetchParticipants(event.id); // Cargar participantes si está en el evento
+                    fetchParticipants(event.id); 
                 }
             }
             setCheckedInEvents(updatedCheckedInEvents);
@@ -48,7 +50,7 @@ function BarsDetails({ route }) {
                 const user = JSON.parse(userData);
                 setCurrentUser(user);
             } else {
-                console.error('Usuario no encontrado en AsyncStorage');
+                console.error('User not found in AsyncStorage');
             }
         } catch (error) {
             console.error("Error fetching current user:", error);
@@ -58,8 +60,8 @@ function BarsDetails({ route }) {
     const fetchBarDetails = async () => {
         try {
             console.log(`Fetching details for bar ID: ${barId}`);
-            const response = await axios.get(`${API_BASE_URL}/bars`); // Asegúrate de actualizar <ngrok-url>
-            console.log("Response data from /api/v1/bars:", response.data); // Mostrar la estructura de respuesta
+            const response = await axios.get(`${API_BASE_URL}/bars`);
+            console.log("Response data from /api/v1/bars:", response.data);
 
             const bar = response.data.bars.find((bar) => bar.id === barId);
             if (bar) {
@@ -73,11 +75,10 @@ function BarsDetails({ route }) {
         }
     };
 
-    // Obtener eventos del bar
     const fetchBarEvents = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/bars/${barId}/events`);
-            console.log("eventos obtenidos por el bar", response.data);
+            console.log("Events fetched for the bar:", response.data);
             setEvents(response.data);
         } catch (error) {
             console.error('Error fetching bar events:', error);
@@ -98,7 +99,7 @@ function BarsDetails({ route }) {
 
     const handleCheckIn = async (eventId) => {
         if (!currentUser || !currentUser.id) {
-            Alert.alert("Error", "Usuario no encontrado. Inicia sesión nuevamente.");
+            Alert.alert("Error", "User not found. Please log in again.");
             return;
         }
     
@@ -109,14 +110,14 @@ function BarsDetails({ route }) {
             );
     
             if (response.status === 201) {
-                Alert.alert("Check-in realizado", "Has sido registrado en este evento.");
+                Alert.alert("Check-in successful", "You have been registered for this event.");
                 setCheckedInEvents((prev) => ({...prev, [eventId]: true}));
                 await AsyncStorage.setItem(`checkedInEvents_${eventId}`, JSON.stringify(true));
                 fetchParticipants(eventId);
             }
         } catch (error) {
-            console.error('Error al realizar check-in:', error);
-            Alert.alert("Error", "No se pudo completar el check-in.");
+            console.error('Error during check-in:', error);
+            Alert.alert("Error", "Check-in could not be completed.");
         }
     };
     
@@ -126,20 +127,20 @@ function BarsDetails({ route }) {
                 `${API_BASE_URL}/bars/${barId}/events/${eventId}/attendances/${currentUser.id}`
             );
     
-            if (response.status === 200) { // Verifica si tu controller responde con el estado 200
-                Alert.alert("Check-out realizado", "Has sido eliminado de este evento.");
+            if (response.status === 200) {
+                Alert.alert("Check-out successful", "You have been removed from this event.");
                 setCheckedInEvents((prev) => ({...prev, [eventId]: false}));
                 await AsyncStorage.removeItem(`checkedInEvents_${eventId}`);
                 setParticipants((prev) => ({...prev, [eventId]: []}));
             }
         } catch (error) {
-            console.error('Error al realizar check-out:', error);
-            Alert.alert("Error", "No se pudo completar el check-out.");
+            console.error('Error during check-out:', error);
+            Alert.alert("Error", "Check-out could not be completed.");
         }
     };
 
     if (!barDetails) {
-        return <Text>Cargando detalles del bar...</Text>;
+        return <Text>Loading bar details...</Text>;
     }
 
     return (
@@ -149,11 +150,11 @@ function BarsDetails({ route }) {
                 <Text style={styles.barLocation}>
                     {barDetails.address?.line1}, {barDetails.address?.city}, {barDetails.address?.country?.name}
                 </Text>
-                <Text style={styles.barDescription}>Latitud: {barDetails.latitude}, Longitud: {barDetails.longitude}</Text>
+                <Text style={styles.barDescription}>Lat: {barDetails.latitude}, Long: {barDetails.longitude}</Text>
             </View>
 
             <View style={styles.eventsContainer}>
-                <Text style={styles.sectionTitle}>Eventos en {barDetails.name}</Text>
+                <Text style={styles.sectionTitle}>Events at {barDetails.name}</Text>
                 {events.length > 0 ? (
                     <FlatList
                         data={events}
@@ -161,13 +162,20 @@ function BarsDetails({ route }) {
                         renderItem={({ item }) => (
                             <View style={styles.eventItem}>
                                 <Text style={styles.eventName}>{item.name}</Text>
-                                <Text style={styles.eventDate}>Fecha: {new Date(item.date).toLocaleDateString()}</Text>
+                                <Text style={styles.eventDate}>Date: {new Date(item.date).toLocaleDateString()}</Text>
                                 <Text style={styles.eventDescription}>{item.description}</Text>
+
+                                {/* Button to navigate to EventPhoto screen */}
+                                <Pressable 
+                                    style={styles.photoDetailsButton} 
+                                    onPress={() => navigation.navigate('EventPhoto', { eventId: item.id })}>
+                                    <Text style={styles.photoDetailsText}>View Bar Photos</Text>
+                                </Pressable>
 
                                 {checkedInEvents[item.id] ? (
                                     <>
                                         <View style={styles.participantsContainer}>
-                                            <Text style={styles.participantsTitle}>Participantes:</Text>
+                                            <Text style={styles.participantsTitle}>Participants:</Text>
                                             {participants[item.id] ? (
                                                 <FlatList
                                                     data={participants[item.id]}
@@ -181,14 +189,14 @@ function BarsDetails({ route }) {
                                                     )}
                                                 />
                                             ) : (
-                                                <Text>Cargando participantes...</Text>
+                                                <Text>Loading participants...</Text>
                                             )}
                                         </View>
                                         <Pressable
                                             style={styles.checkOutButton}
                                             onPress={() => handleCheckOut(item.id)}
                                         >
-                                            <Text style={styles.checkOutText}>Salir del Evento</Text>
+                                            <Text style={styles.checkOutText}>Check Out</Text>
                                         </Pressable>
                                     </>
                                 ) : (
@@ -196,7 +204,7 @@ function BarsDetails({ route }) {
                                         style={styles.checkInButton}
                                         onPress={() => handleCheckIn(item.id)}
                                     >
-                                        <Text style={styles.checkInText}>Hacer Check-In</Text>
+                                        <Text style={styles.checkInText}>Check In</Text>
                                     </Pressable>
                                 )}
                             </View>
@@ -204,7 +212,7 @@ function BarsDetails({ route }) {
                         contentContainerStyle={{ paddingBottom: 20 }}
                     />
                 ) : (
-                    <Text style={styles.noEventsText}>No hay eventos disponibles.</Text>
+                    <Text style={styles.noEventsText}>No events available.</Text>
                 )}
             </View>
         </ScrollView>
@@ -237,6 +245,17 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#555',
         marginTop: 8,
+    },
+    photoDetailsButton: {
+        backgroundColor: '#2196F3', // Button color
+        padding: 10,
+        borderRadius: 8,
+        marginTop: 10,
+        alignItems: 'center',
+    },
+    photoDetailsText: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
     eventsContainer: {
         padding: 16,
