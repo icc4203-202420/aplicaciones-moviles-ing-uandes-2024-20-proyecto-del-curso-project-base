@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, FlatList, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Button } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
+import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 
 const EventIndex = () => {
@@ -32,11 +33,20 @@ const EventIndex = () => {
 
   const handleCheckIn = async (eventId) => {
     try {
-      const response = await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/check_in`);
-      alert('Check-in successful!');
+      const token = await SecureStore.getItemAsync('authToken');
+      if (!token) {
+        Alert.alert('Error', 'Token de autenticación no encontrado.');
+        return;
+      }
+
+      await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/check_in`, {}, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      Alert.alert('Check-in exitoso. Se ha notificado a tus amigos.');
+      console.log('CHECK IN');
     } catch (error) {
-      console.error('Error during check-in:', error);
-      alert('Error during check-in. Please try again.');
+      console.error('Error al hacer check-in:', error);
+      Alert.alert('Error al hacer check-in');
     }
   };
 
