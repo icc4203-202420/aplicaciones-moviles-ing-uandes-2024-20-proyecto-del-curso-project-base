@@ -34,7 +34,6 @@ const Login = () => {
         const pushToken = await savePushToken();
         console.log("Token JWT guardado:", token);
         console.log("USER_ID", USER_ID);
-        // console.log("Token notificaciones guardado:", pushToken);
         Alert.alert('Login Successful!');
         // Redirigir al usuario a la página principal
         router.push("/home");
