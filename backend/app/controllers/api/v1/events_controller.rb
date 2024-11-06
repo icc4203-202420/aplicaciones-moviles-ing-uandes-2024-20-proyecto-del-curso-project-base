@@ -70,29 +70,27 @@ class API::V1::EventsController < ApplicationController
             include: {
               user: {
                 only: [:id, :first_name, :last_name]
-              },
-              image: {
-                only: [:id, :description, :user_id],
-                methods: :url
               }
             },
-            methods: :tagged_users
+            methods: [:tagged_users, :image_url],
           }
         }
       )
-
+      
       event_data[:video_url_path] = @event.video_url_path
-
-      if @event.flyer.attached?
-        event_data.merge!(
-          flyer_url: url_for(@event.flyer),
-          thumbnail_url: url_for(@event.thumbnail)
-        )
-      end
-
+      
+      # Ensure flyer and thumbnail attachments exist before calling url_for
+      # if @event.flyer.attached?
+      #   event_data[:flyer_url] = url_for(@event.flyer)
+      # end
+    
+      # if @event.thumbnail.attached?
+      #   event_data[:thumbnail_url] = url_for(@event.thumbnail)
+      # end
+    
       render json: event_data, status: :ok
-    end
-
+    end    
+    
     def create
       @event = @bar.events.build(event_params)
       if @event.save
