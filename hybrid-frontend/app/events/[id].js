@@ -22,20 +22,22 @@ const EventsShow = () => {
   const [selectedEventName, setSelectedEventName] = useState(''); // State for selected event name
   const closeAttendeesModal = () => setShowAttendeesModal(false);
 
-  const fetchEventData = useCallback(() => {
-    axios.get(`${NGROK_URL}/api/v1/events/${id}`)
-      .then(response => {
-        setEvent(response.data);
-        setVideoUrl(`${NGROK_URL}${response.data.video_url_path}`);
-        setUsers(response.data.users); // Extract the list of attendees
-        setEventPictures(response.data.event_pictures); // Extract event pictures
-      })
-      .catch(error => console.error('Error fetching event:', error));
+  useEffect(() => {
+    const fetchEventData = () => {
+      axios.get(`${NGROK_URL}/api/v1/events/${id}`)
+        .then(response => {
+          setEvent(response.data);
+          setEventPictures(response.data.event_pictures);
+        })
+        .catch(error => console.error('Error fetching event:', error));
+    };
+
+    fetchEventData();
   }, [id]);
 
-  useEffect(() => {
-    fetchEventData();
-  }, [fetchEventData]);
+  if (!event) {
+    return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
+  }
 
   const handleSharePhoto = () => {
     setSelectedEventId(id);
@@ -105,7 +107,6 @@ const EventsShow = () => {
       <Text style={styles.sectionTitle}>Attendees</Text>
       <View style={styles.attendeesContainer}>
         <FlatList
-          data={users}
           renderItem={({ item }) => (
             <View style={styles.attendeeCard}>
               <View style={styles.attendeeAvatar}>
@@ -114,9 +115,9 @@ const EventsShow = () => {
               <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
               <Text style={styles.attendeeHandle}>{item.handle}</Text>
             </View>
-          )}
-          keyExtractor={(user) => user.id.toString()}
-        />
+            )}
+            keyExtractor={(user) => user.id.toString()}
+          />
       </View>
 
       <TouchableOpacity 
@@ -147,7 +148,10 @@ const EventsShow = () => {
         data={eventPictures}
         renderItem={({ item }) => (
           item.image && item.image.url ? (
-            <Image source={{ uri: item.image.url }} style={styles.eventImage} />
+            <Image 
+              source={{ uri: `${NGROK_URL}/event_images/event_${event.id}` }} 
+              style={styles.eventImage} 
+            />
           ) : (
             <View style={styles.eventImagePlaceholder}>
               <Text>No Image Available</Text>
