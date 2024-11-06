@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Image, FlatList, StyleSheet, Alert, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, Image, FlatList, StyleSheet, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
@@ -15,15 +15,17 @@ const EventsShow = () => {
   const [checkingIn, setCheckingIn] = useState(false);
   const { id } = useLocalSearchParams(); // Utiliza `useLocalSearchParams` para obtener el `id` del evento
   const router = useRouter();
-  const [showAttendeesModal, setShowAttendeesModal] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false); // State to control SharePhoto modal visibility
+  const [selectedEventId, setSelectedEventId] = useState(null); // State for selected event ID
+  const [selectedEventName, setSelectedEventName] = useState(''); // State for selected event name
 
   const fetchEventData = useCallback(() => {
     axios.get(`${NGROK_URL}/api/v1/events/${id}`)
       .then(response => {
         setEvent(response.data);
         setVideoUrl(`${NGROK_URL}${response.data.video_url_path}`);
-        setUsers(response.data.users);
-        setEventPictures(response.data.event_pictures);
+        setUsers(response.data.users); // Extract the list of attendees
+        setEventPictures(response.data.event_pictures); // Extract event pictures
       })
       .catch(error => console.error('Error fetching event:', error));
   }, [id]);
@@ -32,24 +34,29 @@ const EventsShow = () => {
     fetchEventData();
   }, [fetchEventData]);
 
+  const handleSharePhoto = () => {
+    setSelectedEventId(id);
+    setSelectedEventName(event.name);
+    setModalVisible(true); // Open the SharePhoto modal
+  };
+
   const handleCheckIn = async () => {
     setCheckingIn(true);
     try {
       const userId = await SecureStore.getItemAsync('USER_ID');
-      await axios.post(`${NGROK_URL}/api/v1/attendances`, {
+      await axios.post(`${NGROK_URL}/api/v1/events/${id}/check_in`, {
         user_id: parseInt(userId, 10),
         event_id: id,
       });
+      // After successful check-in, update the attendees list
+      const newUser = { first_name: 'Current', last_name: 'User', handle: 'current_user', id: parseInt(userId, 10) };
+      setUsers((prevUsers) => [newUser, ...prevUsers]); // Add current user to the list
       Alert.alert('Checked-in', 'You have successfully checked in for this event.');
     } catch (error) {
       Alert.alert('Error', 'You are already registered for this event.');
     } finally {
       setCheckingIn(false);
     }
-  };
-
-  const handleAddPhoto = () => {
-    router.push(`/events/${id}/add-photo`);
   };
 
   const handleGenerateVideo = async () => {
@@ -60,8 +67,6 @@ const EventsShow = () => {
       Alert.alert('Error', 'There was an issue starting video generation.');
     }
   };
-
-  const closeAttendeesModal = () => setShowAttendeesModal(false);
 
   if (!event) {
     return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
@@ -94,7 +99,7 @@ const EventsShow = () => {
       <Text style={styles.sectionTitle}>Attendees</Text>
       <View style={styles.attendeesContainer}>
         <FlatList
-          data={users.slice(0, 5)} // Mostrar los primeros 5 asistentes
+          data={users} // Show the full list of attendees
           renderItem={({ item }) => (
             <View style={styles.attendeeCard}>
               <View style={styles.attendeeAvatar}>
@@ -106,11 +111,6 @@ const EventsShow = () => {
           )}
           keyExtractor={(user) => user.id.toString()}
         />
-        {users.length > 5 && (
-          <TouchableOpacity style={styles.moreButton} onPress={() => setShowAttendeesModal(true)}>
-            <Text style={styles.moreButtonText}>...</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       <TouchableOpacity 
@@ -121,7 +121,6 @@ const EventsShow = () => {
         {checkingIn ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.checkInText}>Check-In</Text>}
       </TouchableOpacity>
       
-
       <Text style={styles.sectionTitle}>Location</Text>
       <Text style={styles.location}>
         {event.bar && event.bar.address ? (
@@ -133,7 +132,7 @@ const EventsShow = () => {
 
       <View style={styles.photosHeader}>
         <Text style={styles.sectionTitle}>Photos</Text>
-        <TouchableOpacity onPress={handleAddPhoto}>
+        <TouchableOpacity onPress={handleSharePhoto}>
           <Text style={styles.addPhotoText}>+</Text>
         </TouchableOpacity>
       </View>
@@ -162,39 +161,9 @@ const EventsShow = () => {
           <Text style={styles.generateVideoText}>Generate Summary Video</Text>
         </TouchableOpacity>
       )}
-
-      <Modal
-        visible={showAttendeesModal}
-        onRequestClose={closeAttendeesModal}
-        animationType="slide"
-        transparent={true}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Event Attendees</Text>
-            <FlatList
-              data={users}
-              renderItem={({ item }) => (
-                <View style={styles.attendeeCard}>
-                  <View style={styles.attendeeAvatar}>
-                    <Text style={styles.avatarText}>{item.first_name[0]}</Text>
-                  </View>
-                  <Text style={styles.attendeeName}>{item.first_name} {item.last_name}</Text>
-                  <Text style={styles.attendeeHandle}>{item.handle}</Text>
-                </View>
-              )}
-              keyExtractor={(user) => user.id.toString()}
-            />
-            <TouchableOpacity style={styles.closeModalButton} onPress={closeAttendeesModal}>
-              <Text style={styles.closeModalText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   scrollContainer: { flex: 1, padding: 16 },
   eventTitle: { fontSize: 22, fontWeight: 'bold', marginVertical: 10 },
@@ -214,51 +183,11 @@ const styles = StyleSheet.create({
   generateVideoButton: { backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginTop: 20, alignItems: 'center' },
   generateVideoText: { color: 'white', fontWeight: 'bold' },
   video: { width: '100%', height: 300, marginTop: 20 },
-  attendeesContainer: {
-    marginTop: 10,
-  },
-  attendeeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    padding: 10,
-    marginVertical: 8,
-    marginHorizontal: 10,
-    elevation: 3, // For shadow on Android
-    shadowColor: '#000', // Shadow on iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  avatar: {
-    backgroundColor: 'lightgray',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
+  attendeesContainer: { marginTop: 10 },
+  attendeeCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0f0f0', borderRadius: 8, padding: 10, marginVertical: 8, marginHorizontal: 10, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
   avatarText: { color: 'white', fontWeight: 'bold' },
-  attendeeName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  attendeeHandle: {
-    fontSize: 14,
-    color: 'gray',
-  },
-  moreButton: {
-    marginTop: 8,
-    alignItems: 'center',
-  },
-  moreButtonText: {
-    fontSize: 16,
-    color: 'blue',
-  },
+  attendeeName: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  attendeeHandle: { fontSize: 14, color: 'gray' },
 });
-
 
 export default EventsShow;
