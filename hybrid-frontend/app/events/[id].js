@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Image, FlatList, StyleSheet, Alert } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ActivityIndicator, Image, FlatList, StyleSheet, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import { Video } from 'expo-av';
 import { MaterialIcons } from '@expo/vector-icons';
+import SharePhoto from './SharePhoto';
 
 const EventsShow = () => {
   const [event, setEvent] = useState(null);
@@ -15,9 +16,11 @@ const EventsShow = () => {
   const [checkingIn, setCheckingIn] = useState(false);
   const { id } = useLocalSearchParams(); // Utiliza `useLocalSearchParams` para obtener el `id` del evento
   const router = useRouter();
+  const [showAttendeesModal, setShowAttendeesModal] = useState(false);
   const [modalVisible, setModalVisible] = useState(false); // State to control SharePhoto modal visibility
   const [selectedEventId, setSelectedEventId] = useState(null); // State for selected event ID
   const [selectedEventName, setSelectedEventName] = useState(''); // State for selected event name
+  const closeAttendeesModal = () => setShowAttendeesModal(false);
 
   const fetchEventData = useCallback(() => {
     axios.get(`${NGROK_URL}/api/v1/events/${id}`)
@@ -99,18 +102,23 @@ const EventsShow = () => {
       <Text style={styles.sectionTitle}>Attendees</Text>
       <View style={styles.attendeesContainer}>
         <FlatList
-          data={users} // Show the full list of attendees
+          data={users.slice(0, 5)}
           renderItem={({ item }) => (
             <View style={styles.attendeeCard}>
               <View style={styles.attendeeAvatar}>
-                <Text style={styles.avatarText}>{item.first_name[0]}</Text>
+                <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
               </View>
-              <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
+              <Text style={styles.attendeeName}>{item.first_name} {item.last_name}</Text>
               <Text style={styles.attendeeHandle}>{item.handle}</Text>
             </View>
           )}
           keyExtractor={(user) => user.id.toString()}
         />
+        {users.length > 5 && (
+          <TouchableOpacity style={styles.moreButton} onPress={() => setShowAttendeesModal(true)}>
+            <Text style={styles.moreButtonText}>...</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <TouchableOpacity 
@@ -161,6 +169,49 @@ const EventsShow = () => {
           <Text style={styles.generateVideoText}>Generate Summary Video</Text>
         </TouchableOpacity>
       )}
+
+      <Modal
+        visible={showAttendeesModal}
+        onRequestClose={() => closeAttendeesModal}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Event Attendees</Text>
+            <FlatList
+              data={users}
+              renderItem={({ item }) => (
+                <View style={styles.attendeeCard}>
+                  <View style={styles.attendeeAvatar}>
+                    <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
+                  </View>
+                  <Text style={styles.attendeeName}>{item.first_name} {item.last_name}</Text>
+                  <Text style={styles.attendeeHandle}>{item.handle}</Text>
+                </View>
+              )}
+              keyExtractor={(user) => user.id.toString()}
+            />
+            <TouchableOpacity style={styles.closeModalButton} onPress={closeAttendeesModal}>
+              <Text style={styles.closeModalText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Share Photo Modal */}
+      <Modal
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+        animationType="slide"
+        transparent={true}
+      >
+        <SharePhoto
+          eventId={selectedEventId}
+          eventName={selectedEventName}
+          onClose={() => setModalVisible(false)}
+        />
+      </Modal>
     </View>
   );
 };
