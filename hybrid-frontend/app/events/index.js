@@ -12,6 +12,7 @@ const EventIndex = () => {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null);
+  const [selectedEventName, setSelectedEventName] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -30,8 +31,9 @@ const EventIndex = () => {
     }
   };
 
-  const handleSharePhoto = (eventId) => {
+  const handleSharePhoto = (eventId, eventName) => {
     setSelectedEventId(eventId);
+    setSelectedEventName(eventName);
     setModalVisible(true);
   };
 
@@ -72,7 +74,7 @@ const EventIndex = () => {
               <Text style={styles.eventDetails}>{item.location}</Text>
               <TouchableOpacity
                 style={styles.shareButton}
-                onPress={() => handleSharePhoto(item.id)}
+                onPress={() => handleSharePhoto(item.id, item.name)}
               >
                 <Text style={styles.buttonText}>Share Photo</Text>
               </TouchableOpacity>
@@ -94,7 +96,7 @@ const EventIndex = () => {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>
-          <SharePhoto eventId={selectedEventId} />
+          <SharePhoto eventId={selectedEventId} eventName={selectedEventName} />
           <Button title="Close" onPress={() => setModalVisible(false)} buttonStyle={styles.closeButton} />
         </View>
       </Modal>

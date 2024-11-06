@@ -8,19 +8,19 @@ import { useRouter } from 'expo-router';
 
 const SharePhoto = ({ eventId, eventName }) => {
   const [imageUri, setImageUri] = useState(null);
-  const [tags, setTags] = useState('');
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
 
     if (!result.canceled) {
-      setImageUri(result.assets[0].uri); // Utilizando el nuevo acceso de Expo a la URI
+      setImageUri(result.assets[0].uri);
     }
   };
 
@@ -29,7 +29,7 @@ const SharePhoto = ({ eventId, eventName }) => {
       Alert.alert('Error', 'No se ha seleccionado ninguna imagen.');
       return;
     }
-  
+
     setLoading(true);
     const formData = new FormData();
     formData.append('event_picture[image]', {
@@ -37,8 +37,8 @@ const SharePhoto = ({ eventId, eventName }) => {
       type: 'image/jpeg',
       name: 'photo.jpg',
     });
-    formData.append('event_picture[tag_handles][]', tags.split(','));
-  
+    formData.append('event_picture[description]', description);
+
     try {
       const token = await SecureStore.getItemAsync('authToken');
       if (!token) {
@@ -46,31 +46,26 @@ const SharePhoto = ({ eventId, eventName }) => {
         setLoading(false);
         return;
       }
-  
-      // Remueve cualquier prefijo adicional
+
       const formattedToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-  
-      const response = await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/event_pictures`, formData, {
+
+      await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/event_pictures`, formData, {
         headers: {
-          'Authorization': formattedToken, // Usa el token formateado
+          'Authorization': formattedToken,
           'Content-Type': 'multipart/form-data',
         },
       });
-  
+
       Alert.alert('Éxito', 'Foto subida con éxito.');
       setImageUri(null);
-      setTags('');
+      setDescription('');
     } catch (error) {
       console.error('Error al subir la foto:', error.response || error.message);
-      if (error.response && error.response.status === 401) {
-        Alert.alert('Error', 'No autorizado. Por favor, inicia sesión de nuevo.');
-      } else {
-        Alert.alert('Error', 'Error al subir la foto.');
-      }
+      Alert.alert('Error', 'Error al subir la foto.');
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   return (
     <View style={styles.container}>
@@ -78,14 +73,15 @@ const SharePhoto = ({ eventId, eventName }) => {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>{eventName}</Text>
+        <Text style={styles.eventTitle}>{eventName}</Text>
       </View>
+
       <Button title="Seleccionar imagen" onPress={pickImage} />
       {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
       <TextInput
-        placeholder="Ingresa los handles para etiquetar (separados por comas)"
-        value={tags}
-        onChangeText={setTags}
+        placeholder="Descripción de la imagen"
+        value={description}
+        onChangeText={setDescription}
         style={styles.input}
       />
       <Button title="Subir foto" onPress={uploadPhoto} disabled={loading} />
@@ -105,7 +101,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   backButton: {
     backgroundColor: '#007bff',
@@ -117,9 +113,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  title: {
+  eventTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    textAlign: 'center',
+    flex: 1,
   },
   image: {
     width: '100%',
