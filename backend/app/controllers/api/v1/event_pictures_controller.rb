@@ -1,12 +1,16 @@
 class API::V1::EventPicturesController < ApplicationController
-  include Authenticable
+  
   before_action :set_event_picture, only: [:tag_user, :tagged_users]
 
   def create
-    @event_picture = EventPicture.new(event_picture_params)
+    @event_picture = EventPicture.new(event_picture_params.except(:tag_handles))
+    tag_handles = event_picture_params[:tag_handles] || []
 
     if @event_picture.save
-      render json: @event_picture, status: :created
+      tag_handles.each do |user_id|
+        Tagging.create(user_id: user_id, event_picture: @event_picture)
+      end
+      render json: { message: 'Picture uploaded successfully', event_picture: @event_picture }, status: :created
     else
       render json: { errors: @event_picture.errors.full_messages }, status: :unprocessable_entity
     end
@@ -39,7 +43,7 @@ class API::V1::EventPicturesController < ApplicationController
   private
 
   def event_picture_params
-    params.require(:event_picture).permit(:image, :event_id, :user_id)
+    params.require(:event_picture).permit(:image, :event_id, :user_id, :description, tag_handles: [])
   end
 
   def set_event_picture
