@@ -25,6 +25,8 @@ const HomeScreen = () => {
   const handleLogout = async () => {
     try {
       await SecureStore.deleteItemAsync('authToken'); // Cambia a Secure Store
+      await SecureStore.deleteItemAsync('USER_ID'); // Cambia a Secure Store
+
       console.log('Token removed, logging out');
       router.push('/'); // Redirige a la pantalla de inicio
     } catch (error) {

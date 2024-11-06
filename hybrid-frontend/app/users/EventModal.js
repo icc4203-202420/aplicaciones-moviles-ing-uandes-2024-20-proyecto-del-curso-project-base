@@ -55,17 +55,19 @@ const EventModal = ({ visible, onClose, friendId }) => {
 
   const handleSubmit = async () => {
     if (!friendId) return;
-    setLoading(true); // Inicia el estado de carga
+    setLoading(true);
     try {
-        const token = await SecureStore.getItemAsync('authToken'); // Cambia a Secure Store
-        if (!token) {
-          console.error('Token de autenticación no encontrado');
-          return;
+        const token = await SecureStore.getItemAsync('authToken');
+        const userId = await SecureStore.getItemAsync('USER_ID');
+        if (!token || !userId) {
+            console.error('Missing authentication token or user ID');
+            Alert.alert('Error', 'Authentication error. Please log in again.');
+            return;
         }
+        
         console.log("AUTH TOKEN: ", token);
-        const userId = await SecureStore.getItemAsync('USER_ID'); // Cambia a Secure Store
-        console.log("USER ", userId);
-        // Define el cuerpo de la solicitud, haciendo que `event_id` sea opcional
+        console.log("USER ID: ", userId);
+
         const requestBody = {
             friendship: {
                 friend_id: friendId,
@@ -73,15 +75,15 @@ const EventModal = ({ visible, onClose, friendId }) => {
             },
         };
 
-        // Realiza la solicitud POST a la API
-        await axios.post(`${NGROK_URL}/api/v1/users/${userId}/friendships`, requestBody, {
+        const response = await axios.post(`${NGROK_URL}/api/v1/users/${userId}/friendships`, requestBody, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
         });
 
-        // Notificación de éxito
+        console.log('Friend request response:', response.data);
+
         await Notifications.scheduleNotificationAsync({
             content: {
                 title: 'Friend Request Sent',
@@ -91,8 +93,7 @@ const EventModal = ({ visible, onClose, friendId }) => {
         });
         Alert.alert('Success', 'The friend request was sent successfully!');
     } catch (error) {
-        // Manejador de errores
-        console.error('Error sending friend request:', error);
+        console.error('Error sending friend request:', error.response ? error.response.data : error.message);
         await Notifications.scheduleNotificationAsync({
             content: {
                 title: 'Error',
@@ -102,10 +103,11 @@ const EventModal = ({ visible, onClose, friendId }) => {
         });
         Alert.alert('Error', 'Could not send the friend request. Please try again.');
     } finally {
-        setLoading(false); // Detiene el estado de carga
+        setLoading(false);
         onClose();
     }
-  };
+};
+
 
   return (
     <Modal

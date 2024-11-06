@@ -146,7 +146,13 @@ const EventsShow = () => {
       <FlatList
         data={eventPictures}
         renderItem={({ item }) => (
-          <Image source={{ uri: item.picture.url }} style={styles.eventImage} />
+          item.image && item.image.url ? (
+            <Image source={{ uri: item.image.url }} style={styles.eventImage} />
+          ) : (
+            <View style={styles.eventImagePlaceholder}>
+              <Text>No Image Available</Text>
+            </View>
+          )
         )}
         keyExtractor={(item) => item.id.toString()}
       />

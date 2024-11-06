@@ -21,17 +21,17 @@ class EventPicture < ApplicationRecord
 
   # private
 
-  # def save_picture_to_public_directory
-  #   return unless image.attached?
+  def save_picture_to_public_directory
+    return unless image.attached?
 
-  #   images_dir = Rails.root.join("public", "event_images", "event_#{event.id}")
-  #   FileUtils.mkdir_p(images_dir) unless Dir.exist?(images_dir)
+    images_dir = Rails.root.join("public", "event_images", "event_#{event.id}")
+    FileUtils.mkdir_p(images_dir) unless Dir.exist?(images_dir)
 
-  #   image_path = Rails.root.join("tmp", image.filename.to_s)
-  #   File.open(image_path, 'wb') do |file|
-  #     file.write(image.download)
-  #   end
+    image_path = Rails.root.join("tmp", image.filename.to_s)
+    File.open(image_path, 'wb') do |file|
+      file.write(image.download)
+    end
 
-  #   FileUtils.mv(image_path, images_dir.join(image.filename.to_s))
-  # end
+    FileUtils.mv(image_path, images_dir.join(image.filename.to_s))
+  end
 end
