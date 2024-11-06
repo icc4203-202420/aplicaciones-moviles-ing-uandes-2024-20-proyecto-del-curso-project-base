@@ -48,9 +48,6 @@ const EventIndex = () => {
                     day: 'numeric',
                   })}
                 </Text>
-                <Text style={styles.hostedBy}>
-                  {item.bar ? `Hosted by ${item.bar.name}` : 'Host information not available'}
-                </Text>
                 <Text style={styles.eventDescription}>{item.description}</Text>
               </View>
             </TouchableOpacity>

@@ -93,7 +93,6 @@ const SharePhoto = ({ eventId, eventName }) => {
       setDescription('');
       setSelectedFriends([]);
   
-      // Navigate to event details after successful upload
       router.push(`/events/${eventId}`);
     } catch (error) {
       console.error('Error al subir la foto:', error.response || error.message);

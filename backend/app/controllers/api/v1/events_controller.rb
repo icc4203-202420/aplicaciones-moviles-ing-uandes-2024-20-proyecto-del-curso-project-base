@@ -53,11 +53,43 @@ class API::V1::EventsController < ApplicationController
     end
 
     def show
-      if @event
-        render json: { event: @event }, status: :ok
-      else
-        render json: { error: "Event not found" }, status: :not_found
+      event_data = @event.as_json(
+        include: {
+          bar: {
+            only: :name,
+            include: {
+              address: {
+                only: [:line1, :line2, :city]
+              }
+            }
+          },
+          users: { only: [:id, :first_name, :last_name, :email, :handle] },
+          event_pictures: {
+            only: [:id, :description],
+            include: {
+              user: {
+                only: [:id, :first_name, :last_name]
+              },
+              picture: {
+                only: [:id, :description, :user_id],
+                methods: :url
+              }
+            },
+            methods: :tagged_friends
+          }
+        }
+      )
+
+      event_data[:video_url_path] = @event.video_url_path
+
+      if @event.flyer.attached?
+        event_data.merge!(
+          flyer_url: url_for(@event.flyer),
+          thumbnail_url: url_for(@event.thumbnail)
+        )
       end
+
+      render json: event_data, status: :ok
     end
 
     def create
