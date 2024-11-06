@@ -74,22 +74,16 @@ const SharePhoto = ({ eventId, eventName }) => {
       name: 'photo.jpg',
     });
     formData.append('event_picture[description]', description);
+    formData.append('event_picture[event_id]', eventId); // Add event_id to the form data
+    formData.append('event_picture[user_id]', await SecureStore.getItemAsync('USER_ID')); // Add user_id to the form data
   
     selectedFriends.forEach(friendId => {
       formData.append('event_picture[tag_handles][]', friendId);
     });
   
     try {
-      const token = await SecureStore.getItemAsync('authToken');
-      if (!token) {
-        Alert.alert('Error', 'Token de autenticación no encontrado.');
-        setLoading(false);
-        return;
-      }
-  
       await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/event_pictures`, formData, {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
@@ -98,19 +92,20 @@ const SharePhoto = ({ eventId, eventName }) => {
       setImageUri(null);
       setDescription('');
       setSelectedFriends([]);
+  
+      router.push(`/events/${eventId}`);
     } catch (error) {
       console.error('Error al subir la foto:', error.response || error.message);
       Alert.alert('Error', 'Error al subir la foto.');
     } finally {
       setLoading(false);
     }
-  };
-  
+  };  
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => router.push(`/events/${eventId}`)} style={styles.backButton}>
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.eventTitle}>{eventName}</Text>
