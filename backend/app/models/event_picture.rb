@@ -5,30 +5,33 @@ class EventPicture < ApplicationRecord
   has_many :taggings
   has_many :tagged_users, through: :taggings, source: :user
 
-
   validates :image, presence: true
   validates :event, presence: true
   validates :user, presence: true
 
   after_commit :save_picture_to_public_directory, on: [:create]
 
+  # def url
+  #   image.attached? ? Rails.application.routes.url_helpers.rails_blob_url(image, only_path: true) : nil
+  # end
+
   def url
-    picture.attached? ? Rails.application.routes.url_helpers.rails_blob_url(picture, only_path: true) : nil
+    Rails.application.routes.url_helpers.rails_blob_path(image, only_path: true) if image.attached?
   end
 
   private
+
   def save_picture_to_public_directory
-    return unless picture.attached?
+    return unless image.attached?
 
     images_dir = Rails.root.join("public", "event_images", "event_#{event.id}")
-
     FileUtils.mkdir_p(images_dir) unless Dir.exist?(images_dir)
 
-    picture_path = Rails.root.join("tmp", picture.filename.to_s)
-    File.open(picture_path, 'wb') do |file|
-      file.write(picture.download)
+    image_path = Rails.root.join("tmp", image.filename.to_s)
+    File.open(image_path, 'wb') do |file|
+      file.write(image.download)
     end
 
-    FileUtils.mv(picture_path, images_dir.join(picture.filename.to_s))
+    FileUtils.mv(image_path, images_dir.join(image.filename.to_s))
   end
 end

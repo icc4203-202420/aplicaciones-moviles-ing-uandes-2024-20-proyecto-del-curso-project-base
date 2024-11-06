@@ -17,7 +17,8 @@ class API::V1::EventsController < ApplicationController
         render json: { message: "You have already checked in to this event." }, status: :unprocessable_entity
       else
         # Marcar el check-in como completado
-        attendance.check_in
+        # attendance.check_in
+        attendance.update(checked_in: true)
         render json: { message: "Check-in successful." }, status: :ok
       end
     rescue ActiveRecord::RecordNotFound
@@ -70,12 +71,12 @@ class API::V1::EventsController < ApplicationController
               user: {
                 only: [:id, :first_name, :last_name]
               },
-              picture: {
+              image: {
                 only: [:id, :description, :user_id],
                 methods: :url
               }
             },
-            methods: :tagged_friends
+            methods: :tagged_users
           }
         }
       )

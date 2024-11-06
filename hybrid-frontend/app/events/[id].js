@@ -47,12 +47,15 @@ const EventsShow = () => {
     setCheckingIn(true);
     try {
       const userId = await SecureStore.getItemAsync('USER_ID');
+      const response = await axios.get(`${NGROK_URL}/api/v1/users/${userId}`);
+      const { first_name, last_name, handle } = response.data;
+
       await axios.post(`${NGROK_URL}/api/v1/events/${id}/check_in`, {
         user_id: parseInt(userId, 10),
         event_id: id,
       });
       // After successful check-in, update the attendees list
-      const newUser = { first_name: 'Current', last_name: 'User', handle: 'current_user', id: parseInt(userId, 10) };
+      const newUser = { first_name, last_name, handle, id: parseInt(userId, 10) };
       setUsers((prevUsers) => [newUser, ...prevUsers]); // Add current user to the list
       Alert.alert('Checked-in', 'You have successfully checked in for this event.');
     } catch (error) {
@@ -102,23 +105,18 @@ const EventsShow = () => {
       <Text style={styles.sectionTitle}>Attendees</Text>
       <View style={styles.attendeesContainer}>
         <FlatList
-          data={users.slice(0, 5)}
+          data={users}
           renderItem={({ item }) => (
             <View style={styles.attendeeCard}>
               <View style={styles.attendeeAvatar}>
                 <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
               </View>
-              <Text style={styles.attendeeName}>{item.first_name} {item.last_name}</Text>
+              <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
               <Text style={styles.attendeeHandle}>{item.handle}</Text>
             </View>
           )}
           keyExtractor={(user) => user.id.toString()}
         />
-        {users.length > 5 && (
-          <TouchableOpacity style={styles.moreButton} onPress={() => setShowAttendeesModal(true)}>
-            <Text style={styles.moreButtonText}>...</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       <TouchableOpacity 
