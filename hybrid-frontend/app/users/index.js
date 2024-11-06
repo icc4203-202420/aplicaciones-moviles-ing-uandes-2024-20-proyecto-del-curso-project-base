@@ -7,6 +7,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import EventModal from './EventModal';
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
 
 const UserSearchScreen = () => {
   const [currentUserId, setCurrentUserId] = useState('');
@@ -95,6 +96,20 @@ const UserSearchScreen = () => {
       setModalVisible(false);
     }
   };
+
+  useEffect(() => {
+    const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
+      const { data } = response.notification.request.content;
+      if (data?.url) {
+        // Redirige a la ruta home/index al hacer clic en la notificación
+        router.push('/home');
+      }
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(responseListener);
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
