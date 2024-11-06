@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, Text, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
-import { Button } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
-import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
-import SharePhoto from './SharePhoto';
 
 const EventIndex = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -30,30 +25,6 @@ const EventIndex = () => {
     }
   };
 
-  const handleSharePhoto = (eventId) => {
-    setSelectedEventId(eventId);
-    setModalVisible(true);
-  };
-
-  const handleCheckIn = async (eventId) => {
-    try {
-      const token = await SecureStore.getItemAsync('authToken');
-      if (!token) {
-        Alert.alert('Error', 'Token de autenticación no encontrado.');
-        return;
-      }
-
-      await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/check_in`, {}, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      Alert.alert('Check-in exitoso. Se ha notificado a tus amigos.');
-      console.log('CHECK IN');
-    } catch (error) {
-      console.error('Error al hacer check-in:', error);
-      Alert.alert('Error al hacer check-in');
-    }
-  };
-
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -66,38 +37,27 @@ const EventIndex = () => {
           data={events}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <View style={styles.eventItem}>
-              <Text style={styles.eventTitle}>{item.name}</Text>
-              <Text style={styles.eventDetails}>{item.date}</Text>
-              <Text style={styles.eventDetails}>{item.location}</Text>
-              <TouchableOpacity
-                style={styles.shareButton}
-                onPress={() => handleSharePhoto(item.id)}
-              >
-                <Text style={styles.buttonText}>Share Photo</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.checkInButton}
-                onPress={() => handleCheckIn(item.id)}
-              >
-                <Text style={styles.buttonText}>Check In</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity onPress={() => router.push(`/events/${item.id}`)}>
+              <View style={styles.eventCard}>
+                <Text style={styles.eventTitle}>{item.name}</Text>
+                <Text style={styles.date}>
+                  {new Date(item.date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </Text>
+                <Text style={styles.hostedBy}>
+                  {item.bar ? `Hosted by ${item.bar.name}` : 'Host information not available'}
+                </Text>
+                <Text style={styles.eventDescription}>{item.description}</Text>
+              </View>
+            </TouchableOpacity>
           )}
           ListEmptyComponent={<Text style={styles.emptyText}>No events found.</Text>}
         />
       )}
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <SharePhoto eventId={selectedEventId} />
-          <Button title="Close" onPress={() => setModalVisible(false)} buttonStyle={styles.closeButton} />
-        </View>
-      </Modal>
     </View>
   );
 };
@@ -120,7 +80,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  eventItem: {
+  eventCard: {
     marginBottom: 15,
     padding: 15,
     borderRadius: 10,
@@ -136,29 +96,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 5,
   },
-  eventDetails: {
+  date: {
     fontSize: 14,
     color: '#555',
     marginBottom: 5,
   },
-  shareButton: {
-    backgroundColor: '#28a745',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  checkInButton: {
-    backgroundColor: '#ffc107',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#fff',
+  hostedBy: {
     fontSize: 14,
-    fontWeight: 'bold',
+    color: '#555',
+    marginBottom: 5,
+  },
+  eventDescription: {
+    fontSize: 14,
+    color: '#333',
+    marginTop: 10,
   },
   loadingText: {
     textAlign: 'center',
@@ -170,15 +121,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     color: 'gray',
-  },
-  modalContainer: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  closeButton: {
-    backgroundColor: '#dc3545',
-    marginTop: 20,
   },
 });
 
