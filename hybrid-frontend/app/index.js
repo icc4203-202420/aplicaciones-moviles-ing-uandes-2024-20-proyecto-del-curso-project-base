@@ -6,7 +6,7 @@ import axios from "axios";
 import * as SecureStore from 'expo-secure-store'; 
 import { NGROK_URL } from '@env';
 import { savePushToken } from '../util/Notifications';
-// import { registerForPushNotificationsAsync } from "../util/Notifications";
+import { registerForPushNotificationsAsync } from "../util/Notifications";
 
 const Login = () => {
   const router = useRouter();
@@ -15,7 +15,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleLogin = async () => {
-    setErrorMessage(""); // Limpiar el mensaje de error al intentar iniciar sesión
+    setErrorMessage(""); 
     try {
       const response = await axios.post(`${NGROK_URL}/api/v1/login`, {
         user: {
@@ -38,6 +38,7 @@ const Login = () => {
       if (error.response) {
         setErrorMessage("Credenciales incorrectas");
       } else {
+        console.log(error)
         setErrorMessage("Error de conexión");
       }
     }
@@ -55,7 +56,16 @@ const Login = () => {
         router.push("/home");
       }
     };
+
+
+    const getToken = async () => {
+      const pushToken = await registerForPushNotificationsAsync()
+
+      console.log(pushToken)
+
+    }
     checkLoginStatus();
+    getToken()
   }, []);
 
   return (

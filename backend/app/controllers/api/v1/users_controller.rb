@@ -27,17 +27,27 @@ class API::V1::UsersController < ApplicationController
     else
       @users = User.all
     end
-    render json: { users: @users.as_json(include: :events) }, status: :ok
+  
+    # Excluir el atributo password_digest de la serialización
+    render json: { users: @users.as_json(only: [:id, :first_name, :last_name, :email, :handle], include: { events: { only: [:id, :name, :date] } }) }, status: :ok
   end
-
+  
 
   def show
     if @user.nil?
       render json: { error: "User not found" }, status: :not_found
     else
-      render json: @user, status: :ok
+      render json: @user.as_json(only: [:id, :first_name, :last_name, :email, :handle]), status: :ok
     end
   end
+  
+  # def show
+  #   if @user.nil?
+  #     render json: { error: "User not found" }, status: :not_found
+  #   else
+  #     render json: @user, status: :ok
+  #   end
+  # end
 
   def create
     @user = User.new(user_params)

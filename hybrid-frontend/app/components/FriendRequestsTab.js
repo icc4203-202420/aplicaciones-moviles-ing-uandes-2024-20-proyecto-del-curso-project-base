@@ -1,56 +1,92 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Button, StyleSheet, FlatList, Alert, ActivityIndicator } from 'react-native';
 import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
 import { NGROK_URL } from '@env';
 
-const FriendRequestsTab = ({ userId }) => {
+const FriendRequestsScreen = () => {
   const [friendRequests, setFriendRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchFriendRequests = async () => {
-    try {
-      const response = await axios.get(`${NGROK_URL}/api/v1/users/${userId}/friend-requests`);
-      if (response.status === 200) {
-        setFriendRequests(response.data); // Almacena las solicitudes de amistad en el estado
+  useEffect(() => {
+    const fetchFriendRequests = async () => {
+      try {
+        const userId = await SecureStore.getItemAsync('USER_ID');
+        if (userId) {
+          const token = await SecureStore.getItemAsync('authToken');
+          const response = await axios.get(`${NGROK_URL}/api/v1/users/${userId}/friend_requests`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setFriendRequests(response.data.friend_requests || []);
+        } else {
+          console.error('No user ID found');
+        }
+      } catch (error) {
+        console.error('Error fetching friend requests:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching friend requests:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchFriendRequests();
+  }, []);
 
   const handleAccept = async (requestId) => {
     try {
-      setLoading(true);
-      const response = await axios.post(`${NGROK_URL}/api/v1/users/${userId}/friend_requests/${requestId}/accept`);
+      const token = await SecureStore.getItemAsync('authToken');
+      const userId = await SecureStore.getItemAsync('USER_ID');
+
+      if (!userId || !token) {
+        Alert.alert('Error', 'User not authenticated');
+        return;
+      }
+
+      const response = await axios.post(
+        `${NGROK_URL}/api/v1/users/${userId}/friend_requests/${requestId}/accept`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       Alert.alert('Success', response.data.message);
-      fetchFriendRequests(); // Actualiza la lista de solicitudes de amistad
+      setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== requestId));
     } catch (error) {
       console.error('Error accepting friend request:', error);
-      Alert.alert('Error', error.response?.data?.error || 'Error accepting friend request');
-    } finally {
-      setLoading(false);
+      Alert.alert('Error', 'Failed to accept friend request');
     }
   };
 
   const handleReject = async (requestId) => {
     try {
-      setLoading(true);
-      await axios.delete(`${NGROK_URL}/api/v1/users/${userId}/friend_requests/${requestId}/reject`);
-      Alert.alert('Success', 'Friend request rejected!');
-      fetchFriendRequests(); // Actualiza la lista de solicitudes de amistad
+      const token = await SecureStore.getItemAsync('authToken');
+      const userId = await SecureStore.getItemAsync('USER_ID');
+
+      if (!userId || !token) {
+        Alert.alert('Error', 'User not authenticated');
+        return;
+      }
+
+      await axios.delete(
+        `${NGROK_URL}/api/v1/users/${userId}/friend_requests/${requestId}/reject`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      Alert.alert('Success', 'Friend request rejected');
+      setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== requestId));
     } catch (error) {
       console.error('Error rejecting friend request:', error);
-      Alert.alert('Error', 'Error rejecting friend request');
-    } finally {
-      setLoading(false);
+      Alert.alert('Error', 'Failed to reject friend request');
     }
   };
-
-  useEffect(() => {
-    fetchFriendRequests();
-  }, [userId]);
 
   if (loading) {
     return (
@@ -61,50 +97,55 @@ const FriendRequestsTab = ({ userId }) => {
   }
 
   return (
-    <View style={styles.tabContent}>
-      {friendRequests.length > 0 ? (
-        friendRequests.map((request) => (
-          <View key={request.id} style={styles.requestContainer}>
-            <Text style={styles.text}>{`${request.user.first_name} ${request.user.last_name} (@${request.user.handle})`}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Friend Requests</Text>
+      <FlatList
+        data={friendRequests}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.requestItem}>
+            <Text style={styles.userText}>{`${item.user.first_name} ${item.user.last_name} (@${item.user.handle})`}</Text>
             <View style={styles.buttonContainer}>
-              <Button title="Accept" onPress={() => handleAccept(request.id)} />
-              <Button title="Reject" onPress={() => handleReject(request.id)} color="red" />
+              <Button title="Accept" onPress={() => handleAccept(item.id)} />
+              <Button title="Reject" onPress={() => handleReject(item.id)} color="red" />
             </View>
           </View>
-        ))
-      ) : (
-        <Text>No tienes solicitudes de amistad.</Text>
-      )}
+        )}
+        ListEmptyComponent={<Text>No friend requests</Text>}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  tabContent: {
+  container: {
     flex: 1,
     padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  requestItem: {
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 5,
+  },
+  userText: {
+    fontSize: 16,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  requestContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
-  },
-  text: {
-    fontSize: 16,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 10,
-  },
 });
 
-export default FriendRequestsTab;
+export default FriendRequestsScreen;

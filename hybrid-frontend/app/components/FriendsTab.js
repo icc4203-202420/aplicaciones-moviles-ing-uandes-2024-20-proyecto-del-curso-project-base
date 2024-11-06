@@ -1,21 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, Dimensions } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { NGROK_URL } from '@env';
 
-const FriendsTab = ({ userId }) => {
+const FriendsTab = () => {
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFriends = async () => {
     try {
+      const userId = await SecureStore.getItemAsync('USER_ID'); // Obtén el ID del usuario
       const token = await SecureStore.getItemAsync('authToken'); // Obtén el token de Secure Store
+
+      if (!userId || !token) {
+        console.error('User ID or token not found');
+        setLoading(false);
+        return;
+      }
+
       const response = await axios.get(`${NGROK_URL}/api/v1/users/${userId}/friendships`, {
         headers: { 'Authorization': `Bearer ${token}` }, // Incluye el token en la cabecera
       });
+
       if (response.status === 200) {
-        setFriends(response.data); // Almacena la lista de amigos en el estado
+        setFriends(response.data); // Ajusta esto según la estructura de tu respuesta
+        console.log('Friends data:', response.data);
       }
     } catch (error) {
       console.error('Error fetching friends:', error);
@@ -26,7 +36,7 @@ const FriendsTab = ({ userId }) => {
 
   useEffect(() => {
     fetchFriends();
-  }, [userId]);
+  }, []);
 
   if (loading) {
     return (
@@ -37,20 +47,18 @@ const FriendsTab = ({ userId }) => {
   }
 
   return (
-    <View style={styles.tabContent}>
+    <View style={styles.container}>
       {friends.length > 0 ? (
-        friends.map((friend) => (
-          <View key={friend.id} style={styles.friendContainer}>
-            <Image
-              source={{ uri: friend.avatar_url || '/default-avatar.png' }}
-              style={styles.avatar}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.name}>{`${friend.first_name} ${friend.last_name}`}</Text>
-              <Text style={styles.handle}>@{friend.handle}</Text>
+        <FlatList
+          data={friends}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.friendContainer}>
+              <Text style={styles.name}>{`${item.first_name} ${item.last_name}`}</Text>
+              <Text style={styles.handle}>@{item.handle}</Text>
             </View>
-          </View>
-        ))
+          )}
+        />
       ) : (
         <Text>No friends yet. Try adding some friends.</Text>
       )}
@@ -64,25 +72,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  tabContent: {
+  container: {
     flex: 1,
     padding: 20,
   },
   friendContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-    padding: 10,
+    width: Dimensions.get('window').width - 40, // Ancho total de la pantalla menos padding
+    padding: 15,
+    marginVertical: 5,
+    backgroundColor: '#f0f0f0',
     borderRadius: 5,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 15,
-  },
-  textContainer: {
-    flex: 1,
   },
   name: {
     fontSize: 16,

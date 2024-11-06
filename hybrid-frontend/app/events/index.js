@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, FlatList, Text, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
 import { Button } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
+import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
+import SharePhoto from './SharePhoto';
 
 const EventIndex = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,16 +31,26 @@ const EventIndex = () => {
   };
 
   const handleSharePhoto = (eventId) => {
-    router.push(`/events/share-photo/${eventId}`);
+    setSelectedEventId(eventId);
+    setModalVisible(true);
   };
 
   const handleCheckIn = async (eventId) => {
     try {
-      const response = await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/check_in`);
-      alert('Check-in successful!');
+      const token = await SecureStore.getItemAsync('authToken');
+      if (!token) {
+        Alert.alert('Error', 'Token de autenticación no encontrado.');
+        return;
+      }
+
+      await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/check_in`, {}, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      Alert.alert('Check-in exitoso. Se ha notificado a tus amigos.');
+      console.log('CHECK IN');
     } catch (error) {
-      console.error('Error during check-in:', error);
-      alert('Error during check-in. Please try again.');
+      console.error('Error al hacer check-in:', error);
+      Alert.alert('Error al hacer check-in');
     }
   };
 
@@ -73,6 +87,17 @@ const EventIndex = () => {
           ListEmptyComponent={<Text style={styles.emptyText}>No events found.</Text>}
         />
       )}
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <SharePhoto eventId={selectedEventId} />
+          <Button title="Close" onPress={() => setModalVisible(false)} buttonStyle={styles.closeButton} />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -145,6 +170,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     color: 'gray',
+  },
+  modalContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  closeButton: {
+    backgroundColor: '#dc3545',
+    marginTop: 20,
   },
 });
 

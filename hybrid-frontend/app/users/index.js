@@ -3,10 +3,11 @@ import { View, FlatList, Text, ActivityIndicator, StyleSheet, Alert } from 'reac
 import { Input, ListItem, Button, Icon } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import EventModal from './EventModal';
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
 
 const UserSearchScreen = () => {
   const [currentUserId, setCurrentUserId] = useState('');
@@ -21,7 +22,7 @@ const UserSearchScreen = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const storedUserId = await AsyncStorage.getItem('CURRENT_USER_ID');
+      const storedUserId = await SecureStore.getItemAsync('USER_ID');
       if (storedUserId) {
         setCurrentUserId(storedUserId);
       }
@@ -62,7 +63,12 @@ const UserSearchScreen = () => {
     if (!currentUserId || !event) return;
 
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await SecureStore.getItemAsync('authToken');
+      if (!token) {
+        Alert.alert('Error', 'Token de autenticación no encontrado.');
+        return;
+      }
+
       await axios.post(`${NGROK_URL}/api/v1/users/${currentUserId}/friendships`, {
         friendship: {
           friend_id: selectedFriendId,
@@ -90,6 +96,20 @@ const UserSearchScreen = () => {
       setModalVisible(false);
     }
   };
+
+  useEffect(() => {
+    const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
+      const { data } = response.notification.request.content;
+      if (data?.url) {
+        // Redirige a la ruta home/index al hacer clic en la notificación
+        router.push('/home');
+      }
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(responseListener);
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
