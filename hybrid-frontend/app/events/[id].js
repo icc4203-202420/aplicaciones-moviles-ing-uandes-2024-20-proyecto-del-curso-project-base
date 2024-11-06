@@ -6,7 +6,6 @@ import axios from 'axios';
 import { NGROK_URL } from '@env';
 import { Video } from 'expo-av';
 import { MaterialIcons } from '@expo/vector-icons';
-import SharePhoto from './SharePhoto';
 
 const EventsShow = () => {
   const [event, setEvent] = useState(null);
@@ -14,26 +13,17 @@ const EventsShow = () => {
   const [eventPictures, setEventPictures] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [checkingIn, setCheckingIn] = useState(false);
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams(); // Utiliza `useLocalSearchParams` para obtener el `id` del evento
   const router = useRouter();
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false); // State to control SharePhoto modal visibility
-  const [selectedEventId, setSelectedEventId] = useState(null); // State for selected event ID
-  const [selectedEventName, setSelectedEventName] = useState(''); // State for selected event name
 
   const fetchEventData = useCallback(() => {
     axios.get(`${NGROK_URL}/api/v1/events/${id}`)
       .then(response => {
-        const data = response.data;
-        
-        if (data) {
-          setEvent(data);
-          setVideoUrl(`${NGROK_URL}${data.video_url_path || ''}`);
-          setUsers(data.users || []);
-          setEventPictures(data.event_pictures || []);
-        } else {
-          console.warn('Event data is empty');
-        }
+        setEvent(response.data);
+        setVideoUrl(`${NGROK_URL}${response.data.video_url_path}`);
+        setUsers(response.data.users);
+        setEventPictures(response.data.event_pictures);
       })
       .catch(error => console.error('Error fetching event:', error));
   }, [id]);
@@ -58,10 +48,8 @@ const EventsShow = () => {
     }
   };
 
-  const handleSharePhoto = () => {
-    setSelectedEventId(id);
-    setSelectedEventName(event.name);
-    setModalVisible(true); // Open the SharePhoto modal
+  const handleAddPhoto = () => {
+    router.push(`/events/${id}/add-photo`);
   };
 
   const handleGenerateVideo = async () => {
@@ -106,13 +94,13 @@ const EventsShow = () => {
       <Text style={styles.sectionTitle}>Attendees</Text>
       <View style={styles.attendeesContainer}>
         <FlatList
-          data={users.slice(0, 5)}
+          data={users.slice(0, 5)} // Mostrar los primeros 5 asistentes
           renderItem={({ item }) => (
             <View style={styles.attendeeCard}>
               <View style={styles.attendeeAvatar}>
-                <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
+                <Text style={styles.avatarText}>{item.first_name[0]}</Text>
               </View>
-              <Text style={styles.attendeeName}>{item.first_name} {item.last_name}</Text>
+              <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
               <Text style={styles.attendeeHandle}>{item.handle}</Text>
             </View>
           )}
@@ -133,6 +121,7 @@ const EventsShow = () => {
         {checkingIn ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.checkInText}>Check-In</Text>}
       </TouchableOpacity>
       
+
       <Text style={styles.sectionTitle}>Location</Text>
       <Text style={styles.location}>
         {event.bar && event.bar.address ? (
@@ -144,7 +133,7 @@ const EventsShow = () => {
 
       <View style={styles.photosHeader}>
         <Text style={styles.sectionTitle}>Photos</Text>
-        <TouchableOpacity onPress={handleSharePhoto}>
+        <TouchableOpacity onPress={handleAddPhoto}>
           <Text style={styles.addPhotoText}>+</Text>
         </TouchableOpacity>
       </View>
@@ -188,7 +177,7 @@ const EventsShow = () => {
               renderItem={({ item }) => (
                 <View style={styles.attendeeCard}>
                   <View style={styles.attendeeAvatar}>
-                    <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
+                    <Text style={styles.avatarText}>{item.first_name[0]}</Text>
                   </View>
                   <Text style={styles.attendeeName}>{item.first_name} {item.last_name}</Text>
                   <Text style={styles.attendeeHandle}>{item.handle}</Text>
@@ -201,20 +190,6 @@ const EventsShow = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-
-      {/* Share Photo Modal */}
-      <Modal
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-        animationType="slide"
-        transparent={true}
-      >
-        <SharePhoto
-          eventId={selectedEventId}
-          eventName={selectedEventName}
-          onClose={() => setModalVisible(false)}
-        />
       </Modal>
     </View>
   );
@@ -239,7 +214,9 @@ const styles = StyleSheet.create({
   generateVideoButton: { backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginTop: 20, alignItems: 'center' },
   generateVideoText: { color: 'white', fontWeight: 'bold' },
   video: { width: '100%', height: 300, marginTop: 20 },
-  attendeesContainer: { marginTop: 10 },
+  attendeesContainer: {
+    marginTop: 10,
+  },
   attendeeCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -248,19 +225,40 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 8,
     marginHorizontal: 10,
-    elevation: 3,
-    shadowColor: '#000',
+    elevation: 3, // For shadow on Android
+    shadowColor: '#000', // Shadow on iOS
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  avatar: { backgroundColor: 'lightgray', borderRadius: 20, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  avatar: {
+    backgroundColor: 'lightgray',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
   avatarText: { color: 'white', fontWeight: 'bold' },
-  attendeeName: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
-  attendeeHandle: { fontSize: 14, color: 'gray' },
-  moreButton: { marginTop: 8, alignItems: 'center' },
-  moreButtonText: { fontSize: 16, color: 'blue' },
-  
+  attendeeName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  attendeeHandle: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  moreButton: {
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  moreButtonText: {
+    fontSize: 16,
+    color: 'blue',
+  },
 });
+
 
 export default EventsShow;
