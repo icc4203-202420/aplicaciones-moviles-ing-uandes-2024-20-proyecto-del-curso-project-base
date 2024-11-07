@@ -3,6 +3,7 @@ import { View, FlatList, Text, StyleSheet, TouchableOpacity, Modal, Alert } from
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import { useRouter } from 'expo-router';
+import { Layout } from '../_layout';
 
 const EventIndex = () => {
   const [events, setEvents] = useState([]);
@@ -27,36 +28,38 @@ const EventIndex = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backButtonText}>Back</Text>
-      </TouchableOpacity>
-      {loading ? (
-        <Text style={styles.loadingText}>Loading events...</Text>
-      ) : (
-        <FlatList
-          data={events}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => router.push(`/events/${item.id}`)}>
-              <View style={styles.eventCard}>
-                <Text style={styles.eventTitle}>{item.name}</Text>
-                <Text style={styles.date}>
-                  {new Date(item.date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </Text>
-                <Text style={styles.eventDescription}>{item.description}</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-          ListEmptyComponent={<Text style={styles.emptyText}>No events found.</Text>}
-        />
-      )}
-    </View>
+    <Layout>
+      <View style={styles.container}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+        {loading ? (
+          <Text style={styles.loadingText}>Loading events...</Text>
+        ) : (
+          <FlatList
+            data={events}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity onPress={() => router.push(`/events/${item.id}`)}>
+                <View style={styles.eventCard}>
+                  <Text style={styles.eventTitle}>{item.name}</Text>
+                  <Text style={styles.date}>
+                    {new Date(item.date).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </Text>
+                  <Text style={styles.eventDescription}>{item.description}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            ListEmptyComponent={<Text style={styles.emptyText}>No events found.</Text>}
+          />
+        )}
+      </View>
+    </Layout>
   );
 };
 

@@ -157,9 +157,6 @@ const EventsShow = () => {
         data={users} 
         renderItem={({ item }) => (
           <View style={styles.attendeeCard}>
-            <View style={styles.attendeeAvatar}>
-              <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
-            </View>
             <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
             <Text style={styles.attendeeHandle}>{item.handle}</Text>
           </View>
