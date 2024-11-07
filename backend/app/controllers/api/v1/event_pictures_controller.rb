@@ -1,7 +1,7 @@
 class API::V1::EventPicturesController < ApplicationController
 
   # before_action :set_event_picture, only: [:tag_user, :tagged_users]
-
+  
   def create
     @event_picture = EventPicture.new(event_picture_params.except(:tag_handles))
     tag_handles = event_picture_params[:tag_handles] || []

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { NGROK_URL } from '@env';
 import { useRouter } from 'expo-router';
 import { Layout } from '../_layout';
-
+import { MaterialIcons } from '@expo/vector-icons';
 const EventIndex = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,9 +30,9 @@ const EventIndex = () => {
   return (
     <Layout>
       <View style={styles.container}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <MaterialIcons name="arrow-back" size={24} color="#333" />
+      </TouchableOpacity>
         {loading ? (
           <Text style={styles.loadingText}>Loading events...</Text>
         ) : (
@@ -68,18 +68,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     backgroundColor: '#fff',
-  },
-  backButton: {
-    marginBottom: 15,
-    padding: 10,
-    backgroundColor: '#007bff',
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   eventCard: {
     marginBottom: 15,

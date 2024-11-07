@@ -53,33 +53,8 @@ class API::V1::EventsController < ApplicationController
       end
 
     end
-    # def show
-    #   if @event
-    #     attendees = @event.attendances.includes(:user).map do |attendance|
-    #       {
-    #         id: attendance.id,
-    #         first_name: attendance.user.first_name,
-    #         last_name: attendance.user.last_name
-    #       }
-    #     end
-
-    #     render json: {
-    #       event: @event.as_json(only: [:id, :name, :description, :date, :start_date, :end_date]),
-    #       bar: @event.bar.as_json(only: [:id, :name]),
-    #       attendees: attendees
-    #     }, status: :ok
-    #   else
-    #     render json: { error: 'Event not found' }, status: :not_found
-    #   end
-    # end
-    # def show
-    #   if @event
-    #     render json: { event: @event }, status: :ok
-    #   else
-    #     render json: { error: "Event not found" }, status: :not_found
-    #   end
-    # end
     def show
+      # Find the event and generate the event data JSON with image URLs and debugging information
       event_data = @event.as_json(
         include: {
           bar: {
@@ -98,14 +73,47 @@ class API::V1::EventsController < ApplicationController
                 only: [:id, :first_name, :last_name]
               }
             },
-            methods: [:tagged_users, :image_url],
+            methods: [:tagged_users, :image_url] # Ensure image_url method is included
           }
         }
       )
 
+      # Add the video URL path to the event data
       event_data[:video_url_path] = @event.video_url_path
+
+      # Debug log to verify image URLs for event pictures
+      Rails.logger.debug("Event Pictures URLs: #{event_data['event_pictures'].map { |p| p['image_url'] }}")
+
+      # Render the JSON response with event data and images
       render json: event_data, status: :ok
     end
+    # def show
+    #   event_data = @event.as_json(
+    #     include: {
+    #       bar: {
+    #         only: :name,
+    #         include: {
+    #           address: {
+    #             only: [:line1, :line2, :city]
+    #           }
+    #         }
+    #       },
+    #       users: { only: [:id, :first_name, :last_name, :email, :handle] },
+    #       event_pictures: {
+    #         only: [:id, :description],
+    #         include: {
+    #           user: {
+    #             only: [:id, :first_name, :last_name]
+    #           }
+    #         },
+    #         methods: [:tagged_users, :image_url],
+    #       }
+    #     }
+    #   )
+
+    #   event_data[:video_url_path] = @event.video_url_path
+    #   render json: event_data, status: :ok
+    # end
 
     def generate_video
       event = Event.find(params[:id])

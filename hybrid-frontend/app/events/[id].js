@@ -14,12 +14,13 @@ const EventsShow = () => {
   const [eventPictures, setEventPictures] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [checkingIn, setCheckingIn] = useState(false);
-  const { id } = useLocalSearchParams(); // Utiliza `useLocalSearchParams` para obtener el `id` del evento
+  const { id } = useLocalSearchParams();
   const router = useRouter();
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false); // State to control SharePhoto modal visibility
-  const [selectedEventId, setSelectedEventId] = useState(null); // State for selected event ID
-  const [selectedEventName, setSelectedEventName] = useState(''); // State for selected event name
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState(null);
+  const [selectedEventName, setSelectedEventName] = useState('');
+
   const closeAttendeesModal = () => setShowAttendeesModal(false);
 
   const fetchEventData = useCallback(async () => {
@@ -33,11 +34,6 @@ const EventsShow = () => {
         setEvent(eventResponse.data);
         setUsers(eventResponse.data.users);
         setVideoUrl(`${NGROK_URL}${eventResponse.data.video_url_path}`);
-
-        // const attendeesResponse = await axios.get(`${NGROK_URL}/api/v1/events/${id}/attendees`, {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // });
-        // setUsers(attendeesResponse.data);
       }
     } catch (error) {
       console.error('Error fetching event data:', error);
@@ -49,9 +45,9 @@ const EventsShow = () => {
     try {
       const response = await axios.get(`${NGROK_URL}/api/v1/events/${id}/pictures`);
       if (response.data && response.data.length > 0) {
-        setEventPictures(response.data); // Set event pictures in state
+        setEventPictures(response.data);
       } else {
-        setEventPictures([]); // Empty list if no pictures found
+        setEventPictures([]);
       }
     } catch (error) {
       console.error('Error fetching pictures:', error);
@@ -66,39 +62,36 @@ const EventsShow = () => {
   const handleSharePhoto = () => {
     setSelectedEventId(id);
     setSelectedEventName(event.name);
-    setModalVisible(true); // Open the SharePhoto modal
+    setModalVisible(true);
   };
 
   const handleCheckIn = async () => {
     setCheckingIn(true);
     try {
       const token = await SecureStore.getItemAsync('authToken');
-      const userId = await SecureStore.getItemAsync('USER_ID'); // Obtiene el user_id desde Secure Store
+      const userId = await SecureStore.getItemAsync('USER_ID');
     
       if (token && userId) {
-        // Primero, realiza el check-in en el evento
         const checkInResponse = await axios.post(
           `${NGROK_URL}/api/v1/events/${id}/attendances`,
           { user_id: userId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-    
+
         if (checkInResponse.status === 200) {
-          // Ahora, obtenemos los datos del usuario actual
           const userResponse = await axios.get(
             `${NGROK_URL}/api/v1/users/${userId}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
-    
+
           if (userResponse.status === 200) {
-            const user = userResponse.data; // Suponiendo que la respuesta tenga los datos del usuario
-    
-            // Agregar el usuario a la lista de asistentes
+            const user = userResponse.data;
+
             setUsers((prevUsers) => [
-              { id: user.id, name: user.handle || 'You' }, // Asume que 'handle' es parte de los datos del usuario
+              { id: user.id, name: user.handle || 'You' },
               ...prevUsers
             ]);
-    
+
             Alert.alert('Check-in confirmado', 'Te has registrado exitosamente.');
           }
         }
@@ -112,8 +105,7 @@ const EventsShow = () => {
       setCheckingIn(false);
     }
   };
-  
-  
+
   const handleGenerateVideo = async () => {
     try {
       await axios.post(`${NGROK_URL}/api/v1/events/${id}/generate_video`);
@@ -153,18 +145,17 @@ const EventsShow = () => {
 
       <Text style={styles.sectionTitle}>Attendees</Text>
       <View style={styles.attendeesContainer}>
-      <FlatList
-        data={users} 
-        renderItem={({ item }) => (
-          <View style={styles.attendeeCard}>
-            <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
-            <Text style={styles.attendeeHandle}>{item.handle}</Text>
-          </View>
-        )}
-        keyExtractor={(user) => user.id.toString()}
-        style={styles.attendeesList}
-        scrollEnabled={true} 
-      />
+        <FlatList
+          data={users} 
+          renderItem={({ item }) => (
+            <View style={styles.attendeeCard}>
+              <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
+              <Text style={styles.attendeeHandle}>{item.handle}</Text>
+            </View>
+          )}
+          keyExtractor={(user) => user.id.toString()}
+          style={styles.attendeesList}
+        />
       </View>
 
       <TouchableOpacity 
@@ -196,7 +187,7 @@ const EventsShow = () => {
         renderItem={({ item }) => (
           item.image && item.image.url ? (
             <Image 
-              source={{ uri: `${NGROK_URL}/event_images/event_${event.id}` }} 
+              source={{ uri: `${NGROK_URL}${item.image.url}` }} 
               style={styles.eventImage} 
             />
           ) : (
@@ -207,7 +198,7 @@ const EventsShow = () => {
         )}
         keyExtractor={(item) => item.id.toString()}
       />
-    
+
       {videoUrl && videoUrl.endsWith('.mp4') ? (
         <Video
           source={{ uri: videoUrl }}
@@ -269,6 +260,7 @@ const EventsShow = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   scrollContainer: { flex: 1, padding: 16 },
   eventTitle: { fontSize: 22, fontWeight: 'bold', marginVertical: 10 },
@@ -294,8 +286,8 @@ const styles = StyleSheet.create({
   attendeeName: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
   attendeeHandle: { fontSize: 14, color: 'gray' },
   attendeesList: {
-    maxHeight: 200, // Limita la altura máxima del FlatList
-    marginTop: 10,  // Añade un poco de espacio superior
+    maxHeight: 200,
+    marginTop: 10,
   },
 });
 

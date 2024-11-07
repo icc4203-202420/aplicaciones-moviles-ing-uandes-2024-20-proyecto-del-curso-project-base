@@ -1,7 +1,7 @@
 // app/_layout.js
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-
+import { View, Text, StyleSheet, SafeAreaView  } from 'react-native';
+import BackButton from './components/BackButton';
 // Estilos globales
 const styles = StyleSheet.create({
   container: {
@@ -42,14 +42,18 @@ const styles = StyleSheet.create({
   buttonTitleSecondary: {
     color: "#B17457",
   },
+  backButton: {
+
+  }
 });
 
 // Componente Layout
 const Layout = ({ children }) => {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      {/* <BackButton />  */}
       {children}
-    </View>
+    </SafeAreaView>
   );
 };
 
