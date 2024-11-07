@@ -5,7 +5,6 @@ import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import * as SecureStore from 'expo-secure-store'; 
-
 const RegisterScreen = () => {
   const router = useRouter();
   const [firstName, setFirstName] = useState('');
@@ -30,18 +29,18 @@ const RegisterScreen = () => {
       setErrorMessage('Las contraseñas no coinciden.');
       return;
     }
-
+  
     setLoading(true);
     try {
       console.log('Registrando usuario...');
-
+  
       // Solo incluimos los campos de dirección si están presentes
       const address = {};
       if (line1) address.line1 = line1;
       if (line2) address.line2 = line2;
       if (city) address.city = city;
       if (country) address.country = country;
-
+  
       const response = await axios.post(
         `${NGROK_URL}/api/v1/signup`,
         {
@@ -63,26 +62,20 @@ const RegisterScreen = () => {
           headers: { 'Content-Type': 'application/json' },
         }
       );
-
+  
       console.log('Estado de la respuesta:', response.status);
       console.log('Datos de la respuesta:', response.data);
-
-      if (response.headers && response.headers.authorization) {
-        const token = response.headers['authorization'];
-        console.log("token", token);
-        if (token) {
-          await SecureStore.setItemAsync('authToken', token); // Guarda el token en SecureStore
-          Alert.alert('Registro exitoso');
-          router.push('/home');
-        } else {
-          Alert.alert('Error', 'No se recibió token. Por favor, intente de nuevo.');
-        }
+  
+      if (response.status === 200) { // Verificar si el registro fue exitoso (código 201)
+        Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada.');
+        // Redirigir a la pantalla de login después del registro exitoso
+        router.push('/');
       } else {
-        Alert.alert('Error', 'Respuesta inesperada del servidor. Por favor, intente nuevamente.');
+        Alert.alert('Error', 'Hubo un problema al registrar la cuenta. Intenta nuevamente.');
       }
     } catch (error) {
       console.error('Error de red:', error);
-
+  
       if (error.response) {
         if (error.response.status === 409) {
           Alert.alert('Error', 'Correo electrónico ya registrado.');
@@ -99,6 +92,7 @@ const RegisterScreen = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <View style={styles.container}>
@@ -159,7 +153,6 @@ const RegisterScreen = () => {
         secureTextEntry
       />
 
-      {/* Address Fields (Opcionales) */}
       <Input
         placeholder="Dirección Línea 1 (Opcional)"
         value={line1}

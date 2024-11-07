@@ -7,7 +7,6 @@ import * as SecureStore from 'expo-secure-store';
 import { NGROK_URL } from '@env';
 import { savePushToken } from '../util/Notifications';
 import { registerForPushNotificationsAsync } from "../util/Notifications";
-
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -31,6 +30,7 @@ const Login = () => {
       const pushToken = await savePushToken();
       console.log("Token JWT guardado:", token);
       console.log("USER_ID", USER_ID);
+      console.log("PUSH TOKEN", pushToken);
       Alert.alert('Login Successful!');
       // Redirigir al usuario a la página principal
       router.push("/home");

@@ -1,9 +1,8 @@
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
-import { Platform } from 'react-native';
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import { NGROK_URL } from '@env';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -15,7 +14,9 @@ Notifications.setNotificationHandler({
 
 export async function registerForPushNotificationsAsync() {
   let token;
+  
   if (Constants.isDevice) {
+    // Verificar los permisos
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
@@ -29,11 +30,20 @@ export async function registerForPushNotificationsAsync() {
       return;
     }
 
-    token = (await Notifications.getExpoPushTokenAsync()).data;
-    console.log('Push token:', token);
+    // Obtener el token de Expo
+    try {
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log('Push token:', token);
+    } catch (e) {
+      alert('Error getting Expo push token!');
+      console.error(e);
+      return;
+    }
 
+    // Guardar el token en SecureStore
     if (token) {
       await SecureStore.setItemAsync('pushToken', token);
+      console.log('Push token saved to SecureStore');
     }
   }
 
@@ -56,7 +66,6 @@ export async function savePushToken() {
     return;
   }
 
-  // Opcional: Envía el token al backend si es necesario
   try {
     const authToken = await SecureStore.getItemAsync('authToken');
     await axios.post(`${NGROK_URL}/api/v1/push_tokens`, { token }, {
