@@ -71,7 +71,7 @@ const SharePhoto = ({ eventId, eventName }) => {
     formData.append('event_picture[image]', {
       uri: imageUri,
       type: 'image/jpeg',
-      name: 'photo.jpg',
+      name: `photo_${Date.now()}.jpg`,
     });
     formData.append('event_picture[description]', description);
     formData.append('event_picture[event_id]', eventId); // Add event_id to the form data

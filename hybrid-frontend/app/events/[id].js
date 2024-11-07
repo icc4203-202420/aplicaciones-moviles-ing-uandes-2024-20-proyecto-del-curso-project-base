@@ -22,19 +22,56 @@ const EventsShow = () => {
   const [selectedEventName, setSelectedEventName] = useState(''); // State for selected event name
   const closeAttendeesModal = () => setShowAttendeesModal(false);
 
-  const fetchEventData = useCallback(() => {
-    axios.get(`${NGROK_URL}/api/v1/events/${id}`)
-      .then(response => {
-        setEvent(response.data);
-        setVideoUrl(`${NGROK_URL}${response.data.video_url_path}`);
-        setUsers(response.data.users); // Extract the list of attendees
-        setEventPictures(response.data.event_pictures); // Extract event pictures
-      })
-      .catch(error => console.error('Error fetching event:', error));
+  // const fetchEventData = useCallback(() => {
+  //   axios.get(`${NGROK_URL}/api/v1/events/${id}`)
+  //     .then(response => {
+  //       setEvent(response.data);
+  //       console.log(response.data);
+  //       setVideoUrl(`${NGROK_URL}${response.data.video_url_path}`);
+  //       setUsers(response.data.users); // Extract the list of attendees
+  //       // setEventPictures(response.data.event_pictures); // Extract event pictures
+  //     })
+  //     .catch(error => console.error('Error fetching event:', error));
+  // }, [id]);
+  const fetchEventData = useCallback(async () => {
+    try {
+      const token = await SecureStore.getItemAsync('authToken');
+
+      if (token) {
+        const eventResponse = await axios.get(`${NGROK_URL}/api/v1/events/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setEvent(eventResponse.data);
+        setUsers(eventResponse.data.users);
+        setVideoUrl(`${NGROK_URL}${eventResponse.data.video_url_path}`);
+
+        // const attendeesResponse = await axios.get(`${NGROK_URL}/api/v1/events/${id}/attendees`, {
+        //   headers: { Authorization: `Bearer ${token}` }
+        // });
+        // setUsers(attendeesResponse.data);
+      }
+    } catch (error) {
+      console.error('Error fetching event data:', error);
+      Alert.alert('Error', 'No se pudieron cargar los datos del evento.');
+    }
   }, [id]);
+
+  const fetchPictures = async () => {
+    try {
+      const response = await axios.get(`${NGROK_URL}/api/v1/events/${id}/pictures`);
+      if (response.data && response.data.length > 0) {
+        setEventPictures(response.data); // Set event pictures in state
+      } else {
+        setEventPictures([]); // Empty list if no pictures found
+      }
+    } catch (error) {
+      console.error('Error fetching pictures:', error);
+    }
+  };
 
   useEffect(() => {
     fetchEventData();
+    fetchPictures();
   }, [fetchEventData]);
 
   const handleSharePhoto = () => {
@@ -46,25 +83,48 @@ const EventsShow = () => {
   const handleCheckIn = async () => {
     setCheckingIn(true);
     try {
-      const userId = await SecureStore.getItemAsync('USER_ID');
-      const response = await axios.get(`${NGROK_URL}/api/v1/users/${userId}`);
-      const { first_name, last_name, handle } = response.data;
-
-      await axios.post(`${NGROK_URL}/api/v1/events/${id}/check_in`, {
-        user_id: parseInt(userId, 10),
-        event_id: id,
-      });
-      // After successful check-in, update the attendees list
-      const newUser = { first_name, last_name, handle, id: parseInt(userId, 10) };
-      setUsers((prevUsers) => [newUser, ...prevUsers]); // Add current user to the list
-      Alert.alert('Checked-in', 'You have successfully checked in for this event.');
+      const token = await SecureStore.getItemAsync('authToken');
+      const userId = await SecureStore.getItemAsync('USER_ID'); // Obtiene el user_id desde Secure Store
+    
+      if (token && userId) {
+        // Primero, realiza el check-in en el evento
+        const checkInResponse = await axios.post(
+          `${NGROK_URL}/api/v1/events/${id}/attendances`,
+          { user_id: userId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+    
+        if (checkInResponse.status === 200) {
+          // Ahora, obtenemos los datos del usuario actual
+          const userResponse = await axios.get(
+            `${NGROK_URL}/api/v1/users/${userId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+    
+          if (userResponse.status === 200) {
+            const user = userResponse.data; // Suponiendo que la respuesta tenga los datos del usuario
+    
+            // Agregar el usuario a la lista de asistentes
+            setUsers((prevUsers) => [
+              { id: user.id, name: user.handle || 'You' }, // Asume que 'handle' es parte de los datos del usuario
+              ...prevUsers
+            ]);
+    
+            Alert.alert('Check-in confirmado', 'Te has registrado exitosamente.');
+          }
+        }
+      } else {
+        Alert.alert('Error', 'Token de autenticación o ID de usuario no encontrado.');
+      }
     } catch (error) {
-      Alert.alert('Error', 'You are already registered for this event.');
+      console.error('Error en check-in:', error);
+      Alert.alert('Error', 'No se pudo realizar el check-in.');
     } finally {
       setCheckingIn(false);
     }
   };
-
+  
+  
   const handleGenerateVideo = async () => {
     try {
       await axios.post(`${NGROK_URL}/api/v1/events/${id}/generate_video`);
@@ -104,19 +164,21 @@ const EventsShow = () => {
 
       <Text style={styles.sectionTitle}>Attendees</Text>
       <View style={styles.attendeesContainer}>
-        <FlatList
-          data={users}
-          renderItem={({ item }) => (
-            <View style={styles.attendeeCard}>
-              <View style={styles.attendeeAvatar}>
-                <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
-              </View>
-              <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
-              <Text style={styles.attendeeHandle}>{item.handle}</Text>
+      <FlatList
+        data={users} 
+        renderItem={({ item }) => (
+          <View style={styles.attendeeCard}>
+            <View style={styles.attendeeAvatar}>
+              <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
             </View>
-          )}
-          keyExtractor={(user) => user.id.toString()}
-        />
+            <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
+            <Text style={styles.attendeeHandle}>{item.handle}</Text>
+          </View>
+        )}
+        keyExtractor={(user) => user.id.toString()}
+        style={styles.attendeesList}
+        scrollEnabled={true} 
+      />
       </View>
 
       <TouchableOpacity 
@@ -197,7 +259,6 @@ const EventsShow = () => {
         </View>
       </Modal>
 
-      {/* Share Photo Modal */}
       <Modal
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
@@ -237,6 +298,10 @@ const styles = StyleSheet.create({
   avatarText: { color: 'white', fontWeight: 'bold' },
   attendeeName: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
   attendeeHandle: { fontSize: 14, color: 'gray' },
+  attendeesList: {
+    maxHeight: 200, // Limita la altura máxima del FlatList
+    marginTop: 10,  // Añade un poco de espacio superior
+  },
 });
 
 export default EventsShow;

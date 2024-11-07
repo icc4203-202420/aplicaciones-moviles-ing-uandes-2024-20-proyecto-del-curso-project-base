@@ -4,14 +4,15 @@ class API::V1::EventsController < ApplicationController
     include Rails.application.routes.url_helpers
     respond_to :json
     before_action :set_bar, only: [:index, :create]
-    before_action :set_event, only: [:show, :update, :destroy, :attendees]
+    before_action :set_event, only: [:show, :update, :destroy, :attendees, :pictures]
     before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
     def check_in
       event = Event.find(params[:id])
 
       # Buscar si ya existe una relación de asistencia para este evento y usuario
-      attendance = Attendance.find_or_initialize_by(user: current_user, event: event)
+      # attendance = Attendance.find_or_initialize_by(user: current_user, event: event)
+      @attendance = @event.attendances.find_or_initialize_by(user: current_user)
 
       if attendance.checked_in
         render json: { message: "You have already checked in to this event." }, status: :unprocessable_entity
@@ -52,7 +53,32 @@ class API::V1::EventsController < ApplicationController
       end
 
     end
+    # def show
+    #   if @event
+    #     attendees = @event.attendances.includes(:user).map do |attendance|
+    #       {
+    #         id: attendance.id,
+    #         first_name: attendance.user.first_name,
+    #         last_name: attendance.user.last_name
+    #       }
+    #     end
 
+    #     render json: {
+    #       event: @event.as_json(only: [:id, :name, :description, :date, :start_date, :end_date]),
+    #       bar: @event.bar.as_json(only: [:id, :name]),
+    #       attendees: attendees
+    #     }, status: :ok
+    #   else
+    #     render json: { error: 'Event not found' }, status: :not_found
+    #   end
+    # end
+    # def show
+    #   if @event
+    #     render json: { event: @event }, status: :ok
+    #   else
+    #     render json: { error: "Event not found" }, status: :not_found
+    #   end
+    # end
     def show
       event_data = @event.as_json(
         include: {
@@ -82,15 +108,12 @@ class API::V1::EventsController < ApplicationController
       )
 
       event_data[:video_url_path] = @event.video_url_path
-
-      if @event.flyer.attached?
-        event_data.merge!(
-          flyer_url: url_for(@event.flyer),
-          thumbnail_url: url_for(@event.thumbnail)
-        )
-      end
-
       render json: event_data, status: :ok
+    end
+
+    def generate_video
+      event = Event.find(params[:id])
+      GenerateVideoJob.perform_later(event)
     end
 
     def create
@@ -116,22 +139,23 @@ class API::V1::EventsController < ApplicationController
     end
 
     def pictures
-      event = Event.find(params[:id])
-      if event.event_pictures.any?
-        pictures_data = event.event_pictures.map do |event_picture|
-          if event_picture.image.attached?
-            {
-              id: event_picture.id,
-              image_url: url_for(event_picture.image),
-              description: event_picture.description
-            }
-          end
-        end.compact
+      @pictures = @event.event_pictures
+      render json: @pictures, include: :image_attachment
+      # if event.event_pictures.any?
+      #   pictures_data = event.event_pictures.map do |event_picture|
+      #     if event_picture.image.attached?
+      #       {
+      #         id: event_picture.id,
+      #         image_url: url_for(event_picture.image),
+      #         description: event_picture.description
+      #       }
+      #     end
+      #   end.compact
 
-        render json: pictures_data
-      else
-        render json: { message: "No pictures found for this event." }, status: :not_found
-      end
+      #   render json: pictures_data
+      # else
+      #   render json: { message: "No pictures found for this event." }, status: :not_found
+      # end
     end
 
 
@@ -154,21 +178,11 @@ class API::V1::EventsController < ApplicationController
       authenticate_user!
       head :unauthorized unless current_user
     end
-    # def verify_jwt_token
-    #   token = request.headers['Authorization']&.split(' ')&.last
-    #   Rails.logger.debug("Received token: #{token}")
-    #   return head :unauthorized unless token
 
-    #   begin
-    #     decoded_token = JWT.decode(token, Rails.application.credentials.secret_key_base)[0]
-    #     user_id = decoded_token['user_id']
-    #     @current_user = User.find(user_id)
-    #     Rails.logger.debug("Authenticated user ID: #{user_id}")
-    #   rescue JWT::DecodeError, ActiveRecord::RecordNotFound
-    #     Rails.logger.debug("JWT decoding error or user not found")
-    #     head :unauthorized
-    #   end
-    # end
+    def handle_image_attachment
+      decoded_image = decode_image(event_params[:image_base64])
+      @event.image.attach(io: decoded_image[:io], filename: decoded_image[:filename], content_type: decoded_image[:content_type])
+    end
 
     def current_user
       @current_user
