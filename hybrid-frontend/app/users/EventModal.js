@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'; 
-import { View, Modal, StyleSheet, Text, TouchableOpacity, Button, FlatList } from 'react-native';
+import { View, Modal, StyleSheet, Text, TouchableOpacity, FlatList } from 'react-native';
 import { Input, Icon } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import * as Notifications from 'expo-notifications'; 
-import * as SecureStore from 'expo-secure-store'; // Importa Secure Store
+import * as SecureStore from 'expo-secure-store'; 
 import { Alert } from 'react-native'; 
 
 const EventModal = ({ visible, onClose, friendId }) => {
@@ -33,22 +33,6 @@ const EventModal = ({ visible, onClose, friendId }) => {
     }
   }, [visible]);
 
-  useEffect(() => {
-    const receivedListener = Notifications.addNotificationReceivedListener(async (notification) => {
-      const { title, body, data } = notification.request.content;
-      console.log('Notification received: ', title, body, data);
-    });
-
-    const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log('Notification response received: ', response);
-    });
-
-    return () => {
-      Notifications.removeNotificationSubscription(receivedListener);
-      Notifications.removeNotificationSubscription(responseListener);
-    };
-  }, []); 
-
   const filteredEvents = events.filter(event =>
     event.name.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -65,9 +49,6 @@ const EventModal = ({ visible, onClose, friendId }) => {
             return;
         }
         
-        console.log("AUTH TOKEN: ", token);
-        console.log("USER ID: ", userId);
-
         const requestBody = {
             friendship: {
                 friend_id: friendId,
@@ -108,7 +89,6 @@ const EventModal = ({ visible, onClose, friendId }) => {
     }
 };
 
-
   return (
     <Modal
       transparent={true}
@@ -119,10 +99,15 @@ const EventModal = ({ visible, onClose, friendId }) => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.title}>Select Event</Text>
+          {/* Buscador con estilo modificado */}
           <Input
             placeholder="Search for event..."
             value={searchText}
             onChangeText={setSearchText}
+            containerStyle={styles.inputContainer}
+            inputContainerStyle={styles.input}
+            leftIcon={<Icon name="search" color="#6F4E37" />}
+            placeholderTextColor="#6F4E37"
           />
           <FlatList
             data={filteredEvents}
@@ -139,8 +124,14 @@ const EventModal = ({ visible, onClose, friendId }) => {
               </TouchableOpacity>
             )}
           />
-          <Button title="Submit" onPress={handleSubmit} />
-          <Button title="Cancel" onPress={onClose} color="red" />
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.submitButtonText}>Submit</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -161,9 +152,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+    padding: 10,
   },
   eventItem: {
     padding: 10,
@@ -175,6 +167,46 @@ const styles = StyleSheet.create({
   },
   eventText: {
     fontSize: 16,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 20,
+  },
+  cancelButton: {
+    backgroundColor: 'white',
+    borderColor: '#A67B5B',
+    borderWidth: 2,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  cancelButtonText: {
+    color: '#A67B5B',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  submitButton: {
+    backgroundColor: '#A67B5B',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  input: {
+    backgroundColor: '#A67B5B',
+    borderRadius: 8,
+    height: 50,
+    paddingHorizontal: 10,
   },
 });
 

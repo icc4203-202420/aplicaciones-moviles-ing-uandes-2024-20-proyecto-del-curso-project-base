@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, Text, ActivityIndicator, StyleSheet, Alert } from 'react-native';
-import { Input, ListItem, Button, Icon } from '@rneui/themed';
+import { Input, Button, Icon } from '@rneui/themed';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import EventModal from './EventModal';
-import * as Notifications from 'expo-notifications';
-import * as Linking from 'expo-linking';
+import { Layout } from '../_layout';
+import BackButton from '../components/BackButton';
 
 const UserSearchScreen = () => {
   const [currentUserId, setCurrentUserId] = useState('');
@@ -97,58 +97,52 @@ const UserSearchScreen = () => {
     }
   };
 
-  useEffect(() => {
-    const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
-      const { data } = response.notification.request.content;
-      if (data?.url) {
-        // Redirige a la ruta home/index al hacer clic en la notificación
-        router.push('/home');
-      }
-    });
-
-    return () => {
-      Notifications.removeNotificationSubscription(responseListener);
-    };
-  }, []);
-
   return (
-    <View style={styles.container}>
-      <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
-      <Input
-        placeholder="Buscar por handle..."
-        value={searchText}
-        onChangeText={setSearchText}
-        containerStyle={styles.input}
-      />
-      {loading ? (
-        <ActivityIndicator size="small" color="#000" />
-      ) : (
-        <FlatList
-          data={filteredUsers}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <ListItem>
-              <ListItem.Content>
-                <ListItem.Title>{item.handle}</ListItem.Title>
-                <ListItem.Subtitle>{`${item.first_name} ${item.last_name}`}</ListItem.Subtitle>
-              </ListItem.Content>
-              <Button 
-                title="" 
-                onPress={() => handleAddFriend(item.id)} 
-                icon={<Icon name="person-add" color="#ffffff" />}
-              />
-            </ListItem>
-          )}
-          ListEmptyComponent={<Text style={styles.emptyText}>No se encontraron usuarios.</Text>}
+    <Layout>
+      <BackButton/>
+      <View style={styles.container}>
+        <Input
+          placeholder="Buscar"
+          value={searchText}
+          onChangeText={setSearchText}
+          containerStyle={styles.inputContainer}
+          inputContainerStyle={styles.input}
+          leftIcon={<Icon name="search" color="#6F4E37" />}
+          placeholderTextColor="#6F4E37"
         />
-      )}
-      <EventModal 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)} 
-        onSubmit={handleModalSubmit}
-        friendId={selectedFriendId}
-      />
-    </View>
+        {loading ? (
+          <ActivityIndicator size="small" color="#000" />
+        ) : (
+          <FlatList
+            data={filteredUsers}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.card}>
+                <View style={styles.cardContent}>
+                  <View style={styles.userInfo}>
+                    <Text style={styles.handleText}>{item.handle}</Text>
+                    <Text style={styles.nameText}>{`${item.first_name} ${item.last_name}`}</Text>
+                  </View>
+                  <Button 
+                    title="" 
+                    onPress={() => handleAddFriend(item.id)} 
+                    icon={<Icon name="person-add" color="#ffffff" />}
+                    buttonStyle={styles.addButton}
+                  />
+                </View>
+              </View>
+            )}
+            ListEmptyComponent={<Text style={styles.emptyText}>No se encontraron usuarios.</Text>}
+          />
+        )}
+        <EventModal 
+          visible={modalVisible} 
+          onClose={() => setModalVisible(false)} 
+          onSubmit={handleModalSubmit}
+          friendId={selectedFriendId}
+        />
+      </View>
+    </Layout>
   );
 };
 
@@ -156,15 +150,55 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: '#fff',
+  },
+  inputContainer: {
+    marginBottom: 5,
+    marginTop: 40,
   },
   input: {
-    marginBottom: 10,
+    backgroundColor: '#A67B5B',
+    borderRadius: 8,
+    height: 50,
+    paddingHorizontal: 10,
   },
   emptyText: {
     textAlign: 'center',
     marginTop: 20,
     color: 'gray',
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 8,
+    marginHorizontal: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  handleText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 5,
+  },
+  nameText: {
+    fontSize: 16,
+    color: '#666',
+    opacity: 0.6,
+  },
+  addButton: {
+    backgroundColor: '#B17457',
   },
 });
 
