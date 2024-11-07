@@ -5,6 +5,7 @@ import { NGROK_URL } from '@env';
 import { useRouter } from 'expo-router';
 import { Layout } from '../_layout';
 import { MaterialIcons } from '@expo/vector-icons';
+
 const EventIndex = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, StyleSheet } from 'react-native';
-import { Input, ListItem, Button } from '@rneui/themed';
+import { View, FlatList, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import { Input, Icon, Card } from '@rneui/themed';
 import { useRouter } from 'expo-router';
 import { NGROK_URL } from '@env';
+import * as SecureStore from 'expo-secure-store';
+import BackButton from '../components/BackButton'; // Importar el BackButton
+import { Layout } from '../_layout';
 
 const BeerSearchScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,30 +52,44 @@ const BeerSearchScreen = () => {
   }, [searchQuery, beers]); // Filter whenever searchQuery or beers change
 
   return (
-    <View style={styles.container}>
-      <Button title="Back" onPress={() => router.back()} buttonStyle={styles.backButton} />
-      <Input
-        placeholder="Search for a beer"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        containerStyle={styles.input}
-      />
-      {loading && <Text style={styles.loadingText}>Loading...</Text>}
-      <FlatList
-        data={filteredBeers}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <ListItem onPress={() => router.push(`/beers/${item.id}`)}>
-            <ListItem.Content>
-              <ListItem.Title>{item.name}</ListItem.Title>
-              <ListItem.Subtitle>{item.style}</ListItem.Subtitle>
-            </ListItem.Content>
-            <ListItem.Chevron />
-          </ListItem>
-        )}
-        ListEmptyComponent={!loading && <Text style={styles.emptyText}>No beers found.</Text>}
-      />
-    </View>
+    <Layout>
+      <BackButton />
+      <View style={styles.container}>
+        <Input
+          placeholder="Search for a beer"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          containerStyle={styles.inputContainer}
+          inputContainerStyle={styles.input}
+          leftIcon={<Icon name="search" color="#6F4E37" />}
+          placeholderTextColor="#6F4E37"
+        />
+        {loading && <ActivityIndicator size="small" color="#000" />}
+        <FlatList
+          data={filteredBeers}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => router.push(`/beers/${item.id}`)}>
+              <Card containerStyle={styles.card}>
+                <View style={styles.cardContent}>
+                  <Text style={styles.cardTitle}>{item.name}</Text>
+                  <Text style={styles.cardSubtitle}>{item.style}</Text>
+                </View>
+                <View style={styles.cardFooter}>
+                  <Icon
+                    name="right"
+                    type="antdesign"
+                    color="#808080"
+                    size={20}
+                  />
+                </View>
+              </Card>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={!loading && <Text style={styles.emptyText}>No beers found.</Text>}
+        />
+      </View>
+    </Layout>
   );
 };
 
@@ -80,17 +97,43 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    backgroundColor: '#fff',
   },
-  backButton: {
-    marginBottom: 10,
+  inputContainer: {
+    marginBottom: 5,
+    marginTop: 40,
   },
   input: {
-    marginBottom: 10,
+    backgroundColor: '#A67B5B',
+    borderRadius: 8,
+    height: 50,
+    paddingHorizontal: 10,
   },
-  loadingText: {
-    textAlign: 'center',
-    marginVertical: 10,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  cardContent: {
+    paddingBottom: 10,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end', // Alineación del ícono a la derecha
+    marginTop: 10,
   },
   emptyText: {
     textAlign: 'center',

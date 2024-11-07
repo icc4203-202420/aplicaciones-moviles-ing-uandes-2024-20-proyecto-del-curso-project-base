@@ -5,7 +5,6 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { NGROK_URL } from '@env';
 
-// Configura el manejador de notificaciones
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
