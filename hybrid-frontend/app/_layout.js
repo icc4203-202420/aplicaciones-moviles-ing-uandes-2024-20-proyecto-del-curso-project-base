@@ -1,40 +1,56 @@
 // app/_layout.js
-// import { View, Text } from 'react-native'
-// import React from 'react'
-// import { Tabs } from 'expo-router'
-// import TabBar from './components/TabBar'
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 
-// const _layout = () => {
-//   return (
-//     <Tabs
-//         tabBar={props=> <TabBar {...props} />}
-//     >
-//         <Tabs.Screen
-//             name="index"
-//             options={{
-//                 title: "Home"
-//             }}
-//         />
-//         <Tabs.Screen
-//             name="explore"
-//             options={{
-//                 title: "Explore"
-//             }}
-//         />
-//         <Tabs.Screen
-//             name="create"
-//             options={{
-//                 title: "Create"
-//             }}
-//         />
-//         <Tabs.Screen
-//             name="profile"
-//             options={{
-//                 title: "Profile"
-//             }}
-//         />
-//     </Tabs>
-//   )
-// }
+// Estilos globales
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "rgb(250, 247, 240)",
+    padding: 20,
+    justifyContent: "center",
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "rgb(74, 73, 71)",
+  },
+  inputText: {
+    color: "rgb(74, 73, 71)",
+  },
+  inputContainer: {
+    borderBottomColor: "rgb(177, 116, 87)",
+  },
+  error: {
+    color: "red",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  buttonPrimary: {
+    backgroundColor: "rgb(177, 116, 87)",
+    marginTop: 20,
+  },
+  buttonSecondary: {
+    borderColor: "rgb(177, 116, 87)",
+    marginTop: 10,
+  },
+  buttonTitlePrimary: {
+    color: "rgb(250, 247, 240)",
+  },
+  buttonTitleSecondary: {
+    color: "#B17457",
+  },
+});
 
-// export default _layout
+// Componente Layout
+const Layout = ({ children }) => {
+  return (
+    <View style={styles.container}>
+      {children}
+    </View>
+  );
+};
+
+export { Layout, styles };
