@@ -1,5 +1,5 @@
 // app/_layout.js
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, SafeAreaView  } from 'react-native';
 import BackButton from './components/BackButton';
 import * as Notifications from 'expo-notifications';
@@ -49,21 +49,50 @@ const styles = StyleSheet.create({
 });
 
 const Layout = ({ children }) => {
-    useEffect(() => {
-      // Registra el dispositivo para recibir notificaciones push y obtiene el token
-      registerForPushNotificationsAsync().then(token => {
-        console.log('Push Notification Token:', token);
-      });
-  
-      // Listener para notificaciones recibidas mientras la app está abierta
-      const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+    const notificationListener = useRef(null);
+  const responseListener = useRef(null);
+
+  useEffect(() => {
+    notificationListener.current = Notifications.addNotificationReceivedListener(
+      (notification) => {
         console.log('Notification received:', notification);
-      });
+      }
+    );
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log('Notification response:', response);
+      }
+    );
+
+    // Cleanup function to remove listeners when the component is unmounted
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Registra el dispositivo para recibir notificaciones push y obtiene el token
+    registerForPushNotificationsAsync().then((token) => {
+      console.log('Push Notification Token:', token);
+    });
+  }, []);
+    // useEffect(() => {
+    //   // Registra el dispositivo para recibir notificaciones push y obtiene el token
+    //   registerForPushNotificationsAsync().then(token => {
+    //     console.log('Push Notification Token:', token);
+    //   });
   
-      return () => {
-        Notifications.removeNotificationSubscription(notificationListener);
-      };
-    }, []);
+    //   // Listener para notificaciones recibidas mientras la app está abierta
+    //   const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+    //     console.log('Notification received:', notification);
+    //   });
+  
+    //   return () => {
+    //     Notifications.removeNotificationSubscription(notificationListener);
+    //   };
+    // }, []);
   
     return (
       <SafeAreaView style={styles.container}>

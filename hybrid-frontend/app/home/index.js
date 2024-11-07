@@ -50,7 +50,7 @@ const HomeScreen = () => {
         {userFirstName ? (
           <Text style={styles.text}>Welcome, {userFirstName}!</Text> // Mostrar el nombre del usuario
         ) : (
-          <Text style={styles.text}>Welcome to the Home Screen</Text>
+          <Text style={styles.text}>Welcome</Text>
         )}
 
         <Button

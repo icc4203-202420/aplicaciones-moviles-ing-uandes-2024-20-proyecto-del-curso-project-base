@@ -16,6 +16,7 @@ const Login = () => {
   const handleLogin = async () => {
     setErrorMessage(""); 
     try {
+      const pushToken = await registerForPushNotificationsAsync();
       const response = await axios.post(`${NGROK_URL}/api/v1/login`, {
         user: {
           email: email.toLowerCase(),
@@ -26,8 +27,7 @@ const Login = () => {
       const USER_ID = response.data.status.data.user.id;
       // Guardar el token en SecureStore
       await SecureStore.setItemAsync('authToken', token);
-      await SecureStore.setItemAsync('USER_ID', USER_ID.toString()); 
-      const pushToken = await savePushToken();
+      await SecureStore.setItemAsync('USER_ID', USER_ID.toString());
       console.log("Token JWT guardado:", token);
       console.log("USER_ID", USER_ID);
       console.log("PUSH TOKEN", pushToken);
@@ -60,9 +60,7 @@ const Login = () => {
 
     const getToken = async () => {
       const pushToken = await registerForPushNotificationsAsync()
-
       console.log(pushToken)
-
     }
     checkLoginStatus();
     getToken()
