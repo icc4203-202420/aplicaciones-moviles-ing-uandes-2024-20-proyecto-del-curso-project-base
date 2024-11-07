@@ -144,22 +144,10 @@ class API::V1::EventsController < ApplicationController
 
     def pictures
       @pictures = @event.event_pictures
-      render json: @pictures, include: :image_attachment
-      # if event.event_pictures.any?
-      #   pictures_data = event.event_pictures.map do |event_picture|
-      #     if event_picture.image.attached?
-      #       {
-      #         id: event_picture.id,
-      #         image_url: url_for(event_picture.image),
-      #         description: event_picture.description
-      #       }
-      #     end
-      #   end.compact
-
-      #   render json: pictures_data
-      # else
-      #   render json: { message: "No pictures found for this event." }, status: :not_found
-      # end
+      pictures_data = @pictures.map do |picture|
+        picture.as_json.merge(image_url: picture.image_url)
+      end
+      render json: pictures_data, status: :ok
     end
 
 

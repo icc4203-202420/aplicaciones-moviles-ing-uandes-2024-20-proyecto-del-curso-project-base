@@ -44,6 +44,7 @@ const EventsShow = () => {
   const fetchPictures = async () => {
     try {
       const response = await axios.get(`${NGROK_URL}/api/v1/events/${id}/pictures`);
+      console.log('Event Pictures:', eventPictures);
       if (response.data && response.data.length > 0) {
         setEventPictures(response.data);
       } else {
@@ -185,9 +186,9 @@ const EventsShow = () => {
       <FlatList
         data={eventPictures}
         renderItem={({ item }) => (
-          item.image && item.image.url ? (
+          item.image_url ? (
             <Image 
-              source={{ uri: `${NGROK_URL}${item.image.url}` }} 
+              source={{ uri: `${NGROK_URL}${item.image_url}` }} 
               style={styles.eventImage} 
             />
           ) : (
@@ -198,6 +199,7 @@ const EventsShow = () => {
         )}
         keyExtractor={(item) => item.id.toString()}
       />
+
 
       {videoUrl && videoUrl.endsWith('.mp4') ? (
         <Video
