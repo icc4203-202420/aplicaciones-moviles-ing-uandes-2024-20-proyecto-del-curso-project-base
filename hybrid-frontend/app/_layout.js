@@ -1,7 +1,9 @@
 // app/_layout.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView  } from 'react-native';
 import BackButton from './components/BackButton';
+import * as Notifications from 'expo-notifications';
+import { registerForPushNotificationsAsync, setNotificationHandler } from '../util/Notifications';
 // Estilos globales
 const styles = StyleSheet.create({
   container: {
@@ -47,14 +49,29 @@ const styles = StyleSheet.create({
   }
 });
 
-// Componente Layout
 const Layout = ({ children }) => {
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* <BackButton />  */}
-      {children}
-    </SafeAreaView>
-  );
-};
-
-export { Layout, styles };
+    useEffect(() => {
+      // Registra el dispositivo para recibir notificaciones push y obtiene el token
+      registerForPushNotificationsAsync().then(token => {
+        console.log('Push Notification Token:', token);
+      });
+  
+      // Listener para notificaciones recibidas mientras la app está abierta
+      const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+        console.log('Notification received:', notification);
+      });
+  
+      return () => {
+        Notifications.removeNotificationSubscription(notificationListener);
+      };
+    }, []);
+  
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.title}></Text>
+        {children}
+      </SafeAreaView>
+    );
+  };
+  
+  export { Layout, styles };

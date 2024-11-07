@@ -2,9 +2,10 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import axios from 'axios';
-import { NGROK_URL } from '@env';
 import * as SecureStore from 'expo-secure-store';
+import { NGROK_URL } from '@env';
 
+// Configura el manejador de notificaciones
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,

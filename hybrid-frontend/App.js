@@ -1,8 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { Router } from 'expo-router';
+import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 // import { RootSiblingParent } from 'react-native-root-siblings';
 import * as Notifications from 'expo-notifications';
+import { useState, useEffect, useRef } from 'react';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -34,6 +37,14 @@ export default function App() {
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       console.log(response);
     });
+
+    return () => {
+      notificationListener.current &&
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      responseListener.current &&
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
 
   return (
     // <RootSiblingParent>
