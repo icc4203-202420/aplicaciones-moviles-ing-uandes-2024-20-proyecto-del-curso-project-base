@@ -74,33 +74,45 @@ const SharePhoto = ({ eventId, eventName }) => {
       name: `photo_${Date.now()}.jpg`,
     });
     formData.append('event_picture[description]', description);
-    formData.append('event_picture[event_id]', eventId); // Add event_id to the form data
-    formData.append('event_picture[user_id]', await SecureStore.getItemAsync('USER_ID')); // Add user_id to the form data
+    formData.append('event_picture[event_id]', eventId);
+  
+    const userId = await SecureStore.getItemAsync('USER_ID');
+    if (!userId) {
+      Alert.alert('Error', 'User ID not found.');
+      setLoading(false);
+      return;
+    }
+  
+    formData.append('event_picture[user_id]', userId);
   
     selectedFriends.forEach(friendId => {
       formData.append('event_picture[tag_handles][]', friendId);
     });
   
     try {
-      await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/event_pictures`, formData, {
+      const response = await axios.post(`${NGROK_URL}/api/v1/events/${eventId}/event_pictures`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
   
-      Alert.alert('Éxito', 'Foto subida con éxito.');
-      setImageUri(null);
-      setDescription('');
-      setSelectedFriends([]);
-  
-      router.push(`/events/${eventId}`);
+      if (response.status === 201) {
+        Alert.alert('Éxito', 'Foto subida con éxito.');
+        setImageUri(null);
+        setDescription('');
+        setSelectedFriends([]);
+        router.push(`/events/${eventId}`);
+      } else {
+        console.error('Upload failed:', response.data);
+        Alert.alert('Error', 'Failed to upload photo.');
+      }
     } catch (error) {
       console.error('Error al subir la foto:', error.response || error.message);
       Alert.alert('Error', 'Error al subir la foto.');
     } finally {
       setLoading(false);
     }
-  };  
+  };   
 
   return (
     <View style={styles.container}>

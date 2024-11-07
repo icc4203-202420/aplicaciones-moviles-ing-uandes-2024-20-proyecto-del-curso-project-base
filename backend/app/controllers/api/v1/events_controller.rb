@@ -96,13 +96,9 @@ class API::V1::EventsController < ApplicationController
             include: {
               user: {
                 only: [:id, :first_name, :last_name]
-              },
-              image: {
-                only: [:id, :description, :user_id],
-                methods: :url
               }
             },
-            methods: :tagged_users
+            methods: [:tagged_users, :image_url],
           }
         }
       )

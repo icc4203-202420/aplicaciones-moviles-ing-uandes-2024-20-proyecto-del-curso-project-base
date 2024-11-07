@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::API
   before_action :configure_permitted_parameters, if: :devise_controller?
-
+  before_action :set_active_storage_host
   # Método para obtener el usuario actual a partir del token de autenticación
   protected
   # def current_user
@@ -18,4 +18,9 @@ class ApplicationController < ActionController::API
     devise_parameter_sanitizer.permit(:sign_up, keys: [:email, :password, :password_confirmation])
     devise_parameter_sanitizer.permit(:account_update, keys: [:email, :password, :password_confirmation])
   end
+  private
+
+    def set_active_storage_host
+      ActiveStorage::Current.url_options = { host: request.base_url }
+    end
 end

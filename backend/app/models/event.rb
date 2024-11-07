@@ -8,6 +8,7 @@ class Event < ApplicationRecord
   has_one_attached :video_url
 
   def thumbnail
+    return nil unless flyer.attached?
     flyer.variant(resize_to_limit: [200, nil]).processed
   end
 

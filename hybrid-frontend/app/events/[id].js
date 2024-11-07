@@ -22,17 +22,6 @@ const EventsShow = () => {
   const [selectedEventName, setSelectedEventName] = useState(''); // State for selected event name
   const closeAttendeesModal = () => setShowAttendeesModal(false);
 
-  // const fetchEventData = useCallback(() => {
-  //   axios.get(`${NGROK_URL}/api/v1/events/${id}`)
-  //     .then(response => {
-  //       setEvent(response.data);
-  //       console.log(response.data);
-  //       setVideoUrl(`${NGROK_URL}${response.data.video_url_path}`);
-  //       setUsers(response.data.users); // Extract the list of attendees
-  //       // setEventPictures(response.data.event_pictures); // Extract event pictures
-  //     })
-  //     .catch(error => console.error('Error fetching event:', error));
-  // }, [id]);
   const fetchEventData = useCallback(async () => {
     try {
       const token = await SecureStore.getItemAsync('authToken');
@@ -208,7 +197,16 @@ const EventsShow = () => {
       <FlatList
         data={eventPictures}
         renderItem={({ item }) => (
-          <Image source={{ uri: item.picture.url }} style={styles.eventImage} />
+          item.image && item.image.url ? (
+            <Image 
+              source={{ uri: `${NGROK_URL}/event_images/event_${event.id}` }} 
+              style={styles.eventImage} 
+            />
+          ) : (
+            <View style={styles.eventImagePlaceholder}>
+              <Text>No Image Available</Text>
+            </View>
+          )
         )}
         keyExtractor={(item) => item.id.toString()}
       />

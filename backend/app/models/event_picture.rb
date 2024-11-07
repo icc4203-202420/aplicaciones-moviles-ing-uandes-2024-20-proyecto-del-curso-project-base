@@ -11,15 +11,15 @@ class EventPicture < ApplicationRecord
 
   after_commit :save_picture_to_public_directory, on: [:create]
 
-  # def url
-  #   image.attached? ? Rails.application.routes.url_helpers.rails_blob_url(image, only_path: true) : nil
-  # end
-
-  def url
-    Rails.application.routes.url_helpers.rails_blob_path(image, only_path: true) if image.attached?
+  def image_url
+    image.attached? ? Rails.application.routes.url_helpers.rails_blob_url(image, only_path: true) : nil
   end
 
-  private
+  # # def url
+  # #   Rails.application.routes.url_helpers.rails_blob_path(image, only_path: true) if image.attached?
+  # # end
+
+  # private
 
   def save_picture_to_public_directory
     return unless image.attached?
