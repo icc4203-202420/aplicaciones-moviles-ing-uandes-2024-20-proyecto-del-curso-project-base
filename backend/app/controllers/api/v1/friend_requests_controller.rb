@@ -47,6 +47,9 @@ class API::V1::FriendRequestsController < ApplicationController
         Rails.logger.debug "Created reverse friendship for user: #{friend_request.user_id} with friend: #{@user.id}"
       end
 
+      # Enviar notificación de aceptación
+      send_friend_request_notification(friend_request.user, "accepted")
+
       # Eliminar la solicitud de amistad después de aceptar
       # friend_request.destroy
       render json: { message: 'Friend request accepted' }, status: :ok
@@ -60,6 +63,9 @@ class API::V1::FriendRequestsController < ApplicationController
     friend_request = @user.inverse_friendships.find(params[:id])
 
     if friend_request.destroy
+      # Enviar notificación de rechazo
+      send_friend_request_notification(friend_request.user, "rejected")
+
       render json: { message: 'Friend request rejected.' }, status: :ok
     else
       render json: { error: 'Could not reject friend request.' }, status: :unprocessable_entity
@@ -70,5 +76,28 @@ class API::V1::FriendRequestsController < ApplicationController
 
   def set_user
     @user = User.find(params[:user_id])
+  end
+
+  def send_friend_request_notification(friend, action)
+    # Obtener el token de push del amigo
+    friend_push_token = friend.push_token
+
+    if friend_push_token.present?
+      message = action == "accepted" ? "Your friend request has been accepted." : "Your friend request has been rejected."
+
+      Rails.logger.debug "Sending push notification to friend #{friend.id}: #{message}"
+
+      # Enviar notificación push al amigo
+      PushNotificationService.send_notification(
+        to: friend_push_token, # Token del amigo
+        title: 'Friend Request Status',
+        body: message,
+        data: { action: action, route: '/home' }  # Incluye la ruta para abrir la página Home
+      )
+
+      Rails.logger.debug "Push notification sent to friend: #{friend.first_name} #{friend.last_name}"
+    else
+      Rails.logger.error "No push token found for friend: #{friend.id}"
+    end
   end
 end
