@@ -6,7 +6,7 @@ import axios from 'axios';
 import { NGROK_URL } from '@env';
 import { Video } from 'expo-av';
 import { MaterialIcons } from '@expo/vector-icons';
-import SharePhoto from './SharePhoto';
+import SharePhoto from '../SharePhoto';
 
 const EventsShow = () => {
   const [event, setEvent] = useState(null);
@@ -55,6 +55,7 @@ const EventsShow = () => {
     }
   };
 
+  
   useEffect(() => {
     fetchEventData();
     fetchPictures();
@@ -115,6 +116,10 @@ const EventsShow = () => {
       Alert.alert('Error', 'There was an issue starting video generation.');
     }
   };
+  
+  const handleImageClick = (imageId) => {
+    router.push(`/events/${id}/event_pictures/${imageId}`);
+  };
 
   if (!event) {
     return <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />;
@@ -141,6 +146,13 @@ const EventsShow = () => {
         <Text style={styles.hostedBy}>
           {event.bar ? `Hosted by ${event.bar.name}` : 'Host information not available'}
         </Text>
+        <Text style={styles.location}>
+          {event.bar && event.bar.address ? (
+            `${event.bar.address.line1}\n${event.bar.address.line2}, ${event.bar.address.city}`
+          ) : (
+            "Location not available"
+          )}
+        </Text>
       </View>
       <Text style={styles.eventDescription}>{event.description}</Text>
 
@@ -166,16 +178,7 @@ const EventsShow = () => {
       >
         {checkingIn ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.checkInText}>Check-In</Text>}
       </TouchableOpacity>
-      
-      <Text style={styles.sectionTitle}>Location</Text>
-      <Text style={styles.location}>
-        {event.bar && event.bar.address ? (
-          `${event.bar.address.line1}\n${event.bar.address.line2}, ${event.bar.address.city}`
-        ) : (
-          "Location information not available"
-        )}
-      </Text>
-
+        
       <View style={styles.photosHeader}>
         <Text style={styles.sectionTitle}>Photos</Text>
         <TouchableOpacity onPress={handleSharePhoto}>
@@ -187,10 +190,12 @@ const EventsShow = () => {
         data={eventPictures}
         renderItem={({ item }) => (
           item.image_url ? (
-            <Image 
-              source={{ uri: `${NGROK_URL}${item.image_url}` }} 
-              style={styles.eventImage} 
-            />
+            <TouchableOpacity onPress={() => handleImageClick(item.id)}>
+              <Image 
+                source={{ uri: `${NGROK_URL}${item.image_url}` }} 
+                style={styles.eventImage} 
+              />
+            </TouchableOpacity>
           ) : (
             <View style={styles.eventImagePlaceholder}>
               <Text>No Image Available</Text>
@@ -199,7 +204,6 @@ const EventsShow = () => {
         )}
         keyExtractor={(item) => item.id.toString()}
       />
-
 
       {videoUrl && videoUrl.endsWith('.mp4') ? (
         <Video
@@ -265,10 +269,10 @@ const EventsShow = () => {
 
 const styles = StyleSheet.create({
   scrollContainer: { flex: 1, padding: 16 },
-  eventTitle: { fontSize: 22, fontWeight: 'bold', marginVertical: 10 },
+  eventTitle: { fontSize: 25, fontWeight: 'bold', marginVertical: 5 },
   detailsContainer: { marginVertical: 16 },
   hostedBy: { fontSize: 16, color: 'gray' },
-  date: { fontSize: 14, color: 'gray', marginTop: 8 },
+  date: { fontSize: 14, color: 'gray', marginTop: 3 },
   checkInContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 },
   checkInButton: { backgroundColor: '#333', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 5 },
   checkInText: { color: 'white', fontWeight: 'bold' },
@@ -278,7 +282,7 @@ const styles = StyleSheet.create({
   photosHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 },
   addPhotoText: { fontSize: 24, color: 'blue', marginLeft: 8 },
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  eventImage: { width: '100%', height: 200, borderRadius: 16, marginVertical: 10 },
+  eventImage: { width: '100%', height: 0, paddingBottom: '100%', borderRadius: 16, marginVertical: 10 },
   generateVideoButton: { backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginTop: 20, alignItems: 'center' },
   generateVideoText: { color: 'white', fontWeight: 'bold' },
   video: { width: '100%', height: 300, marginTop: 20 },

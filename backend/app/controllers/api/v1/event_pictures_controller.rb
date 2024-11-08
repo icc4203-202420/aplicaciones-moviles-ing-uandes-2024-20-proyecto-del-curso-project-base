@@ -1,5 +1,25 @@
 class API::V1::EventPicturesController < ApplicationController
   # before_action :set_event_picture, only: [:tag_user, :tagged_users]
+  def index
+    # Filtrar las imágenes del evento por event_id si se pasa en los parámetros
+    event_pictures = EventPicture.where(event_id: params[:event_id])
+
+    if event_pictures.any?
+      # Para cada imagen de evento, obtener las etiquetas de usuarios y la URL de la imagen
+      event_pictures_data = event_pictures.map do |event_picture|
+        tagged_users_data = User.where(id: event_picture.tagged_users).select(:id, :first_name, :last_name, :handle)
+
+        {
+          event_picture: event_picture.as_json.merge(image_url: event_picture.image_url), # Agregar la URL de la imagen
+          tagged_users: tagged_users_data
+        }
+      end
+
+      render json: { event_pictures: event_pictures_data }, status: :ok
+    else
+      render json: { error: "No pictures found for this event" }, status: :not_found
+    end
+  end
 
   def create
     @event_picture = EventPicture.new(event_picture_params.except(:tag_handles))
@@ -24,11 +44,16 @@ class API::V1::EventPicturesController < ApplicationController
     @event_picture = EventPicture.find(params[:id])
     if @event_picture
       tagged_users_data = User.where(id: @event_picture.tagged_users).select(:id, :first_name, :last_name, :handle)
-      render json: { event_picture: @event_picture, tagged_users: tagged_users_data }, status: :ok
+
+      # Combina la URL de la imagen con los detalles de la imagen del evento
+      event_picture_data = @event_picture.as_json.merge(image_url: @event_picture.image_url)
+
+      render json: { event_picture: event_picture_data, tagged_users: tagged_users_data }, status: :ok
     else
       render json: { error: "Event_picture not found" }, status: :not_found
     end
   end
+
 
   # Nueva acción para etiquetar usuarios en una imagen
   def tag_user
@@ -67,17 +92,17 @@ class API::V1::EventPicturesController < ApplicationController
   end
 
   def notify_tagged_friends(event_picture)
-    friend_id = event_picture.tagged_friends
+    friend_id = event_picture.tagged_users
     friends = User.where(id: friend_id)
 
     friends.each do |friend|
       notification_sent = false
 
-      if friend.expo_push_token.present?
+      if friend.push_token.present?
         notification_sent = PushNotificationService.send_notification(
           to: friend.push_token,
           title: "#{event_picture.user.handle} tagged you in a photo",
-          body:,
+          body: "",
           data: { event_id: event_picture.event_id, picture_id: event_picture.id }
         )
 

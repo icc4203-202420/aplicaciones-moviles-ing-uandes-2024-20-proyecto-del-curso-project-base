@@ -87,33 +87,7 @@ class API::V1::EventsController < ApplicationController
       # Render the JSON response with event data and images
       render json: event_data, status: :ok
     end
-    # def show
-    #   event_data = @event.as_json(
-    #     include: {
-    #       bar: {
-    #         only: :name,
-    #         include: {
-    #           address: {
-    #             only: [:line1, :line2, :city]
-    #           }
-    #         }
-    #       },
-    #       users: { only: [:id, :first_name, :last_name, :email, :handle] },
-    #       event_pictures: {
-    #         only: [:id, :description],
-    #         include: {
-    #           user: {
-    #             only: [:id, :first_name, :last_name]
-    #           }
-    #         },
-    #         methods: [:tagged_users, :image_url],
-    #       }
-    #     }
-    #   )
-
-    #   event_data[:video_url_path] = @event.video_url_path
-    #   render json: event_data, status: :ok
-    # end
+    
 
     def generate_video
       event = Event.find(params[:id])
