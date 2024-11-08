@@ -4,7 +4,6 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
-
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -96,3 +95,5 @@ export async function savePushToken() {
     console.error('Error saving push token to backend:', error);
   }
 }
+
+

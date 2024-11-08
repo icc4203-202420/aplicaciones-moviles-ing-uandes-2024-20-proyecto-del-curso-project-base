@@ -13,7 +13,7 @@ class API::V1::AttendancesController < ApplicationController
     if @attendance.update(checked_in: true)
       # Notificación para el usuario
       if user.push_token.present?
-        NotificationService.send_notification(
+        PushNotificationService.send_notification(
           to: user.push_token,
           title: "Successfully checked in at #{@event.name}!",
           body: "",
@@ -25,11 +25,11 @@ class API::V1::AttendancesController < ApplicationController
       friends = user.friends
       friends.each do |friend|
         next unless friend.push_token.present?
-        NotificationService.send_notification(
+        PushNotificationService.send_notification(
           to: friend.push_token,
           title: "#{user.handle} has checked in to an event!",
           body: "#{user.handle} has decided to attend the event: #{@event.name}.",
-          data: { event_id: @event.id }
+          data: { event_id: @event.id, route: "/events/#{@event.id}" }
         )
       end
 

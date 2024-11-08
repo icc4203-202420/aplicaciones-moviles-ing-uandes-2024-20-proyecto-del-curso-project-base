@@ -1,7 +1,7 @@
 # app/services/push_notification_service.rb
-# require 'net/http'
-# require 'uri'
-# require 'json'
+require 'net/http'
+require 'uri'
+require 'json'
 class PushNotificationService
   def self.send_notification(to:, title:, body:, data:)
     message = {

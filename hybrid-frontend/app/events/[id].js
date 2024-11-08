@@ -93,7 +93,7 @@ const EventsShow = () => {
               ...prevUsers
             ]);
 
-            Alert.alert('Check-in confirmado', 'Te has registrado exitosamente.');
+            // Alert.alert('Check-in confirmado', 'Te has registrado exitosamente.');
           }
         }
       } else {

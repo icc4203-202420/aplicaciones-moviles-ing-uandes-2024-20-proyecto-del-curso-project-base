@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, SafeAreaView  } from 'react-native';
 import BackButton from './components/BackButton';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, setNotificationHandler } from '../util/Notifications';
+import NotificationListener from '../util/NotificationListener';
 // Estilos globales
 const styles = StyleSheet.create({
   container: {
@@ -49,7 +50,7 @@ const styles = StyleSheet.create({
 });
 
 const Layout = ({ children }) => {
-    const notificationListener = useRef(null);
+  const notificationListener = useRef(null);
   const responseListener = useRef(null);
 
   useEffect(() => {
@@ -81,6 +82,7 @@ const Layout = ({ children }) => {
   
     return (
       <SafeAreaView style={styles.container}>
+        <NotificationListener />
         <Text style={styles.title}></Text>
         {children}
       </SafeAreaView>
