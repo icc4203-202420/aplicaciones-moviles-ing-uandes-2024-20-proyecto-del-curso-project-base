@@ -75,10 +75,33 @@ class API::V1::FriendshipsController < ApplicationController
     @friendship.bar_id = friendship_params[:bar_id] if friendship_params[:bar_id].present?
     @friendship.event_id = friendship_params[:event_id] if friendship_params[:event_id].present?
 
+    # if @friendship.save
+    #   # Obtener el push token del amigo
+    #   friend_push_token = @friend.push_token
+    #   user_push_token = @user.push_token
+    #   Rails.logger.info("CONTROLLER; FRIEND TOKEN: #{friend_push_token}")
+    #   Rails.logger.info("CONTROLLER; USER TOKEN: #{user_push_token}")
+    #   if friend_push_token.present?
+    #     # Enviar notificación al amigo
+    #     response = PushNotificationService.send_notification(
+    #       to: friend_push_token,
+    #       title: 'New Friend Request',
+    #       body: "#{@user.first_name} #{@user.last_name} has sent you a friend request.",
+    #       data: { friendship_id: @friendship.id }
+    #     )
+
+    #     Rails.logger.info("Notification response: #{response}") # Log para revisar la respuesta
+
+    #   else
+    #     Rails.logger.warn("Friend's push token is missing or invalid for user_id: #{@friend.id}")
+    #   end
+
     if @friendship.save
       # Get the push tokens
       friend_push_token = @friend.push_token
       user_push_token = @user.push_token
+      Rails.logger.info("CONTROLLER; FRIEND TOKEN: #{friend_push_token}")
+      Rails.logger.info("CONTROLLER; USER TOKEN: #{user_push_token}")
 
       # Send notification to the friend
       PushNotificationService.send_notification(

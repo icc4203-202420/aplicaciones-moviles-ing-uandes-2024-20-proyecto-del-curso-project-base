@@ -3,6 +3,8 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import axios from 'axios';
+import { NGROK_URL } from '@env';
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -31,18 +33,44 @@ export async function registerForPushNotificationsAsync() {
   }
 
   if (finalStatus !== 'granted') {
-    alert('Failed to get push token for push notification!');
+    console.log('Failed to get push token for push notification!');
     return;
   }
 
   const projectId = Constants.expoConfig.extra.eas.projectId || 'aa7408ab-c7a9-4230-9a68-3822874f6a9b';
   const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-  console.log(token);
+  // console.log(token);
   
   // Guardar el token en SecureStore
   try {
     await SecureStore.setItemAsync('pushToken', token);
-    console.log('Push token saved to SecureStore');
+    // console.log('Push token saved to SecureStore');
+    try {
+      const authToken = await SecureStore.getItemAsync('authToken');
+      const userId = await SecureStore.getItemAsync('USER_ID');
+  
+      // Solo guardar el token en el backend si `userId` existe
+      if (userId) {
+        await axios.post(
+          `${NGROK_URL}/api/v1/users/${userId}/push_token`, 
+          { 
+            id: userId, // Incluye el id del usuario en el cuerpo de la solicitud
+            token,      // Incluye el token en el cuerpo de la solicitud
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${authToken}`, 
+            },
+          }
+        );
+        console.log(userId, ' push_token saved to backend');
+      } else {
+        console.log('User ID not found; push token not sent to backend.');
+      }
+    } catch (error) {
+      console.error('Error saving push token to backend:', error);
+    }
+
   } catch (error) {
     console.error('Error saving push token to SecureStore:', error);
   }
@@ -58,7 +86,7 @@ export async function savePushToken() {
 
   try {
     const authToken = await SecureStore.getItemAsync('authToken');
-    await axios.post(`${NGROK_URL}/api/v1/push_tokens`, { token }, {
+    await axios.post(`${NGROK_URL}/api/v1/push_token`, { token }, {
       headers: {
         'Authorization': `Bearer ${authToken}`,
       },

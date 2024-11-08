@@ -1,18 +1,23 @@
 class API::V1::UsersController < ApplicationController
   respond_to :json
   before_action :set_user, only: [:show, :update]
-
-  # def index
-  #   @users = User.includes(:reviews, :address).all
-  #   render json: { users: @users }, status: :ok
-  # end
+  # before_action :authenticate_user!, only: [:push_token]
   def push_token
-    if current_user.update(push_token: params[:push_token])
+    user = User.find_by(id: params[:id]) # Buscar al usuario por id
+    if user && user.update(push_token: params[:token]) # Cambiar a `params[:token]` para coincidir con el nombre en la solicitud
       head :ok
     else
-      render json: { error: 'Unable to update token' }, status: :unprocessable_entity
+      render json: { error: 'Unable to update token or user not found' }, status: :unprocessable_entity
     end
   end
+
+  # def push_token
+  #   if current_user.update(push_token: params[:push_token])
+  #     head :ok
+  #   else
+  #     render json: { error: 'Unable to update token' }, status: :unprocessable_entity
+  #   end
+  # end
 
   def search
     @users = User.where("handle LIKE ?", "%#{params[:handle]}%")
@@ -27,11 +32,11 @@ class API::V1::UsersController < ApplicationController
     else
       @users = User.all
     end
-  
+
     # Excluir el atributo password_digest de la serialización
     render json: { users: @users.as_json(only: [:id, :first_name, :last_name, :email, :handle], include: { events: { only: [:id, :name, :date] } }) }, status: :ok
   end
-  
+
 
   def show
     if @user.nil?
@@ -40,7 +45,7 @@ class API::V1::UsersController < ApplicationController
       render json: @user.as_json(only: [:id, :first_name, :last_name, :email, :handle]), status: :ok
     end
   end
-  
+
   # def show
   #   if @user.nil?
   #     render json: { error: "User not found" }, status: :not_found

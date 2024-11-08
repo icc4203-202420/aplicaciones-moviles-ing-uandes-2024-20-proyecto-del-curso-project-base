@@ -78,21 +78,6 @@ const Layout = ({ children }) => {
       console.log('Push Notification Token:', token);
     });
   }, []);
-    // useEffect(() => {
-    //   // Registra el dispositivo para recibir notificaciones push y obtiene el token
-    //   registerForPushNotificationsAsync().then(token => {
-    //     console.log('Push Notification Token:', token);
-    //   });
-  
-    //   // Listener para notificaciones recibidas mientras la app está abierta
-    //   const notificationListener = Notifications.addNotificationReceivedListener(notification => {
-    //     console.log('Notification received:', notification);
-    //   });
-  
-    //   return () => {
-    //     Notifications.removeNotificationSubscription(notificationListener);
-    //   };
-    // }, []);
   
     return (
       <SafeAreaView style={styles.container}>
