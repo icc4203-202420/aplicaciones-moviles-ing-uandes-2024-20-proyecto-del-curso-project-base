@@ -155,6 +155,73 @@ const EventsShow = () => {
           )}
         </Text>
       </View>
+      <Text style={styles.eventDescription}>{event.description}</Text>
+
+      <Text style={styles.sectionTitle}>Attendees</Text>
+      <View style={styles.attendeesContainer}>
+        <FlatList
+          data={users} 
+          renderItem={({ item }) => (
+            <View style={styles.attendeeCard}>
+              <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
+              <Text style={styles.attendeeHandle}>{item.handle}</Text>
+            </View>
+          )}
+          keyExtractor={(user) => user.id.toString()}
+          style={styles.attendeesList}
+        />
+      </View>
+
+      <TouchableOpacity 
+        style={styles.checkInButton} 
+        onPress={handleCheckIn} 
+        disabled={checkingIn}
+      >
+        {checkingIn ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.checkInText}>Check-In</Text>}
+      </TouchableOpacity>
+        
+      <View style={styles.photosHeader}>
+        <Text style={styles.sectionTitle}>Photos</Text>
+        <TouchableOpacity onPress={handleSharePhoto}>
+          <Text style={styles.addPhotoText}>+</Text>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={eventPictures}
+        renderItem={({ item }) => (
+          item.image_url ? (
+            <TouchableOpacity onPress={() => handleImageClick(item.id)}>
+              <Image 
+                source={{ uri: `${NGROK_URL}${item.image_url}` }} 
+                style={styles.eventImage} 
+              />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.eventImagePlaceholder}>
+              <Text>No Image Available</Text>
+            </View>
+          )
+        )}
+        keyExtractor={(item) => item.id.toString()}
+      />
+
+      {videoUrl && videoUrl.endsWith('.mp4') ? (
+        <Video
+          source={{ uri: videoUrl }}
+          style={styles.video}
+          useNativeControls
+          resizeMode="contain"
+        />
+      ) : (
+        <TouchableOpacity 
+          style={styles.generateVideoButton} 
+          onPress={handleGenerateVideo} 
+          disabled={!isEventPast}
+        >
+          <Text style={styles.generateVideoText}>Generate Summary Video</Text>
+        </TouchableOpacity>
+      )}
 
       {/* Modal de carga para la generación del video */}
       <Modal
