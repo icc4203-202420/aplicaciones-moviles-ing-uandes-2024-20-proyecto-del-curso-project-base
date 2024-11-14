@@ -1,17 +1,17 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, FlatList, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, FlatList, Text, Button } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import FeedItem from './FeedItem';
 import createCable, { subscribeToFeed } from '../services/WebSocket';
-import AuthContext from '../context/AuthContext';
 import * as SecureStore from 'expo-secure-store';
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
   const [authToken, setAuthToken] = useState(null);
   const [userId, setUserId] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
-    // Obtener authToken y userId desde SecureStore
     const getTokenAndUserId = async () => {
       try {
         const storedAuthToken = await SecureStore.getItemAsync('authToken');
@@ -37,6 +37,10 @@ const Feed = () => {
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Botón de regreso */}
+      <Button title="Back" onPress={() => navigation.goBack()} />
+      
+      {/* Lista de publicaciones */}
       <FlatList
         data={posts}
         renderItem={({ item }) => <FeedItem post={item} />}

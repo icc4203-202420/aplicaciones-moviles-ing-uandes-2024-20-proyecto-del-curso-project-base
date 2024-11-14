@@ -1,7 +1,8 @@
+// src/services/WebSocket.js
 import ActionCable from '@rails/actioncable';
 
 const createCable = (authToken) => {
-  return ActionCable.createConsumer(`ws://YOUR_BACKEND_URL/cable?token=${authToken}`);
+  return ActionCable.createConsumer(`ws://<NGROK_URL>/cable?token=${authToken}`);
 };
 
 export const subscribeToFeed = (cable, onReceived) => {
@@ -16,3 +17,4 @@ export const subscribeToFeed = (cable, onReceived) => {
 };
 
 export default createCable;
+
