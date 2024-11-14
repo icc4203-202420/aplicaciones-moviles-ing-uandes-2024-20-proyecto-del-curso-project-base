@@ -13,6 +13,7 @@ import EventsList from './components/Event/EventsList';
 import EventDetail from './components/Event/EventDetail';
 import EventPhoto from './components/Bars/EventPhoto';
 import ImagePickerExample from './components/Test/test';
+import Feed from './components/Feed/feed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createStackNavigator();
@@ -57,6 +58,8 @@ export default function App() {
             <Stack.Screen name="EventDetail" component={EventDetail} options={{ title: 'Events Detail' }} />
             <Stack.Screen name="EventPhoto" component={EventPhoto} options={{ title: 'Events Photo' }} />
             <Stack.Screen name="ImagePickerExample" component={ImagePickerExample} options={{ title: 'Image Picker' }} />
+            <Stack.Screen name="Feed" component={Feed} options={{ title: 'Feed' }} />
+
           </>
         ) : (
           <>

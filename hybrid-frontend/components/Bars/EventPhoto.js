@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import API_BASE_URL from '../Hooks/fetchAxios';
+
 import { Video } from 'expo-av'; // Keep if you want to use video playback
 
 function EventPhoto() {
