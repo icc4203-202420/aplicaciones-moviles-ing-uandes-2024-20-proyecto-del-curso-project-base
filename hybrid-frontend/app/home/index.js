@@ -71,6 +71,12 @@ const HomeScreen = () => {
           buttonStyle={styles.linkButton}
           titleStyle={styles.buttonTitle}
         />
+        <Button
+          title="Feed"
+          onPress={() => router.push('/feed')}
+          buttonStyle={styles.linkButton}
+          titleStyle={styles.buttonTitle}
+        />
 
         {userId && (
           <Button
