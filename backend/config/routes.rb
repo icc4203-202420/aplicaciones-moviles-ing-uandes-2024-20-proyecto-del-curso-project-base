@@ -34,6 +34,7 @@ Rails.application.routes.draw do
           # get :attendees, to: 'attendances#users'
           # post 'check_in'
           get :pictures  # Esto creará una ruta para /api/v1/events/:id/pictures
+          post :generate_video
           resource :attendances, only: [:show, :create, :destroy]
         end
 

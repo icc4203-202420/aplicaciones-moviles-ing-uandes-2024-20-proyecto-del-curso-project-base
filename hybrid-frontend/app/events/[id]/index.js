@@ -14,6 +14,7 @@ const EventsShow = () => {
   const [eventPictures, setEventPictures] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [checkingIn, setCheckingIn] = useState(false);
+  const [videoGenerating, setVideoGenerating] = useState(false); // Estado para el modal de carga de video
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
@@ -44,7 +45,6 @@ const EventsShow = () => {
   const fetchPictures = async () => {
     try {
       const response = await axios.get(`${NGROK_URL}/api/v1/events/${id}/pictures`);
-      console.log('Event Pictures:', eventPictures);
       if (response.data && response.data.length > 0) {
         setEventPictures(response.data);
       } else {
@@ -55,7 +55,6 @@ const EventsShow = () => {
     }
   };
 
-  
   useEffect(() => {
     fetchEventData();
     fetchPictures();
@@ -93,8 +92,6 @@ const EventsShow = () => {
               { id: user.id, name: user.handle || 'You' },
               ...prevUsers
             ]);
-
-            // Alert.alert('Check-in confirmado', 'Te has registrado exitosamente.');
           }
         }
       } else {
@@ -109,11 +106,14 @@ const EventsShow = () => {
   };
 
   const handleGenerateVideo = async () => {
+    setVideoGenerating(true); // Activar el modal de carga
     try {
       await axios.post(`${NGROK_URL}/api/v1/events/${id}/generate_video`);
       Alert.alert('Success', 'Video generation started!');
     } catch (error) {
       Alert.alert('Error', 'There was an issue starting video generation.');
+    } finally {
+      setVideoGenerating(false); // Desactivar el modal de carga
     }
   };
   
@@ -133,6 +133,7 @@ const EventsShow = () => {
         <MaterialIcons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
       
+      {/* Detalles del evento */}
       <View style={styles.detailsContainer}>
         <Text style={styles.eventTitle}>{event.name}</Text>
         <Text style={styles.date}>
@@ -154,114 +155,19 @@ const EventsShow = () => {
           )}
         </Text>
       </View>
-      <Text style={styles.eventDescription}>{event.description}</Text>
 
-      <Text style={styles.sectionTitle}>Attendees</Text>
-      <View style={styles.attendeesContainer}>
-        <FlatList
-          data={users} 
-          renderItem={({ item }) => (
-            <View style={styles.attendeeCard}>
-              <Text style={styles.attendeeName}>{item.first_name} {item.last_name} </Text>
-              <Text style={styles.attendeeHandle}>{item.handle}</Text>
-            </View>
-          )}
-          keyExtractor={(user) => user.id.toString()}
-          style={styles.attendeesList}
-        />
-      </View>
-
-      <TouchableOpacity 
-        style={styles.checkInButton} 
-        onPress={handleCheckIn} 
-        disabled={checkingIn}
-      >
-        {checkingIn ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.checkInText}>Check-In</Text>}
-      </TouchableOpacity>
-        
-      <View style={styles.photosHeader}>
-        <Text style={styles.sectionTitle}>Photos</Text>
-        <TouchableOpacity onPress={handleSharePhoto}>
-          <Text style={styles.addPhotoText}>+</Text>
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        data={eventPictures}
-        renderItem={({ item }) => (
-          item.image_url ? (
-            <TouchableOpacity onPress={() => handleImageClick(item.id)}>
-              <Image 
-                source={{ uri: `${NGROK_URL}${item.image_url}` }} 
-                style={styles.eventImage} 
-              />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.eventImagePlaceholder}>
-              <Text>No Image Available</Text>
-            </View>
-          )
-        )}
-        keyExtractor={(item) => item.id.toString()}
-      />
-
-      {videoUrl && videoUrl.endsWith('.mp4') ? (
-        <Video
-          source={{ uri: videoUrl }}
-          style={styles.video}
-          useNativeControls
-          resizeMode="contain"
-        />
-      ) : (
-        <TouchableOpacity 
-          style={styles.generateVideoButton} 
-          onPress={handleGenerateVideo} 
-          disabled={!isEventPast}
-        >
-          <Text style={styles.generateVideoText}>Generate Summary Video</Text>
-        </TouchableOpacity>
-      )}
-
+      {/* Modal de carga para la generación del video */}
       <Modal
-        visible={showAttendeesModal}
-        onRequestClose={() => closeAttendeesModal}
-        animationType="slide"
+        visible={videoGenerating}
         transparent={true}
+        animationType="fade"
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Event Attendees</Text>
-            <FlatList
-              data={users}
-              renderItem={({ item }) => (
-                <View style={styles.attendeeCard}>
-                  <View style={styles.attendeeAvatar}>
-                    <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
-                  </View>
-                  <Text style={styles.attendeeName}>{item.first_name} {item.last_name}</Text>
-                  <Text style={styles.attendeeHandle}>{item.handle}</Text>
-                </View>
-              )}
-              keyExtractor={(user) => user.id.toString()}
-            />
-            <TouchableOpacity style={styles.closeModalButton} onPress={closeAttendeesModal}>
-              <Text style={styles.closeModalText}>Close</Text>
-            </TouchableOpacity>
+          <View style={styles.modalContent}>
+            <ActivityIndicator size="large" color="#ffffff" />
+            <Text style={styles.modalText}>Generating Video...</Text>
           </View>
         </View>
-      </Modal>
-
-      <Modal
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-        animationType="slide"
-        transparent={true}
-      >
-        <SharePhoto
-          eventId={selectedEventId}
-          eventName={selectedEventName}
-          onClose={() => setModalVisible(false)}
-        />
       </Modal>
     </View>
   );
@@ -273,7 +179,6 @@ const styles = StyleSheet.create({
   detailsContainer: { marginVertical: 16 },
   hostedBy: { fontSize: 16, color: 'gray' },
   date: { fontSize: 14, color: 'gray', marginTop: 3 },
-  checkInContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 },
   checkInButton: { backgroundColor: '#333', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 5 },
   checkInText: { color: 'white', fontWeight: 'bold' },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 20 },
@@ -282,17 +187,22 @@ const styles = StyleSheet.create({
   photosHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 },
   addPhotoText: { fontSize: 24, color: 'blue', marginLeft: 8 },
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  eventImage: { width: '100%', height: 0, paddingBottom: '100%', borderRadius: 16, marginVertical: 10 },
   generateVideoButton: { backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginTop: 20, alignItems: 'center' },
   generateVideoText: { color: 'white', fontWeight: 'bold' },
-  video: { width: '100%', height: 300, marginTop: 20 },
-  attendeesContainer: { marginTop: 10 },
-  attendeeCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0f0f0', borderRadius: 8, padding: 10, marginVertical: 8, marginHorizontal: 10, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-  avatarText: { color: 'white', fontWeight: 'bold' },
-  attendeeName: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
-  attendeeHandle: { fontSize: 14, color: 'gray' },
-  attendeesList: {
-    maxHeight: 200,
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#333',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    color: '#fff',
     marginTop: 10,
   },
 });
