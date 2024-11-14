@@ -171,7 +171,6 @@ const EventsShow = () => {
           style={styles.attendeesList}
         />
       </View>
-
       <TouchableOpacity 
         style={styles.checkInButton} 
         onPress={handleCheckIn} 
@@ -186,7 +185,6 @@ const EventsShow = () => {
           <Text style={styles.addPhotoText}>+</Text>
         </TouchableOpacity>
       </View>
-
       <FlatList
         data={eventPictures}
         renderItem={({ item }) => (
@@ -205,7 +203,6 @@ const EventsShow = () => {
         )}
         keyExtractor={(item) => item.id.toString()}
       />
-
       {videoUrl && videoUrl.endsWith('.mp4') ? (
         <Video
           source={{ uri: videoUrl }}
@@ -225,15 +222,34 @@ const EventsShow = () => {
 
       {/* Modal de carga para la generación del video */}
       <Modal
-        visible={videoGenerating}
+        visible={videoGenerating || showAttendeesModal}
+        onRequestClose={() => {
+          setVideoGenerating(false);
+          setShowAttendeesModal(false);
+        }}
+        animationType="slide"
         transparent={true}
-        animationType="fade"
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <ActivityIndicator size="large" color="#ffffff" />
-            <Text style={styles.modalText}>Generating Video...</Text>
-          </View>
+          <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Event Attendees</Text>
+              <FlatList
+                data={users}
+                renderItem={({ item }) => (
+                  <View style={styles.attendeeCard}>
+                    <View style={styles.attendeeAvatar}>
+                      <Text style={styles.avatarText}>{item.first_name ? item.first_name[0] : ''}</Text>
+                    </View>
+                    <Text style={styles.attendeeName}>{item.first_name} {item.last_name}</Text>
+                    <Text style={styles.attendeeHandle}>{item.handle}</Text>
+                  </View>
+                )}
+                keyExtractor={(user) => user.id.toString()}
+              />
+              <TouchableOpacity style={styles.closeModalButton} onPress={closeAttendeesModal}>
+                <Text style={styles.closeModalText}>Close</Text>
+              </TouchableOpacity>
+            </View>
         </View>
       </Modal>
     </View>
@@ -248,14 +264,26 @@ const styles = StyleSheet.create({
   date: { fontSize: 14, color: 'gray', marginTop: 3 },
   checkInButton: { backgroundColor: '#333', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 5 },
   checkInText: { color: 'white', fontWeight: 'bold' },
+  checkInContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 20 },
   eventDescription: { color: 'gray', marginTop: 5 },
   location: { color: 'gray', marginTop: 5 },
   photosHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 },
   addPhotoText: { fontSize: 24, color: 'blue', marginLeft: 8 },
   loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  eventImage: { width: '100%', height: 0, paddingBottom: '100%', borderRadius: 16, marginVertical: 10 },
   generateVideoButton: { backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginTop: 20, alignItems: 'center' },
   generateVideoText: { color: 'white', fontWeight: 'bold' },
+  video: { width: '100%', height: 300, marginTop: 20 },
+  attendeesContainer: { marginTop: 10 },
+  attendeeCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0f0f0', borderRadius: 8, padding: 10, marginVertical: 8, marginHorizontal: 10, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+  avatarText: { color: 'white', fontWeight: 'bold' },
+  attendeeName: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  attendeeHandle: { fontSize: 14, color: 'gray' },
+  attendeesList: {
+    maxHeight: 200,
+    marginTop: 10,
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
