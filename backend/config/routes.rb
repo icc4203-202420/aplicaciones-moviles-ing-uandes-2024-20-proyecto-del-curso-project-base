@@ -51,7 +51,12 @@ Rails.application.routes.draw do
       end
 
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
-      resources :friendships, only: [:index, :create, :destroy]
+      resources :friendships, only: [:index, :create, :destroy] do
+        member do
+          put 'accept'
+          put 'decline'
+        end
+      end
     end
   end
 end

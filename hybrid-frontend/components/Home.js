@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 10,
     alignItems: 'center',
+    width: '80%',
   },
   logoutButton: {
     backgroundColor: '#f44336',

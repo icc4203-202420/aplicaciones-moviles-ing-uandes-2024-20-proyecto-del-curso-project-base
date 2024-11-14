@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput, StyleSheet, FlatList, Text } from "react-native";
+import { View, TextInput, StyleSheet, FlatList, Text, Button } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import SearchFriendList from "./FriendList";
@@ -7,6 +7,7 @@ import API_BASE_URL from "../Hooks/fetchAxios";
 
 export default function FriendsDetails() {
     const [friends, setFriends] = useState([]); 
+    const [pendingRequests, setPendingRequests] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
     const [searchTerm, setSearchTerm] = useState(''); 
     const [currentUser, setCurrentUser] = useState(null); 
@@ -19,6 +20,7 @@ export default function FriendsDetails() {
                     const user = JSON.parse(userData);
                     setCurrentUser(user);
                     fetchFriends(user.id);
+                    fetchPendingRequests(user.id);
                 }
             } catch (error) {
                 console.error("Error al obtener currentUser:", error);
@@ -30,10 +32,19 @@ export default function FriendsDetails() {
     const fetchFriends = async (userId) => {
         if (!userId) return;
         try {
-            const response = await axios.get(`${API_BASE_URL}/users/${userId}/friends`)
-            setFriends(response.data)
+            const response = await axios.get(`${API_BASE_URL}/users/${userId}/friends`);
+            setFriends(response.data);
         } catch (error) {
             console.error("Error al cargar amigos:", error);
+        }
+    };
+
+    const fetchPendingRequests = async (userId) => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/friendships?status=pending&user_id=${userId}`);
+            setPendingRequests(response.data);
+        } catch (error) {
+            console.error("Error al cargar solicitudes pendientes:", error);
         }
     };
 
@@ -58,12 +69,31 @@ export default function FriendsDetails() {
             });
 
             if (response.status === 200) {
-                const newFriend = searchResults.find((friend) => friend.id === friendId);
-                setFriends([...friends, newFriend]);
-                alert("Amigo agregado con éxito");
+                alert("Solicitud de amistad enviada");
             }
         } catch (error) {
-            console.error("Error al agregar amigo:", error);
+            console.error("Error al enviar solicitud de amistad:", error);
+        }
+    };
+
+    const handleAcceptRequest = async (friendshipId) => {
+        try {
+            await axios.put(`${API_BASE_URL}/friendships/${friendshipId}/accept`);
+            setPendingRequests(pendingRequests.filter(req => req.id !== friendshipId));
+            fetchFriends(currentUser.id); // Actualizar la lista de amigos
+            alert("Solicitud de amistad aceptada");
+        } catch (error) {
+            console.error("Error al aceptar solicitud de amistad:", error);
+        }
+    };
+
+    const handleDeclineRequest = async (friendshipId) => {
+        try {
+            await axios.put(`${API_BASE_URL}/friendships/${friendshipId}/decline`);
+            setPendingRequests(pendingRequests.filter(req => req.id !== friendshipId));
+            alert("Solicitud de amistad rechazada");
+        } catch (error) {
+            console.error("Error al rechazar solicitud de amistad:", error);
         }
     };
 
@@ -85,6 +115,24 @@ export default function FriendsDetails() {
                 />
 
                 <View style={styles.friendsContainer}>
+                    <Text style={styles.sectionTitle}>Solicitudes Pendientes</Text>
+                    <FlatList
+                        data={pendingRequests}
+                        keyExtractor={(request) => request.id.toString()}
+                        renderItem={({ item }) => (
+                            <View style={styles.requestCard}>
+                                <Text style={styles.friendName}>
+                                    {item.user.first_name} {item.user.last_name} (@{item.user.handle})
+                                </Text>
+                                <View style={styles.buttonContainer}>
+                                    <Button title="Aceptar" onPress={() => handleAcceptRequest(item.id)} />
+                                    <Button title="Rechazar" onPress={() => handleDeclineRequest(item.id)} />
+                                </View>
+                            </View>
+                        )}
+                        ListEmptyComponent={<Text style={styles.noRequestsText}>No tienes solicitudes pendientes.</Text>}
+                    />
+
                     <Text style={styles.sectionTitle}>Tus Amigos</Text>
                     <FlatList
                         data={friends}
@@ -113,6 +161,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
     },
     input: {
         backgroundColor: 'white',
@@ -145,7 +198,7 @@ const styles = StyleSheet.create({
     friendName: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#f9a825',
     },
     friendHandle: {
         fontSize: 14,
