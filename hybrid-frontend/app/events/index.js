@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
+import { View, StatusBar, FlatList, Text, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
 import axios from 'axios';
 import { NGROK_URL } from '@env';
 import { useRouter } from 'expo-router';
@@ -31,6 +31,7 @@ const EventIndex = () => {
   return (
     <Layout>
       <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#A67B5B" />
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <MaterialIcons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
@@ -67,14 +68,15 @@ const EventIndex = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    backgroundColor: '#fff',
+    marginLeft: 10,
+    marginBottom: 10,
+    marginRight: 10,
   },
   eventCard: {
     marginBottom: 15,
     padding: 15,
     borderRadius: 10,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#D5C0AB',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -85,6 +87,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 5,
+    color: "#70492C",
   },
   date: {
     fontSize: 14,
