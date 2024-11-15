@@ -28,7 +28,7 @@ const Feed = () => {
           return () => subscription.unsubscribe();
         }
       } catch (error) {
-        console.error('Error retrieving token or userId from SecureStore:', error);
+        console.error('Error:', error);
       }
     };
 
