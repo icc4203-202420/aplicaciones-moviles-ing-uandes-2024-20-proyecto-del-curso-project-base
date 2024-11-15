@@ -98,7 +98,6 @@ const FriendRequestsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Friend Requests</Text>
       <FlatList
         data={friendRequests}
         keyExtractor={(item) => item.id.toString()}
