@@ -133,7 +133,6 @@ const EventsShow = () => {
         <MaterialIcons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
       
-      {/* Detalles del evento */}
       <View style={styles.detailsContainer}>
         <Text style={styles.eventTitle}>{event.name}</Text>
         <Text style={styles.date}>
@@ -252,6 +251,20 @@ const EventsShow = () => {
             </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+        animationType="slide"
+        transparent={true}
+      >
+        <SharePhoto
+          eventId={selectedEventId}
+          eventName={selectedEventName}
+          onClose={() => setModalVisible(false)}
+        />
+      </Modal>
+
     </View>
   );
 };
