@@ -1,14 +1,15 @@
 class API::V1::UserFriendshipsController < ApplicationController
   before_action :set_user, only: [:index]
 
-  # GET /api/v1/users/:user_id/friendships
+  # GET /api/v1/users/:user_id/friends
   def index
-    # Fetch all friendships where the user is either the user or the friend
-    friendships = Friendship.where("user_id = ? OR friend_id = ?", @user.id, @user.id)
-                             .includes(:user, :friend)  # Avoid N+1 queries
-    
-    # Render friendships as JSON, including associated user and friend records
-    render json: friendships, include: ['user', 'friend']
+    # Combine friends (initiated) and inverse_friends (received)
+    @friends = @user.friends + @user.inverse_friends
+
+    # Remove duplicates in case of bidirectional friendships
+    @friends = @friends.uniq
+
+    render json: @friends, status: :ok
   end
 
   private
