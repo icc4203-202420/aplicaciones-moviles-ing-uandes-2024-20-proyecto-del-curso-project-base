@@ -39,14 +39,14 @@ Rails.application.routes.draw do
       resources :users do
         resources :reviews, only: [:index, :show, :create, :update, :destroy]
 
-        collection do #nuevo
+        collection do
           get 'search', to: 'users#search'
         end
 
-        
-
         member do
           get 'friends', to: 'users#friends'
+          # Add the new route to fetch friendships for a user
+          get 'friendships', to: 'user_friendships#index' # New endpoint
         end
       end
 

@@ -1,28 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import axios from 'axios';
+import API_BASE_URL from '../Hooks/fetchAxios';
 
 const Feed = () => {
-  const [reviews, setReviews] = useState([]);
+  const [friendships, setFriendships] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(1); // Example current user ID
 
   useEffect(() => {
-    fetchReviews();
+    fetchAcceptedFriendships();
   }, []);
 
-  const fetchReviews = async () => {
+  const fetchAcceptedFriendships = async () => {
     try {
-      const response = await axios.get('https://7ed5-200-73-69-220.ngrok-free.app/api/v1/reviews');
+      const response = await axios.get(`${API_BASE_URL}/friendships`);
+      console.log('API Response:', response.data); // Debug API response
+
       if (response.status === 200) {
-        console.log('Fetched Reviews:', response.data); // Log response data to verify structure
-        setReviews(response.data.reviews); // Assuming the reviews array is directly under `data`
+        // Filter friendships with status 'accepted' and where the current user is involved
+        const userFriendships = response.data.filter((friendship) => {
+          const isAccepted = friendship.status === 'accepted';
+          const isUserInvolved =
+            friendship.user_id === currentUserId || friendship.friend_id === currentUserId;
+
+          return isAccepted && isUserInvolved;
+        });
+
+        console.log('Filtered Friendships:', userFriendships); // Debug filtered results
+        setFriendships(userFriendships);
       } else {
-        setError('Failed to fetch reviews.');
+        setError('Failed to fetch friendships.');
       }
     } catch (error) {
-      console.error('Error fetching reviews:', error);
-      setError('Error fetching reviews, please try again later.');
+      console.error('Error fetching friendships:', error);
+      setError('Error fetching friendships, please try again later.');
     } finally {
       setLoading(false);
     }
@@ -42,14 +55,18 @@ const Feed = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Reviews Feed</Text>
+      <Text style={styles.header}>Accepted Friendships</Text>
       <FlatList
-        data={reviews}
+        data={friendships}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.reviewContainer}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.review}>{item.review}</Text>
+          <View style={styles.friendshipContainer}>
+            <Text style={styles.name}>
+              {item.user.first_name} {item.user.last_name} (@{item.user.handle})
+            </Text>
+            <Text style={styles.details}>
+              Friendship accepted on: {new Date(item.updated_at).toLocaleDateString()}
+            </Text>
           </View>
         )}
       />
@@ -67,7 +84,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 16,
   },
-  reviewContainer: {
+  friendshipContainer: {
     marginBottom: 12,
     padding: 12,
     backgroundColor: '#f9f9f9',
@@ -77,7 +94,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  review: {
+  details: {
     fontSize: 16,
     color: '#333',
   },

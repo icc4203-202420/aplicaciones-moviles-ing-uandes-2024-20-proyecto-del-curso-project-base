@@ -7,9 +7,9 @@ import { useNavigation } from '@react-navigation/native';
 
 function BarsDetails({ route }) {
     const { barId } = route.params; 
-    const navigation = useNavigation(); // Get navigation object
+    const navigation = useNavigation();
     const [barDetails, setBarDetails] = useState(null);
-    const [events, setEvents] = useState([]); 
+    const [events, setEvents] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [checkedInEvents, setCheckedInEvents] = useState({});
     const [participants, setParticipants] = useState({});
@@ -18,36 +18,26 @@ function BarsDetails({ route }) {
         fetchBarDetails();
         fetchBarEvents();
         fetchCurrentUser();
-        loadCheckedInEvents();
     }, []);
 
     useEffect(() => {
-        if (events.length > 0) {
+        if (events.length > 0 && currentUser) {
             loadCheckedInEvents();
         }
-    }, [events]);
-
-    const loadCheckedInEvents = async () => {
-        try {
-            const updatedCheckedInEvents = {};
-            for (const event of events) {
-                const checkedInStatus = await AsyncStorage.getItem(`checkedInEvents_${event.id}`);
-                if (checkedInStatus) {
-                    updatedCheckedInEvents[event.id] = JSON.parse(checkedInStatus);
-                    fetchParticipants(event.id); 
-                }
-            }
-            setCheckedInEvents(updatedCheckedInEvents);
-        } catch (error) {
-            console.error("Error loading checked-in events:", error);
-        }
-    };
+    }, [events, currentUser]);
 
     const fetchCurrentUser = async () => {
         try {
             const userData = await AsyncStorage.getItem('user');
             if (userData) {
                 const user = JSON.parse(userData);
+
+                // Clear data if switching users
+                if (currentUser?.id !== user.id) {
+                    setCheckedInEvents({});
+                    setParticipants({});
+                }
+
                 setCurrentUser(user);
             } else {
                 console.error('User not found in AsyncStorage');
@@ -61,11 +51,8 @@ function BarsDetails({ route }) {
         try {
             console.log(`Fetching details for bar ID: ${barId}`);
             const response = await axios.get(`${API_BASE_URL}/bars`);
-            console.log("Response data from /api/v1/bars:", response.data);
-
             const bar = response.data.bars.find((bar) => bar.id === barId);
             if (bar) {
-                console.log("Bar details found:", bar);
                 setBarDetails(bar);
             } else {
                 console.error('Bar not found in response data');
@@ -78,10 +65,25 @@ function BarsDetails({ route }) {
     const fetchBarEvents = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/bars/${barId}/events`);
-            console.log("Events fetched for the bar:", response.data);
             setEvents(response.data);
         } catch (error) {
             console.error('Error fetching bar events:', error);
+        }
+    };
+
+    const loadCheckedInEvents = async () => {
+        try {
+            const updatedCheckedInEvents = {};
+            for (const event of events) {
+                const checkedInStatus = await AsyncStorage.getItem(`checkedInEvents_${currentUser?.id}_${event.id}`);
+                if (checkedInStatus) {
+                    updatedCheckedInEvents[event.id] = JSON.parse(checkedInStatus);
+                    fetchParticipants(event.id);
+                }
+            }
+            setCheckedInEvents(updatedCheckedInEvents);
+        } catch (error) {
+            console.error("Error loading checked-in events:", error);
         }
     };
 
@@ -102,17 +104,17 @@ function BarsDetails({ route }) {
             Alert.alert("Error", "User not found. Please log in again.");
             return;
         }
-    
+
         try {
             const response = await axios.post(
                 `${API_BASE_URL}/bars/${barId}/events/${eventId}/attendances`,
                 { attendance: { user_id: currentUser.id, event_id: eventId, checked_in: true } }
             );
-    
+
             if (response.status === 201) {
                 Alert.alert("Check-in successful", "You have been registered for this event.");
-                setCheckedInEvents((prev) => ({...prev, [eventId]: true}));
-                await AsyncStorage.setItem(`checkedInEvents_${eventId}`, JSON.stringify(true));
+                setCheckedInEvents((prev) => ({ ...prev, [eventId]: true }));
+                await AsyncStorage.setItem(`checkedInEvents_${currentUser.id}_${eventId}`, JSON.stringify(true));
                 fetchParticipants(eventId);
             }
         } catch (error) {
@@ -120,18 +122,23 @@ function BarsDetails({ route }) {
             Alert.alert("Error", "Check-in could not be completed.");
         }
     };
-    
+
     const handleCheckOut = async (eventId) => {
+        if (!currentUser || !currentUser.id) {
+            Alert.alert("Error", "User not found. Please log in again.");
+            return;
+        }
+
         try {
             const response = await axios.delete(
                 `${API_BASE_URL}/bars/${barId}/events/${eventId}/attendances/${currentUser.id}`
             );
-    
+
             if (response.status === 200) {
                 Alert.alert("Check-out successful", "You have been removed from this event.");
-                setCheckedInEvents((prev) => ({...prev, [eventId]: false}));
-                await AsyncStorage.removeItem(`checkedInEvents_${eventId}`);
-                setParticipants((prev) => ({...prev, [eventId]: []}));
+                setCheckedInEvents((prev) => ({ ...prev, [eventId]: false }));
+                await AsyncStorage.removeItem(`checkedInEvents_${currentUser.id}_${eventId}`);
+                setParticipants((prev) => ({ ...prev, [eventId]: [] }));
             }
         } catch (error) {
             console.error('Error during check-out:', error);
@@ -165,10 +172,10 @@ function BarsDetails({ route }) {
                                 <Text style={styles.eventDate}>Date: {new Date(item.date).toLocaleDateString()}</Text>
                                 <Text style={styles.eventDescription}>{item.description}</Text>
 
-                                {/* Button to navigate to EventPhoto screen */}
-                                <Pressable 
-                                    style={styles.photoDetailsButton} 
-                                    onPress={() => navigation.navigate('EventPhoto', { eventId: item.id })}>
+                                <Pressable
+                                    style={styles.photoDetailsButton}
+                                    onPress={() => navigation.navigate('EventPhoto', { eventId: item.id })}
+                                >
                                     <Text style={styles.photoDetailsText}>View Bar Photos</Text>
                                 </Pressable>
 
