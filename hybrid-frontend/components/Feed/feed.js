@@ -5,6 +5,7 @@ import axios from 'axios';
 import API_BASE_URL from '../Hooks/fetchAxios';
 
 const Feed = () => {
+  const [feed, SetFeed] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [friends, setFriends] = useState([]);
   const [beers, setBeers] = useState({}); // Store beers as an object (beer_id -> beer_name)
@@ -37,17 +38,12 @@ const Feed = () => {
 
       // Fetch all beers
       const beersResponse = await axios.get(`${API_BASE_URL}/beers`);
-      const allBeers = beersResponse.data;
-
-      // Debugging: Log the response to check the structure
-      console.log('Beers response:', allBeers);
-
-      if (allBeers && typeof allBeers === 'object') {
-        // Assuming beer data is returned as an object with beer_id as keys
-        setBeers(allBeers);
-      } else {
-        console.error('Beers data is not an object:', allBeers);
-      }
+      const allBeers = beersResponse.data.beers || [];
+      const beersMap = allBeers.reduce((map, beer) => {
+        map[beer.id] = beer;
+        return map;
+      }, {});
+      setBeers(beersMap);
 
     } catch (error) {
       console.error('Error fetching feed data:', error);
@@ -66,10 +62,7 @@ const Feed = () => {
     const friend = friends.find((friend) => friend.id === review.user_id);
     console.log('Friend:', friend);
     const beerId = review.beer_id; // Access the beer_id from the review
-    const beerName = 
-     // Access the beer name using the beer_id
-    console.log('Beer ID:', beerId); // Log the beer ID
-    console.log('Beer Name:', beerName); // Log the beer name
+    const beerName = beers[beerId]?.name || 'Desconocida';
 
     
     

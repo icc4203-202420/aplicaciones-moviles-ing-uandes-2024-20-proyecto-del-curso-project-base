@@ -68,7 +68,6 @@ class API::V1::EventsController < ApplicationController
     @attendees = @event.users.distinct.joins(:attendances).where('attendances.checked_in = ?', true)
     render json: @attendees.as_json(only: [:id, :first_name, :last_name]), status: :ok
   end
-  
 
   private
 
