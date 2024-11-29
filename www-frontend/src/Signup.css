@@ -1,0 +1,43 @@
+/* Signup.css */
+.signup-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 15px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .signup-form-container .MuiTextField-root {
+    border-radius: 10px;
+    background-color: #fff;
+  }
+  
+  .signup-form-container .MuiTextField-root input {
+    border-radius: 1000px;
+  }
+  
+  .signup-form-container .MuiButton-containedPrimary {
+    background-color: #ffffff;
+    color: white;
+    border-radius: 40px;
+    padding: 10px 15px;
+  }
+  
+  .signup-form-container .MuiButton-containedPrimary:hover {
+    background-color: #004d40;
+  }
+  
+  .signup-form-container h5 {
+    color: #00796b;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  body {
+    background-color: #f9f9f9;
+  }
+  

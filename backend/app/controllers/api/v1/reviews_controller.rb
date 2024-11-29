@@ -1,20 +1,21 @@
 class API::V1::ReviewsController < ApplicationController
   respond_to :json
-  before_action :set_user, only: [:index, :create]
+  before_action :set_user, only: [ :create]
   before_action :set_review, only: [:show, :update, :destroy]
 
   def index
-    @reviews = Review.where(user: @user)
-    render json: { reviews: @reviews }, status: :ok
+    @reviews = Review.all
+    render json: { reviews: @reviews }
   end
 
   def show
     if @review
-      render json: { review: @review }, status: :ok
+      render json: { review: @review.as_json }, status: :ok
     else
       render json: { error: "Review not found" }, status: :not_found
     end
   end
+
 
   def create
     @review = @user.reviews.build(review_params)
@@ -50,6 +51,6 @@ class API::V1::ReviewsController < ApplicationController
   end
 
   def review_params
-    params.require(:review).permit(:id, :text, :rating, :beer_id)
+    params.require(:review).permit(:id, :text, :rating, :beer_id, :user_name)
   end
 end

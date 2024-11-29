@@ -1,0 +1,43 @@
+.bar-detail-container {
+  margin: 20px;
+  padding: 10px;
+  color: black;
+}
+
+.events-heading {
+  font-size: 2rem;  /* Tamaño de fuente */
+  color: black !important;  /* Color negro con !important */
+  text-align: center;  /* Alineación centrada */
+  margin-bottom: 20px; /* Margen debajo del título */
+  border-bottom: 2px solid #DABB3F;  /* Línea debajo del título */
+  padding-bottom: 10px;  /* Espacio entre el texto y la línea */
+}
+
+.event-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.event-item {
+  margin: 15px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color:#f9a825;
+}
+
+.event-item h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #ffffff;
+}
+
+.event-item p {
+  margin: 5px 0;
+  color: #ffffff;
+}
+
+.event-item button:hover {
+  background-color: #c2a33b;
+  color: white;
+}

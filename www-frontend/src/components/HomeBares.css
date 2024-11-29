@@ -1,0 +1,89 @@
+.home-bares-container {
+    background-color: #f9f9f9;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  /* .app-bar {
+    background-color: #ffffff;
+    color: #000;
+    box-shadow: none;
+    border-bottom: 1px solid #e0e0e0;
+  } */
+  
+  .title {
+    font-family: 'Pacifico', cursive;
+    flex-grow: 1;
+    text-align: center;
+    color: #000;
+  }
+  
+  .header {
+    margin-top: 2rem;
+  }
+  
+  .question {
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #000;
+  }
+  
+  .highlight {
+    color: #f1c40f;
+    font-weight: bold;
+  }
+  
+  .search-bar {
+    margin-bottom: 2rem;
+  }
+  
+  .search-input {
+    border-radius: 50px;
+    background-color: #f3f3f3;
+  }
+  
+  .tabs-container {
+    margin-bottom: 2rem;
+  }
+  
+  .tabs {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .tab {
+    min-width: 50%;
+    font-weight: bold;
+  }
+  
+  .tab.active {
+    color: #f1c40f;
+  }
+  
+  .bar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .bar-card {
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .bar-card img {
+    width: 100%;
+    height: auto;
+  }
+  
+  .bar-card .location-icon {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    color: #f1c40f;
+  }
+
+
+  

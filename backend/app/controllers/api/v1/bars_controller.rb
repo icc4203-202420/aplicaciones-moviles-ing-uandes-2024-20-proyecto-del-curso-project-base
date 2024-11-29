@@ -6,19 +6,43 @@ class API::V1::BarsController < ApplicationController
   before_action :set_bar, only: [:show, :update, :destroy]
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
-  def index
-    @bars = Bar.all
-    render json: { bars: @bars }, status: :ok
+  # GET /api/v1/bars
+# In your BarsController index action
+def index
+  country_name = params[:country]
+  street_name = params[:street]
+
+  @bars = Bar.includes(address: :country) # Ensure country is included with addresses
+
+  if country_name.present?
+    @bars = @bars.joins(address: :country).where('countries.name ILIKE ?', "%#{country_name}%")
   end
+
+  if street_name.present?
+    @bars = @bars.where('addresses.line1 ILIKE ? OR addresses.line2 ILIKE ?', "%#{street_name}%", "%#{street_name}%")
+  end
+
+  render json: {
+    bars: @bars.as_json(
+      include: {
+        address: { only: [:line1, :line2, :city], include: { country: { only: [:name] } } }
+      }
+    )
+  }, status: :ok
+end
+
+
+
+
 
   def show
     if @bar.image.attached?
-      render json: @bar.as_json.merge({ 
-        image_url: url_for(@bar.image), 
-        thumbnail_url: url_for(@bar.thumbnail) }),
-        status: :ok
+      render json: @bar.as_json.merge(include: {address: {only:[:line1, :city]}}).merge({
+        image_url: url_for(@bar.image),
+        thumbnail_url: url_for(@bar.thumbnail)
+      }), status: :ok
     else
-      render json: { bar: @bar.as_json }, status: :ok
+      render json: { bar: @bar.as_json(include: { address: { only: [:line1, :city] } }) }, status: :ok
     end
   end
 
@@ -32,7 +56,7 @@ class API::V1::BarsController < ApplicationController
       render json: @bar.errors, status: :unprocessable_entity
     end
   end
-  
+
   def update
     handle_image_attachment if bar_params[:image_base64]
 
@@ -43,18 +67,16 @@ class API::V1::BarsController < ApplicationController
     end
   end
 
-  # Método para eliminar un bar existente
   def destroy
     if @bar.destroy
       render json: { message: 'Bar successfully deleted.' }, status: :no_content
     else
       render json: @bar.errors, status: :unprocessable_entity
     end
-  end  
+  end
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
   def set_bar
     @bar = Bar.find_by(id: params[:id])
     render json: { error: 'Bar not found' }, status: :not_found unless @bar
@@ -70,5 +92,8 @@ class API::V1::BarsController < ApplicationController
   def handle_image_attachment
     decoded_image = decode_image(bar_params[:image_base64])
     @bar.image.attach(io: decoded_image[:io], filename: decoded_image[:filename], content_type: decoded_image[:content_type])
-  end  
+  end
 end
+
+
+

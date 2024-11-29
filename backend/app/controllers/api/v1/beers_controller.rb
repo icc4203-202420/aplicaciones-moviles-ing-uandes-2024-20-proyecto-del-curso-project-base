@@ -10,7 +10,7 @@ class API::V1::BeersController < ApplicationController
   def index
     @beers = Beer.all
     render json: { beers: @beers }, status: :ok
-  end
+  end 
 
   # def index
   #   @beers = Rails.cache.fetch("beers", expires_in: 12.hours) do
@@ -22,12 +22,18 @@ class API::V1::BeersController < ApplicationController
   # GET /beers/:id
   def show
     if @beer.image.attached?
-      render json: @beer.as_json.merge({ 
+      render json: @beer.as_json(include: { 
+        brand: { include: :brewery }, 
+        bars: {}
+      }).merge({ 
         image_url: url_for(@beer.image), 
-        thumbnail_url: url_for(@beer.thumbnail)}),
-        status: :ok
+        thumbnail_url: url_for(@beer.thumbnail) 
+      }), status: :ok
     else
-      render json: { beer: @beer.as_json }, status: :ok
+      render json: @beer.as_json(include: { 
+        brand: { include: :brewery },
+        bars: {}
+      }), status: :ok
     end 
   end
 

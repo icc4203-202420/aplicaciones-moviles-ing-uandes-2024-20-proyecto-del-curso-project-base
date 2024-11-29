@@ -1,0 +1,79 @@
+/* BeerList.css */
+
+/* Container styles */
+.container {
+  max-width: 800px; /* Aumentamos el ancho para mejor visualización */
+  margin: 0 auto; /* Centramos el contenedor */
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading styles */
+.heading {
+  font-size: 2rem;
+  color: #fae25d; /* Yellow accent */
+  margin-bottom: 1rem;
+  text-align: center; /* Centramos el texto */
+}
+
+/* Search input styles */
+.search-input {
+  width: 100%; /* Aseguramos que ocupe todo el ancho */
+  padding: 0rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  color: #333;
+  outline-color: #f9a825; /* Yellow outline on focus */
+}
+
+/* List container styles */
+.beer-list-container {
+  max-height: 400px; /* Altura máxima para la lista con scrollbar */
+  overflow-y: scroll;
+  border: 1px solid #f9a825; /* Borde amarillo alrededor de la lista */
+  padding: 0;
+  margin: 0 auto; /* Centramos el contenedor */
+  border-radius: 4px;
+  background-color: #fff; /* Fondo blanco */
+}
+
+/* List styles */
+.beer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* List item styles */
+.beer-list-item {
+  padding: 0.5rem;
+  border-bottom: 1px solid #f9a825; /* Borde inferior amarillo */
+  font-size: 1.1rem;
+  color: #333;
+  background-color: #fff8e1; /* Fondo amarillo claro */
+  display: flex;
+  align-items: center;
+}
+
+.beer-list-item:last-child {
+  border-bottom: none;
+}
+
+.beer-list-item:hover {
+  background-color: #f9a825; /* Fondo amarillo en hover */
+  color: #fff; /* Texto blanco en hover */
+}
+
+/* Scrollbar styles (optional) */
+.beer-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.beer-list-container::-webkit-scrollbar-thumb {
+  background-color: #f9a825;
+  border-radius: 4px;
+}
