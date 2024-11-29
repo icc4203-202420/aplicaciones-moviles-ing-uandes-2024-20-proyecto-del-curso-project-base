@@ -1,5 +1,6 @@
 class API::V1::ReviewsController < ApplicationController
   respond_to :json
+  before_action :authenticate_user! 
   before_action :set_user, only: [:index, :create]
   before_action :set_review, only: [:show, :update, :destroy]
 
@@ -7,7 +8,7 @@ class API::V1::ReviewsController < ApplicationController
     @reviews = Review.where(user: @user)
     render json: { reviews: @reviews }, status: :ok
   end
-
+  
   def show
     if @review
       render json: { review: @review }, status: :ok
@@ -46,8 +47,18 @@ class API::V1::ReviewsController < ApplicationController
   end
 
   def set_user
-    @user = User.find(params[:user_id]) 
+    user_id = params[:review][:user_id]  # Extraer el user_id de params[:review]
+    Rails.logger.info "User ID received: #{user_id}"
+    begin
+      @user = User.find(user_id)
+    rescue ActiveRecord::RecordNotFound
+      Rails.logger.info "User with ID #{user_id} not found"
+      render json: { error: 'User not found' }, status: :not_found
+    end
   end
+  
+  
+  
 
   def review_params
     params.require(:review).permit(:id, :text, :rating, :beer_id)

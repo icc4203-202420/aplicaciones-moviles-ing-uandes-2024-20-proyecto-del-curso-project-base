@@ -8,28 +8,57 @@ class API::V1::BeersController < ApplicationController
 
   # GET /beers
   def index
-    @beers = Beer.all
-    render json: { beers: @beers }, status: :ok
+    @beers = Beer.includes(:brand).all
+    render json: { 
+      beers: @beers.as_json(include: { brand: { only: [:name] } })
+    }, status: :ok
   end
 
-  # def index
-  #   @beers = Rails.cache.fetch("beers", expires_in: 12.hours) do
-  #     Beer.includes(:brand, :brewery).all
-  #   end
-  #   render json: @beers
-  # end
-  
-  # GET /beers/:id
   def show
+    @beer = Beer.includes(:brand, :bars, :reviews).find(params[:id])
+  
+    brewery = @beer.brand.brewery
+  
+    beer_data = @beer.as_json(only: [:id, :name, :beer_type, :style, :hop, :yeast, :malts, :ibu, :alcohol, :blg, :avg_rating], 
+      include: {
+        brand: { only: [:name] },
+        bars: { only: [:id, :name, address: [:line1, :line2, :city]] }
+      })
+  
+    beer_data[:brewery] = { name: brewery.name } if brewery.present?
+  
+    # Add reviews data
+    beer_data[:reviews] = @beer.reviews.includes(:user).map do |review|
+      {
+        id: review.id,
+        rating: review.rating,
+        text: review.text,
+        user: {
+          id: review.user.id,
+          name: "#{review.user.first_name} #{review.user.last_name}",
+          handle: review.user.handle
+        }
+      }
+    end
+  
+    # Add current user's review if it exists
+    if current_user
+      current_user_review = @beer.reviews.find_by(user: current_user)
+      beer_data[:current_user_review] = current_user_review.as_json(only: [:id, :rating, :text]) if current_user_review
+    end
+  
     if @beer.image.attached?
-      render json: @beer.as_json.merge({ 
-        image_url: url_for(@beer.image), 
-        thumbnail_url: url_for(@beer.thumbnail)}),
-        status: :ok
-    else
-      render json: { beer: @beer.as_json }, status: :ok
-    end 
+      beer_data.merge!({
+        image_url: url_for(@beer.image),
+        thumbnail_url: url_for(@beer.thumbnail)
+      })
+    end
+  
+    render json: { beer: beer_data }, status: :ok
   end
+  
+  
+  
 
   # POST /beers
   def create
