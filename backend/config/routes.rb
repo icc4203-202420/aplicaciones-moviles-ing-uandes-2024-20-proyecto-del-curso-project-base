@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     registrations: 'api/v1/registrations'
   }
 
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
@@ -21,14 +22,39 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
-      resources :bars
-      resources :beers
-      resources :users do
-        resources :reviews, only: [:index]
+      resources :bars do
+        resources :events
       end
-      
+
+      resources :events do
+        collection do
+          get 'all_events', to: 'events#all_events'  
+        end
+      end
+
+      resources :beers do
+        resources :reviews, only: [:index, :create, :show]
+      end
+      resources :users do
+        collection do
+          post 'update_push_token', to: 'users#update_push_token'
+        end
+        resources :reviews, only: [:index]
+        resources :friendships, param: :friend_id, only: [:index, :create, :show, :update]
+      end
+
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
+      resources :countries, only: [:index]
+      resources :events do
+        resources :event_pictures, only: [:new, :create]
+      end
+
+      resources :event_pictures, only: [:new, :create]
+      resources :attendances
     end
   end
 
 end
+
+
+#

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_08_09_155040) do
+ActiveRecord::Schema[7.1].define(version: 2024_11_04_134915) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -135,6 +135,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_09_155040) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.json "tagged_friends", default: [], null: false
     t.index ["event_id"], name: "index_event_pictures_on_event_id"
     t.index ["user_id"], name: "index_event_pictures_on_user_id"
   end
@@ -156,7 +157,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_09_155040) do
     t.integer "friend_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "bar_id", null: false
+    t.integer "bar_id"
+    t.integer "event_id"
     t.index ["bar_id"], name: "index_friendships_on_bar_id"
     t.index ["friend_id"], name: "index_friendships_on_friend_id"
     t.index ["user_id", "friend_id"], name: "index_friendships_on_user_id_and_friend_id", unique: true
@@ -194,6 +196,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_09_155040) do
     t.datetime "remember_created_at"
     t.string "jti", null: false
     t.string "handle"
+    t.string "expo_push_token"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["handle"], name: "index_users_on_handle", unique: true
     t.index ["jti"], name: "index_users_on_jti", unique: true
@@ -215,6 +218,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_08_09_155040) do
   add_foreign_key "event_pictures", "users"
   add_foreign_key "events", "bars"
   add_foreign_key "friendships", "bars"
+  add_foreign_key "friendships", "events"
   add_foreign_key "friendships", "users"
   add_foreign_key "friendships", "users", column: "friend_id"
   add_foreign_key "reviews", "beers", on_delete: :cascade

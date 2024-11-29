@@ -6,19 +6,20 @@ class API::V1::BarsController < ApplicationController
   before_action :set_bar, only: [:show, :update, :destroy]
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
+  # Se modifico el controlador levemente para poder acceder a las addresses directamente con el GET de bars
   def index
-    @bars = Bar.all
-    render json: { bars: @bars }, status: :ok
+    @bars = Bar.includes(:address).all
+    render json: @bars.as_json(include: :address), status: :ok
   end
 
   def show
     if @bar.image.attached?
-      render json: @bar.as_json.merge({ 
-        image_url: url_for(@bar.image), 
-        thumbnail_url: url_for(@bar.thumbnail) }),
-        status: :ok
+      render json: @bar.as_json(include: [:address, :events]).merge({
+        image_url: url_for(@bar.image),
+        thumbnail_url: url_for(@bar.thumbnail)
+      }), status: :ok
     else
-      render json: { bar: @bar.as_json }, status: :ok
+      render json: { bar: @bar.as_json(include: [:address, :events]) }, status: :ok
     end
   end
 
@@ -32,7 +33,7 @@ class API::V1::BarsController < ApplicationController
       render json: @bar.errors, status: :unprocessable_entity
     end
   end
-  
+
   def update
     handle_image_attachment if bar_params[:image_base64]
 
@@ -50,7 +51,7 @@ class API::V1::BarsController < ApplicationController
     else
       render json: @bar.errors, status: :unprocessable_entity
     end
-  end  
+  end
 
   private
 
@@ -70,5 +71,5 @@ class API::V1::BarsController < ApplicationController
   def handle_image_attachment
     decoded_image = decode_image(bar_params[:image_base64])
     @bar.image.attach(io: decoded_image[:io], filename: decoded_image[:filename], content_type: decoded_image[:content_type])
-  end  
+  end
 end
