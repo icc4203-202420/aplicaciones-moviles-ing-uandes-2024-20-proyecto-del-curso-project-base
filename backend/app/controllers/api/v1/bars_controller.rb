@@ -7,19 +7,58 @@ class API::V1::BarsController < ApplicationController
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
   def index
-    @bars = Bar.all
-    render json: { bars: @bars }, status: :ok
+    if params[:query].present?
+      bars = Bar.joins(:address)
+                .where('bars.name ILIKE ? OR addresses.city ILIKE ? OR addresses.country ILIKE ? OR addresses.line1 ILIKE ? OR addresses.line2 ILIKE ?',
+                       "%#{params[:query]}%",
+                       "%#{params[:query]}%",
+                       "%#{params[:query]}%",
+                       "%#{params[:query]}%")
+    else
+      bars = Bar.all
+    end
+    bars_with_event_count = bars.map do |bar|
+      bar.as_json.merge(event_count: bar.event_count)
+    end
+
+    render json: { bars: bars_with_event_count }, status: :ok
   end
 
+  # def show
+  #   if @bar.image.attached?
+  #     render json: @bar.as_json.merge({
+  #       image_url: url_for(@bar.image),
+  #       thumbnail_url: url_for(@bar.thumbnail),
+  #       event_count: @bar.event_count  # Incluye el conteo de eventos
+  #     }), status: :ok
+  #   else
+  #     render json: @bar.as_json.merge(event_count: @bar.event_count), status: :ok
+  #   end
+  # end
   def show
-    if @bar.image.attached?
-      render json: @bar.as_json.merge({ 
-        image_url: url_for(@bar.image), 
-        thumbnail_url: url_for(@bar.thumbnail) }),
-        status: :ok
-    else
-      render json: { bar: @bar.as_json }, status: :ok
+    events = @bar.events.map do |event|
+      {
+        name: event.name,
+        description: event.description,
+        start_date: event.start_date,
+        end_date: event.end_date
+      }
     end
+
+    bar_details = @bar.as_json(include: { address: { only: [:line1, :line2, :city, :country] } })
+                      .merge({
+                        event_count: @bar.event_count,
+                        events: events,
+                        beers: @bar.beers.as_json
+                      })
+
+    render json: bar_details, status: :ok
+  end
+
+  def events
+    bar = Bar.find(params[:id])
+    events = bar.events.select(:id, :name, :start_date, :end_date)
+    render json: { events: events }
   end
 
   def create
@@ -32,7 +71,7 @@ class API::V1::BarsController < ApplicationController
       render json: @bar.errors, status: :unprocessable_entity
     end
   end
-  
+
   def update
     handle_image_attachment if bar_params[:image_base64]
 
@@ -50,7 +89,7 @@ class API::V1::BarsController < ApplicationController
     else
       render json: @bar.errors, status: :unprocessable_entity
     end
-  end  
+  end
 
   private
 
@@ -62,7 +101,7 @@ class API::V1::BarsController < ApplicationController
 
   def bar_params
     params.require(:bar).permit(
-      :name, :latitude, :longitude, :image_base64,
+      :name, :latitude, :longitude, :image_base64, :address_id,
       address_attributes: [:user_id, :line1, :line2, :city, country_attributes: [:name]]
     )
   end
@@ -70,5 +109,5 @@ class API::V1::BarsController < ApplicationController
   def handle_image_attachment
     decoded_image = decode_image(bar_params[:image_base64])
     @bar.image.attach(io: decoded_image[:io], filename: decoded_image[:filename], content_type: decoded_image[:content_type])
-  end  
+  end
 end

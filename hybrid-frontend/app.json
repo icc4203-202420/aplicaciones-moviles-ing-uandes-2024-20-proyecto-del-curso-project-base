@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "hybrid-frontend",
+    "slug": "hybrid-frontend",
+    "version": "1.0.0",
+    "scheme": "miapp",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "aa7408ab-c7a9-4230-9a68-3822874f6a9b"
+      }
+    },
+    "owner": "caroohong"
+  }
+}

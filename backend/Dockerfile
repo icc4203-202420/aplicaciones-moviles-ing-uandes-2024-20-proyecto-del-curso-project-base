@@ -24,4 +24,3 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["rails", "server", "-b", "0.0.0.0", "-p", "3001"]
 
-

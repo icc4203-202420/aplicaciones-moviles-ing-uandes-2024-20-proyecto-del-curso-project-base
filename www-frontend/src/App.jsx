@@ -1,35 +1,65 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import './App.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import React from 'react';
+import Home from './components/Home';
+import BarSearch from './components/Bar/BarSearch';
+import BarEvents from './components/Bar/Events/BarEvents';
+import User from './components/User/User';
+import BeerList from './components/Beer/BeerList';
+import BeerDetail from './components/Beer/BeerDetail';
+import BeerReviewList from './components/Beer/BeerReviewList';
+import BeerReviewForm from './components/Beer/BeerReviewForm';
+import Navbar from './components/Navbar';
+import Login from './components/Login';
+import SignUp from './components/SignUp';
+import Account from './components/Account'; 
+import AuthProvider from './components/contexts/AuthContext';
+import { CheckInProvider } from './components/contexts/CheckInContext'; // Importa el CheckInProvider
+import { Navigate } from 'react-router-dom';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Nuevas importaciones
+import EventGallery from './components/Bar/Events/EventGallery';
+import FriendSearch from './components/FriendSearch';
+import TagUserInPicture from './components/Bar/Events/TagUserInPicture';
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+function Authenticate({ element: Component }) {
+  const isAuthenticated = !!localStorage.getItem('JWT_TOKEN');
+  return isAuthenticated ? <Component /> : <Navigate to="/login" />;
 }
 
-export default App
+function App() {
+  return (
+    <AuthProvider>
+      <CheckInProvider> {/* Envuelve tu aplicación con CheckInProvider */}
+        <Router>
+          <div className="app">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/bars" element={<BarSearch />} />
+              <Route path="/bars/:id/events" element={<BarEvents />} />
+              <Route path="/users" element={<Authenticate element={User} />} />
+              <Route path="/beers" element={<BeerList />} />
+              <Route path="/beers/:id" element={<BeerDetail />} />
+              <Route path="/beers/:id/reviews" element={<BeerReviewList />} />
+              <Route path="/beers/:id/review" element={<Authenticate element={BeerReviewForm} />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/account" element={<Account />} />
+
+              {/* Nuevas rutas */}
+              <Route path="/bars/:barId/events/:eventId/gallery" element={<EventGallery />} />
+              <Route path="/search/friends" element={<Authenticate element={FriendSearch} />} />
+              <Route path="/event/:eventId/picture/:pictureId/tag" element={<Authenticate element={TagUserInPicture} />} />
+            </Routes>
+            <Navbar />
+            <ToastContainer />
+          </div>
+        </Router>
+      </CheckInProvider>
+    </AuthProvider>
+  );
+}
+
+export default App;

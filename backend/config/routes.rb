@@ -21,12 +21,42 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
-      resources :bars
-      resources :beers
+      resources :bars do
+        resources :events, only: [:index]
+      end
+      resources :beers do
+        resources :reviews, only: [:create, :index, :show, :update, :destroy]
+        resources :bars
+      end
+      resource :attendances, only: [:create]
+      resources :events, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          # get :attendees, to: 'attendances#users'
+          # post 'check_in'
+          get :pictures  # Esto creará una ruta para /api/v1/events/:id/pictures
+          post :generate_video
+          resource :attendances, only: [:show, :create, :destroy]
+        end
+
+        resources :event_pictures, only: [:index, :show, :create] do
+          member do
+            post :tag_user  # Ruta para etiquetar usuarios en una imagen /api/v1/event_pictures/:id/tag_user
+            get :tagged_users
+          end
+        end
+      end
       resources :users do
         resources :reviews, only: [:index]
+        resources :friendships, only: [:index, :create]
+        resources :friend_requests, only: [:index] do
+          member do
+            post :accept
+            delete :reject
+          end
+        end
+        post :push_token, on: :member
       end
-      
+
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
     end
   end
