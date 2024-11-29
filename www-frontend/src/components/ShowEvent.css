@@ -1,0 +1,76 @@
+.show-event-container {
+  margin: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.show-event-name {
+  color: #C58100;
+  font-family: "Montserrat Alternates";
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: normal;
+  
+  background-color: #564c3d;
+  color: transparent;
+  text-shadow: 0px 2px 3px rgba(197,129,9);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+}
+
+.show-event-date {
+  color: black;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.show-event-desc {
+  color: black; 
+}
+
+.show-event-attendees {
+  color: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.show-event-friends,
+.show-event-other {
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  width: 300px;
+  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #F1DCA7;
+  border-radius: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin: 20px;
+  background-color: #eccf84;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+  border-width: 3px;
+  border-color: #C58100;
+}
+
+.show-event-other-header,
+.show-event-friends-header {
+  display: flex;
+  justify-content: start;
+  margin-left: 15px;
+  font-weight: 600;
+}
+
+.show-event-other-list,
+.show-event-friends-list {
+  margin-right: 5px;
+}
+
+.show-event-flyer img {
+  max-width: 100%;
+  height: auto;
+}

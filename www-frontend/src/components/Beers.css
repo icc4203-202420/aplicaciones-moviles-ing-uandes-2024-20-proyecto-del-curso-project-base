@@ -1,0 +1,80 @@
+.beers-container {
+  padding: 20px;
+  background-color: #F1DCA7;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.beers-title {
+  color: #C58100;
+  font-family: "Montserrat Alternates";
+  font-size: 52px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: normal;
+
+  text-align: center;
+  
+  background-color: #564c3d;
+  color: transparent;
+  text-shadow: 0px 2px 3px rgba(197,129,9);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+}
+
+.beers-toggle-button {
+  background-color: #C58100;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.beers-toggle-button:hover {
+  background-color: #A76D00;
+}
+
+.beers-list-container {
+  margin-top: 30px;
+}
+
+.beers-search {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1.5px solid #C58100;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  outline: none;
+}
+
+.beers-list {
+  list-style: none;
+  padding: 0;
+}
+
+.beers-item {
+  margin: 10px 0;
+}
+
+.beers-link {
+  font-size: 20px;
+  color: #C58100;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.beers-link:hover {
+  color: #A76D00;
+}
+
+.axios-state-message {
+  font-size: 18px;
+  color: #C58100;
+  margin: 20px 0;
+}

@@ -1,0 +1,40 @@
+.home-title {
+    color: #C58100;
+    font-family: "Montserrat Alternates";
+    font-size: 52px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: normal;
+  
+    text-align: center;
+    
+    background-color: #564c3d;
+    color: transparent;
+    text-shadow: 0px 2px 3px rgba(197,129,9);
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+
+    padding-top: 30px;
+}
+
+.maintenance-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 70vh;
+
+    color: #C58100;
+    font-family: "Montserrat Alternates";
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    text-align: center;
+}

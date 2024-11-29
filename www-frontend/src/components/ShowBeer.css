@@ -1,0 +1,82 @@
+.beer-container {
+  margin: 15px;
+}
+
+.beer-name {
+  color: #C58100;
+  font-family: "Montserrat Alternates";
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: normal;
+
+  text-align: center;
+  
+  background-color: #564c3d;
+  color: transparent;
+  text-shadow: 0px 2px 3px rgba(197,129,9);
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+}
+
+.beer-top {
+  color: black;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.beer-img {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.beer-items {
+  flex: 1;
+}
+
+.avg-rating {
+  margin: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.rating-header {
+  font-family: Roboto;
+  color: #000;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+}
+
+.MuiRating-iconFilled {
+  color: rgba(197, 129, 0, 1);
+}
+
+.rating-value {
+  font-family: Roboto;
+  color: #000;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+}
+
+.beer-description {
+  margin: 15px;
+
+  font-family: Roboto;
+  color: #000;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+}

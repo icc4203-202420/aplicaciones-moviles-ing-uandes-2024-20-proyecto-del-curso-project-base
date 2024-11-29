@@ -28,7 +28,7 @@ COPY backend .
 # Expose port 3001 to be accessible from the host
 EXPOSE 3001
 
-COPY /backend/docker-entrypoint.sh /usr/local/bin/
+COPY /backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["rails", "server", "-b", "0.0.0.0", "-p", "3001"]

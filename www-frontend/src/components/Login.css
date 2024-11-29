@@ -1,0 +1,22 @@
+#login-title {
+  margin-left: 34px;
+  margin-top: 45px;
+
+  font-size: 72px;
+}
+
+#login-bg {
+  height: 75%;
+}
+
+#login-container {
+  margin-top: 190px;
+}
+
+#login-header {
+  font-size: 24px;
+}
+
+.login-error-message {
+  color: #F1DCA7;
+}
